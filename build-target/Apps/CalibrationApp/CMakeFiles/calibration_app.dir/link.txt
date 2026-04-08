@@ -1,1 +1,0 @@
-/usr/bin/arm-linux-gnueabihf-gcc --sysroot=/opt/sysroots/bullseye-armhf -g CMakeFiles/calibration_app.dir/src/main.c.o -o calibration_app 
