@@ -1,0 +1,1 @@
+/usr/bin/arm-linux-gnueabihf-gcc --sysroot=/opt/sysroots/bullseye-armhf -g CMakeFiles/brewie_app.dir/src/main.c.o CMakeFiles/brewie_app.dir/src/UI/UI.c.o -o brewie_app 

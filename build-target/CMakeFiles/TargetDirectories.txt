@@ -1,0 +1,14 @@
+/home/anders/FreeBrewie-SOM/build-target/CMakeFiles/rebuild_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/CMakeFiles/edit_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/BrewieApp/CMakeFiles/rebuild_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/BrewieApp/CMakeFiles/edit_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/BrewieApp/CMakeFiles/brewie_app.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/CalibrationApp/CMakeFiles/rebuild_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/CalibrationApp/CMakeFiles/edit_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/CalibrationApp/CMakeFiles/calibration_app.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/Launcher/CMakeFiles/rebuild_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/Launcher/CMakeFiles/edit_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Apps/Launcher/CMakeFiles/brewie_launcher.dir
+/home/anders/FreeBrewie-SOM/build-target/Tools/McuProbe/CMakeFiles/rebuild_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Tools/McuProbe/CMakeFiles/edit_cache.dir
+/home/anders/FreeBrewie-SOM/build-target/Tools/McuProbe/CMakeFiles/mcu_probe.dir

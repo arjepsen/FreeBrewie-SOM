@@ -1,0 +1,146 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.18"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "Apps/BrewieApp",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.18"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Apps/BrewieApp",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "Apps/CalibrationApp",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.18"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Apps/CalibrationApp",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "Apps/Launcher",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.18"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Apps/Launcher",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "Tools/McuProbe",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.18"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "Tools/McuProbe",
+					"targetIndexes" : 
+					[
+						3
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					],
+					"name" : "FreeBrewie_SOM_Stack",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "brewie_app::@c654b3b2ccc294702c70",
+					"jsonFile" : "target-brewie_app-Debug-1db078bbfd85f48d4a37.json",
+					"name" : "brewie_app",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 3,
+					"id" : "brewie_launcher::@0752866b4889651e6644",
+					"jsonFile" : "target-brewie_launcher-Debug-45134696df0c61720a2c.json",
+					"name" : "brewie_launcher",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "calibration_app::@d818a46fbcc0a76da75a",
+					"jsonFile" : "target-calibration_app-Debug-bbc8b0f594085850ce6a.json",
+					"name" : "calibration_app",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "mcu_probe::@90c8196a6c3063e197a7",
+					"jsonFile" : "target-mcu_probe-Debug-b81e21864e1917d93384.json",
+					"name" : "mcu_probe",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/anders/FreeBrewie-SOM/build-target",
+		"source" : "/home/anders/FreeBrewie-SOM"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 1
+	}
+}
