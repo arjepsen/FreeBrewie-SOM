@@ -1,0 +1,21 @@
+build-*/
+CMakeFiles/
+CMakeCache.txt
+compile_commands.json
+cmake_install.cmake
+Testing/
+Makefile
+
+# Common editor/runtime leftovers
+*.log
+*.swp
+*.swo
+*~
+
+# VS Code
+.vscode/*.log
+.vscode/.ropeproject/
+
+# OS junk
+.DS_Store
+Thumbs.db
