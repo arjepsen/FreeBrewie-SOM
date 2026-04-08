@@ -1,0 +1,8 @@
+{
+  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+  "cmake.configureOnOpen": false,
+
+  "git.enableSmartCommit": false,
+  "git.autofetch": false,
+  "git.confirmSync": false
+}
