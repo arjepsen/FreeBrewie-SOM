@@ -12,8 +12,7 @@
     {
         (void)level;
         fputs(buf, stderr);
-        fputc('
-', stderr);
+        fputc('\n', stderr);
     }
 
     int main()
