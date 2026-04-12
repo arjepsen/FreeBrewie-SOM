@@ -1,29 +1,110 @@
 # FreeBrewie SOM stack
 
-Fresh reorganized scaffold for the SOM-side software stack.
+SOM-side software for the FreeBrewie rebuild.
 
-## Structure
-- `Apps/` = actual applications
-- `Shared/` = shared libraries/modules used by applications
-- `Tools/` = standalone developer/service tools
-- `external/` = third-party dependencies (LVGL submodule lives here)
-- `cmake/` = toolchain files and shared CMake helpers
+This repository is the Linux-side stack that runs on the Olimex A13 SOM. Its first job is to bring up a reliable MCU link, then gradually grow into the actual appliance-side application stack.
 
-## Notes
-This scaffold is intentionally reorganized for clarity:
-- one repository
-- one `src/` per application
-- shared code separated from app code
-- tools kept separate
+## Current status
 
-## Important honesty note
-This package was built from the readable public repo state and project docs.
-A few files that were not directly readable from the repo view are included as
-explicit placeholders or fresh scaffold files rather than copied originals.
-In particular:
-- `external/lvgl/` is represented only by a placeholder README in this zip
-- `cmake/toolchain-armhf-bullseye.cmake` is a practical scaffold, not a verified copy
+Working now:
 
-## Intended next step
-Use this as the new clean layout baseline, then fold in the real LVGL submodule
-and any verified local toolchain details from the VM.
+- Target build completes in VS Code.
+- LVGL examples and demos are disabled for normal project builds.
+- `brewie_app` starts on the SOM when run as the `brewie` user.
+- The app can open `/dev/ttyS1`.
+- The app sends heartbeat frames to the MCU.
+- The MCU replies with `STATUS_REPORT` frames, and the SOM-side RX parser can decode them.
+- The current display/UI path is **not yet stable**. A temporary headless bring-up path was used to verify the serial protocol path first.
+
+## Repository structure
+
+- `Apps/`  
+  Actual applications that run on the SOM.
+- `Shared/`  
+  Shared modules used by one or more applications.
+- `Tools/`  
+  Standalone developer and service tools.
+- `external/`  
+  Third-party dependencies, including LVGL.
+- `cmake/`  
+  Toolchain and shared CMake support files.
+
+## Applications
+
+### `Apps/BrewieApp`
+
+Main SOM application.
+
+Current responsibility during bring-up:
+
+- initialize the runtime
+- open the MCU serial link
+- send heartbeat periodically
+- receive and decode MCU frames
+- provide the base application loop for later UI and control work
+
+Other SOM applications can be added later, but for now the focus should stay on `BrewieApp` until the main runtime path is solid.
+
+## Configuration
+
+The target build currently copies `lv_conf_target.h` over `lv_conf.h` during the target configure step.
+
+That means:
+
+- simulator-oriented LVGL config belongs in `lv_conf.h`
+- target-oriented LVGL config belongs in `lv_conf_target.h`
+
+If target display or font options appear to "revert", check `lv_conf_target.h` first.
+
+## Build policy
+
+Normal project builds should stay lean.
+
+Current policy:
+
+- do **not** build LVGL examples by default
+- do **not** build LVGL demos by default
+- do **not** build extra SOM apps by default during early bring-up
+- focus on one known-good application path at a time
+
+## Runtime users
+
+- `admin` is the interactive maintenance account.
+- `brewie` is the appliance/runtime account.
+
+The `brewie` user is the correct runtime identity for the application because it has the required device access groups such as `video`, `dialout`, `input`, and `tty`.
+
+## Bring-up sequence used so far
+
+1. Build `brewie_app` on the VM.
+2. Copy the binary to the SOM.
+3. Run the binary manually as `brewie`.
+4. Verify serial open on `/dev/ttyS1`.
+5. Verify heartbeat TX.
+6. Verify MCU `STATUS_REPORT` RX.
+7. Keep the app headless until the serial/runtime side is stable.
+8. Reintroduce display and UI in very small steps afterward.
+
+## Immediate next steps
+
+1. Keep the current working serial/heartbeat path as the known-good baseline.
+2. Clean up the temporary debug prints and bypasses without losing the working behavior.
+3. Log or decode a little more useful information from `STATUS_REPORT`.
+4. Reintroduce display bring-up with a **minimal** LVGL test:
+   - display only
+   - one label
+   - no touch first
+   - no full UI layer first
+5. Only after that, reconnect the proper UI module.
+
+## Documentation policy
+
+At this stage, keep documentation compact and practical.
+
+The minimum useful doc set for this repo is:
+
+- `README.md`
+- `Docs/SOM_Architecture.md`
+- `Docs/SOM_Bringup_Status.md`
+
+Anything beyond that should be added only when it serves an active need.
