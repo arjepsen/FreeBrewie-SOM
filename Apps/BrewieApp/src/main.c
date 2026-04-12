@@ -19,11 +19,13 @@ int main()
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
 
-    if(!app_init(&app)) {
+    if (!app_init(&app))
+    {
         return 1;
     }
 
-    while(keep_running) {
+    while (keep_running)
+    {
         app_update(&app);
     }
 
