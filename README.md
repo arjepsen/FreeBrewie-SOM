@@ -7,25 +7,28 @@ This repository is the Linux-side stack that runs on the Olimex A13 SOM. Its fir
 ## Current status
 
 Working now:
-
 - Target build completes in VS Code.
 - LVGL examples and demos are disabled for normal project builds.
 - `brewie_app` starts on the SOM when run as the `brewie` user.
 - The app can open `/dev/ttyS1`.
 - The app sends heartbeat frames to the MCU.
 - The MCU replies with `STATUS_REPORT` frames, and the SOM-side RX parser can decode them.
-- The current display/UI path is **not yet stable**. A temporary headless bring-up path was used to verify the serial protocol path first.
+- The current display/UI path is not yet stable. A temporary headless bring-up path was used to verify the serial protocol path first.
 
 ## Repository structure
 
 - `Apps/`  
   Actual applications that run on the SOM.
+
 - `Shared/`  
   Shared modules used by one or more applications.
+
 - `Tools/`  
   Standalone developer and service tools.
+
 - `external/`  
   Third-party dependencies, including LVGL.
+
 - `cmake/`  
   Toolchain and shared CMake support files.
 
@@ -62,9 +65,9 @@ Normal project builds should stay lean.
 
 Current policy:
 
-- do **not** build LVGL examples by default
-- do **not** build LVGL demos by default
-- do **not** build extra SOM apps by default during early bring-up
+- do not build LVGL examples by default
+- do not build LVGL demos by default
+- do not build extra SOM apps by default during early bring-up
 - focus on one known-good application path at a time
 
 ## Runtime users
@@ -90,7 +93,7 @@ The `brewie` user is the correct runtime identity for the application because it
 1. Keep the current working serial/heartbeat path as the known-good baseline.
 2. Clean up the temporary debug prints and bypasses without losing the working behavior.
 3. Log or decode a little more useful information from `STATUS_REPORT`.
-4. Reintroduce display bring-up with a **minimal** LVGL test:
+4. Reintroduce display bring-up with a minimal LVGL test:
    - display only
    - one label
    - no touch first
@@ -101,10 +104,25 @@ The `brewie` user is the correct runtime identity for the application because it
 
 At this stage, keep documentation compact and practical.
 
-The minimum useful doc set for this repo is:
+Use the repo docs as follows:
 
-- `README.md`
-- `Docs/SOM_Architecture.md`
-- `Docs/SOM_Bringup_Status.md`
+- `README.md`  
+  Repository overview, current status, and near-term direction.
+
+- `Docs/README.md`  
+  Index of the SOM-side document set.
+
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-04-15.md`  
+  SOM-side software structure, top-level groups, and intended file responsibilities.
+
+- `Docs/FreeBrewie_UI_Current_Status_2026-04-15.md`  
+  Current SOM/UI bring-up status and immediate next milestone.
+
+- `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`  
+  Practical SOM↔MCU integration notes, serial link path, and current protocol integration direction.
 
 Anything beyond that should be added only when it serves an active need.
+
+## About
+
+No description, website, or topics provided.
