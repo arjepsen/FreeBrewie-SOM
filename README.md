@@ -19,16 +19,12 @@ Working now:
 
 - `Apps/`  
   Actual applications that run on the SOM.
-
 - `Shared/`  
   Shared modules used by one or more applications.
-
 - `Tools/`  
   Standalone developer and service tools.
-
 - `external/`  
   Third-party dependencies, including LVGL.
-
 - `cmake/`  
   Toolchain and shared CMake support files.
 
@@ -39,7 +35,6 @@ Working now:
 Main SOM application.
 
 Current responsibility during bring-up:
-
 - initialize the runtime
 - open the MCU serial link
 - send heartbeat periodically
@@ -53,7 +48,6 @@ Other SOM applications can be added later, but for now the focus should stay on 
 The target build currently copies `lv_conf_target.h` over `lv_conf.h` during the target configure step.
 
 That means:
-
 - simulator-oriented LVGL config belongs in `lv_conf.h`
 - target-oriented LVGL config belongs in `lv_conf_target.h`
 
@@ -64,7 +58,6 @@ If target display or font options appear to "revert", check `lv_conf_target.h` f
 Normal project builds should stay lean.
 
 Current policy:
-
 - do not build LVGL examples by default
 - do not build LVGL demos by default
 - do not build extra SOM apps by default during early bring-up
@@ -104,25 +97,31 @@ The `brewie` user is the correct runtime identity for the application because it
 
 At this stage, keep documentation compact and practical.
 
-Use the repo docs as follows:
+The current useful SOM doc set is:
 
-- `README.md`  
-  Repository overview, current status, and near-term direction.
+- `README.md`
+- `Docs/README.md`
+- `Docs/Brewie_SOM_Platform_Notes.md`
+- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-04-06.md`
+- `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-04-15.md`
+- `Docs/FreeBrewie_UI_Current_Status_2026-04-15.md`
+
+Use them as follows:
 
 - `Docs/README.md`  
-  Index of the SOM-side document set.
-
+  Short index of the SOM-side document set.
+- `Docs/Brewie_SOM_Platform_Notes.md`  
+  Hardware/platform facts for the SOM target.
+- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-04-06.md`  
+  Development host, toolchain, build environment, and workflow notes.
+- `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`  
+  Practical SOM↔MCU integration notes and serial/protocol direction.
 - `Docs/FreeBrewie_SOM_Architecture_Notes_2026-04-15.md`  
   SOM-side software structure, top-level groups, and intended file responsibilities.
-
 - `Docs/FreeBrewie_UI_Current_Status_2026-04-15.md`  
   Current SOM/UI bring-up status and immediate next milestone.
 
-- `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`  
-  Practical SOM↔MCU integration notes, serial link path, and current protocol integration direction.
+For the shared SOM↔MCU protocol truth, use the protocol document in the main project docs repo.
 
-Anything beyond that should be added only when it serves an active need.
-
-## About
-
-No description, website, or topics provided.
+Anything beyond this should be added only when it serves an active need.
