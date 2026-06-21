@@ -1,0 +1,4 @@
+#ifndef FREEBREWIE_FAULT_LOGIC_H
+#define FREEBREWIE_FAULT_LOGIC_H
+
+#endif

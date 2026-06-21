@@ -1,0 +1,4 @@
+#ifndef FREEBREWIE_SCREEN_FAULT_H
+#define FREEBREWIE_SCREEN_FAULT_H
+
+#endif

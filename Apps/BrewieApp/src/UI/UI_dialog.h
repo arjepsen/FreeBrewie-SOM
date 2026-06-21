@@ -1,0 +1,4 @@
+#ifndef FREEBREWIE_UI_DIALOG_H
+#define FREEBREWIE_UI_DIALOG_H
+
+#endif

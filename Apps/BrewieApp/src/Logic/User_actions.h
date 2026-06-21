@@ -1,0 +1,4 @@
+#ifndef FREEBREWIE_USER_ACTIONS_H
+#define FREEBREWIE_USER_ACTIONS_H
+
+#endif

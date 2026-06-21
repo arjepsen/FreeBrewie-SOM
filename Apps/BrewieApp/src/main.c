@@ -1,8 +1,7 @@
 #include <signal.h>
 #include <stdbool.h>
-#include <stdio.h>
 
-#include "App/App.h"
+#include "App.h"
 
 static volatile sig_atomic_t keep_running = 1;
 

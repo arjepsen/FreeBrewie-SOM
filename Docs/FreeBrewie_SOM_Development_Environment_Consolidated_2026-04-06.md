@@ -1,484 +1,224 @@
-# FreeBrewie SOM Development Environment
+# FreeBrewie SOM Development Environment Consolidated
+
+*Date: 2026-04-06*
 
 ## Purpose
-This document is the **canonical development-environment and workflow document** for the FreeBrewie SOM/UI side.
 
-It is meant to replace overlapping older SOM setup/environment notes by collecting the still-relevant facts into one place.
+This document defines the practical development and bring-up workflow for the FreeBrewie SOM side.
 
-This file should answer:
-
-- where is SOM-side software developed?
-- how is it built?
-- how do simulator and target builds differ?
-- what is the current repo/build workflow?
-- what easy-to-forget details should be written down?
-
-This is an environment/workflow document.
-It is **not** the platform-truth document and **not** the current-software-status document.
-
----
-
-## Scope and relation to other docs
-
-This document should be used together with:
-
-- **SOM platform notes**  
-  Hardware, Linux image, display/touch bring-up, `/dev/ttyS1`, service/layout on target.
-
-- **FreeBrewie UI current status**  
-  What is working right now, what is still scaffolding, and what the next development step is.
-
-- **SOM↔MCU integration/protocol docs**  
-  Message model, startup interaction, heartbeat, snapshots, and link expectations.
-
-So the split should now be:
-
-- **Platform doc** = what the SOM target is
-- **Environment doc** = how we develop/build/deploy for it
-- **Current-status doc** = where the software stands right now
-
----
-
-## High-level development model
-
-The FreeBrewie SOM software is **not primarily developed directly on the SOM**.
-
-The intended workflow is:
-
-1. develop on the Debian VM
-2. use VS Code + CMake there
-3. build either:
-   - simulator build for host testing
-   - target build for the real SOM
-4. copy the built target binary to the SOM
-5. run and test it there
-6. later install/run it through `brewie.service`
-
-So:
-
-- the **VM** is the real development/build machine
-- the **SOM** is the runtime target
+It is meant to keep the development environment, deployment path, runtime users, and manual test procedure clear and stable.
 
 ---
 
 ## Development host
 
-Known working development host:
+Development is done on a Debian VM.
 
-- **Debian GNU/Linux 11 (Bullseye) amd64 VM**
+Typical workflow:
 
-Why the VM matters:
-
-- stable toolchain environment
-- stable dependency set
-- controlled sysroot/cross-build setup
-- avoids host-machine drift
-
-This VM is the primary development environment for FreeBrewie SOM work.
-
----
-
-## Repository
-
-Current working repo folder on the VM:
-
-- `~/brewie-ui-rebuild`
-
-Current git remote:
-
-- `git@github.com:arjepsen/ReBrewie-LVGL.git`
-
-Important naming note:
-
-- repo and folder naming still reflect older project history
-- the active project naming should now be treated as **FreeBrewie**
-- repository renaming can be handled later
-- avoid letting old repo naming redefine the current product/project identity
+* edit and build on the VM
+* copy the target binary to the SOM
+* test manually on the SOM first
+* only later move behavior under the appliance service
 
 ---
 
 ## Build system
 
-Build system:
+The project uses CMake.
 
-- **CMake**
+Typical target build flow in VS Code:
 
-Primary project files:
+1. `CMake: Delete Cache and Reconfigure`
+2. `CMake: Build`
 
-- `CMakeLists.txt`
-- `CMakePresets.json`
+The current target build directory is:
 
-Toolchain file:
+* `build-target`
 
-- `cmake/toolchain-armhf-bullseye.cmake`
+The target binary path is:
 
-The project is built through CMake both for:
-
-- host simulator
-- cross-compiled SOM target
+* `build-target/Apps/BrewieApp/brewie_app`
 
 ---
 
-## CMake presets
+## Target runtime model
 
-Known important configure presets:
+The SOM side is intended to be an appliance-style Linux system.
 
-- `sim-debug`
-- `target-debug`
+That means:
 
-Matching build presets:
-
-- `build-sim-debug`
-- `build-target-debug`
-
-Meaning:
-
-### `sim-debug`
-Use for:
-
-- LVGL simulator work on the VM
-- fast UI iteration
-- non-hardware-specific experimentation
-
-### `target-debug`
-Use for:
-
-- generating the real ARM executable for the SOM
-- validating target-side code paths
-- preparing binaries to copy/run on the SOM
+* maintenance work is done through a maintenance account
+* the application itself runs as a dedicated runtime user
+* the runtime path and service path should stay stable
 
 ---
 
-## Very important VS Code distinction
+## Locked bring-up facts
 
-A key confusion rediscovered during recent work:
+These facts are now considered fixed unless deliberately changed later.
 
-VS Code/CMake Tools has **two separate choices** that must not be mixed up.
+### Users
 
-### 1. Configure preset
-Examples:
+* Login / maintenance user: `admin`
+* Runtime / appliance user: `brewie`
 
-- `sim-debug`
-- `target-debug`
+### `admin`
 
-This decides:
+* interactive maintenance account
+* has a normal shell
+* used for SSH login, file copy, inspection, and maintenance work
 
-- host vs cross-compiling mode
-- build directory
-- toolchain-file usage
+### `brewie`
 
-### 2. Build target
-Examples:
+* runtime-only account
+* shell: `/usr/sbin/nologin`
+* uid/gid are system-style runtime values
+* belongs to the runtime-access groups needed by the app:
 
-- `brewie_ui`
-- `mcu_probe`
+  * `tty`
+  * `dialout`
+  * `video`
+  * `input`
 
-This decides:
+### Important rule
 
-- which actual executable/target is built when Build is pressed
+Do **not** assume:
 
-### Practical consequence
+* SSH login as `brewie`
+* a `/home/brewie` directory
 
-Selecting `target-debug` does **not** automatically mean the UI app is what gets built.
-
-A real issue encountered was:
-
-- VS Code was configured for `target-debug`
-- but Build still targeted `mcu_probe`
-- so it looked like target UI behavior/build behavior was more confusing than it really was
-
-This distinction is important enough to remember explicitly:
-
-**preset selection alone is not enough — the intended build target must also be selected**
-
-For FreeBrewie UI work, the intended build target is normally:
-
-- **`brewie_ui`**
+Those are not part of the current SOM setup.
 
 ---
 
-## Editor / IDE
+## Filesystem layout
 
-Known editor/tooling direction:
+The intended appliance-side layout is:
 
-- **VS Code**
-- **CMake Tools**
-- **C/C++ extension**
+* runtime install path: `/opt/brewie`
+* runtime state area: `/var/lib/brewie`
+* config area: `/etc/brewie`
+* log area: `/var/log/brewie`
 
-Known useful behavior:
+Important current fact:
 
-- Configure via Command Palette:
-  - `Ctrl+Shift+P` → `CMake: Select Configure Preset`
-  - `Ctrl+Shift+P` → `CMake: Configure`
-- Build target can be switched via:
-  - `Ctrl+Shift+P` → `CMake: Set Build Target`
-
-Useful settings/history:
-
-- `compile_commands.json` export enabled
-- IntelliSense configured through CMake Tools configuration provider
-- `cmake.configureOnOpen` intentionally not forced on every open
+* `brewie` does **not** use `/home/brewie`
+* the runtime install path to care about is `/opt/brewie`
 
 ---
 
-## VS Code crash note
+## Service model
 
-A previously confirmed issue existed on the VM:
+The managed service is:
 
-Symptom:
+* `brewie.service`
 
-- VS Code crashed when using Git UI paths such as commit/sync
+This is the appliance service that should eventually launch the application automatically.
 
-Known practical workaround:
-
-- launch VS Code using:
-  - `code --ozone-platform=x11`
-
-Interpretation:
-
-- likely Wayland/Ozone-related UI-path crash in the VM
-- X11 launch mode avoided the crash
-
-This matters only for the VM editor workflow, not for the target application.
+During early bring-up, manual testing should happen first.
+Only after manual runtime behavior is proven should the service path be updated or relied upon.
 
 ---
 
-## Toolchain and sysroot
+## Manual deployment flow
 
-Known target ABI direction:
+The correct deployment pattern is:
 
-- **armhf**
-- Debian Bullseye compatible userspace
-- Linux ARM hard-float target
+1. build on the Debian VM
+2. copy the binary to the SOM as `admin`
+3. install the binary into `/opt/brewie`
+4. run the binary manually as `brewie`
+5. verify runtime behavior
+6. only afterward move back toward the managed service flow
 
-Known cross compiler:
+### Copy from VM to SOM
 
-- **`arm-linux-gnueabihf-gcc`** 10.2.1
-- corresponding C++ compiler also available
+Example:
 
-Known sysroot:
+```bash
+scp build-target/Apps/BrewieApp/brewie_app admin@<som-ip>:/home/admin/brewie_app
+```
 
-- **`/opt/sysroots/bullseye-armhf`**
+### SSH to the SOM
 
-This remains one of the most important environment truths because it affects:
+```bash
+ssh admin@<som-ip>
+```
 
-- compiler selection
-- linker behavior
-- dependency compatibility
-- generated binary compatibility with the SOM image
+### Install the binary
 
----
+```bash
+sudo install -o brewie -g brewie -m 0755 /home/admin/brewie_app /opt/brewie/brewie_app
+```
 
-## Cross-compilation proof
+### Manual runtime test
 
-The target build path is no longer theoretical.
+```bash
+sudo -u brewie /opt/brewie/brewie_app
+```
 
-It has been verified that the VM can produce a real ARM Linux executable for the SOM.
-
-Observed valid target binary shape:
-
-- `ELF 32-bit LSB pie executable, ARM, EABI5 ...`
-
-This confirms:
-- cross-build path works
-- generated binary is suitable for the SOM platform
-
----
-
-## LVGL
-
-Known UI framework direction:
-
-- **LVGL 9 series**
-
-LVGL is included as a git submodule.
-
-Current submodule path:
-
-- `external/lvgl`
-
-The important thing for this document is:
-- LVGL is vendorized as a submodule
-- it is part of the main repo
-- both sim and target builds depend on it
+This is the correct manual bring-up command for the current SOM setup.
 
 ---
 
-## Simulator backend
+## Current known-good manual runtime result
 
-Simulator dependency on the VM:
+The current known-good SOM-side baseline is:
 
-- **SDL2**
+* the app starts as `brewie`
+* display init is currently bypassed intentionally
+* `/dev/ttyS1` opens successfully
+* heartbeat frames are sent repeatedly
+* the MCU responds with `STATUS_REPORT`
+* the SOM receives and prints parsed incoming frame information
+* `FAULT_REPORT` can also be received
 
-Installed package used during setup:
+This means the current known-good baseline is:
 
-- `libsdl2-dev`
-
-Important architectural reminder:
-
-- **SDL is for the simulator path only**
-- it is **not** the intended normal runtime display path on the SOM
-
-So the mental model is:
-- **VM simulator** = LVGL + SDL
-- **real SOM target** = LVGL + real Linux display backend
-
-This distinction should remain explicit to avoid later confusion.
-
----
-
-## LVGL config files
-
-A key build/config detail rediscovered during recent work:
-
-The project originally had:
-- `lv_conf.h`
-
-That file had simulator-oriented settings, including:
-- `#define LV_USE_SDL 1`
-
-That caused the target build to try to compile SDL-related LVGL pieces, which is wrong for the real SOM target.
-
-To separate simulator and target behavior, a second config file was introduced:
-- `lv_conf_target.h`
-
-Current intent:
-- simulator build uses SDL-enabled LVGL config
-- target build uses SDL-disabled LVGL config
-
-Known important target-side setting:
-- `#define LV_USE_SDL 0`
-
-This is one of the important recent clarifications and should remain documented.
+* **new source structure builds**
+* **manual runtime launch works**
+* **serial link works**
+* **heartbeat works**
+* **MCU response reception works**
 
 ---
 
-## Current source layout
+## Runtime verification checklist
 
-Known important current project files include:
-- `src/main.c`
-- `src/main_sim.c`
-- `UI/UI.c`
-- `UI/UI.h`
-- `Tools/McuProbe/CMakeLists.txt`
-- `Tools/McuProbe/McuProbe.c`
+When manually testing the app on the SOM, verify:
 
-Current interpretation:
+* app starts as `brewie`
+* `/dev/ttyS1` opens
+* heartbeat is sent
+* MCU `STATUS_REPORT` frames are received
+* no assumptions are made yet about the display path
 
-### `src/main.c`
-- real SOM target entry point
-
-### `src/main_sim.c`
-- simulator entry point
-
-### `UI/UI.c`
-- shared UI layer
-
-This is the correct mental model.
-
-The goal is **not** to maintain two separate codebases.
-The goal is:
-- platform-specific entry code stays separate
-- shared UI/application code stays shared
+At the current stage, the serial/comms baseline is the anchor.
+Display/UI work should be added beside it, not by disturbing it.
 
 ---
 
-## Why there are two mains
+## Current practical development order
 
-This is intentional.
+The intended order is:
 
-The simulator and the real SOM target need different platform bring-up code.
-
-That does **not** mean:
-- duplicated application logic
-- duplicated UI logic
-- different product behavior
-
-It means:
-- one entry is optimized for desktop simulation
-- one entry is optimized for the real Linux appliance target
-
-That distinction should remain.
+1. keep the working serial baseline intact
+2. keep communication separate from UI work
+3. bring up the smallest possible display path
+4. use `Screen_boot` as the first visible startup/debug screen
+5. only then grow into fuller UI behavior
 
 ---
 
-## Target-app design guardrails
-The current target app is being built for a weak Linux SOM, not a roomy desktop machine.
+## Notes for future threads
 
-So the target-side runtime should follow these guardrails from the beginning:
+For this SOM setup, always remember:
 
-- prefer a single process for the first real target app
-- separate responsibilities with modules, not immediate process-splitting
-- keep steady-state runtime logic non-blocking
-- avoid long sleeps in active logic
-- avoid CPU-burning busy loops
-- avoid unnecessary heap allocation after startup
-- keep ownership simple and data structures compact
-- avoid bringing simulator convenience assumptions into the target architecture
-
-The purpose of these rules is:
-- predictable runtime behavior
-- modest CPU use
-- easier debugging
-- less later rework
-
----
-
-## Non-blocking runtime direction
-For the current target app, the intended shape is:
-- timestamp-driven cadence
-- non-blocking serial I/O handling
-- quick work slices
-- incremental UI updates
-- lightweight wait strategy between work slices
-
-So the target-side design goal is:
-- responsive behavior without turning the app into a constant hot spin loop
-
-This means “non-blocking” should be understood as:
-- short bounded work
-- explicit cadence/state handling
-- modest waiting
-- not full-CPU polling
-
----
-
-## Build-and-run direction for the next milestone
-The next real target-side milestone should be approached like this:
-
-1. build `brewie_ui` for target
-2. copy it to the SOM
-3. run it manually first
-4. verify target-side LVGL startup
-5. verify `/dev/ttyS1` open
-6. verify periodic heartbeat send
-7. verify minimal on-screen debug/status output
-8. only then replace the older placeholder service command with the real app
-
-This keeps deployment conservative while bring-up is still early.
-
----
-
-## Practical workflow recommendation
-For the immediate phase, it is better to keep the work narrow:
-
-- define the first target app clearly
-- implement it as one program with internal modules
-- prove it manually on the SOM
-- then move it under `brewie.service`
-
-That is better than immediately:
-- broad repo cleanup
-- process-splitting
-- introducing IPC
-- designing the full later appliance software stack in detail
-
----
-
-## Short truthful recap
-The development environment is now in a good place for the next real target step:
-
-- VM-side build workflow is known
-- simulator vs target distinction is clear
-- target executable can be produced reliably
-- the next step is controlled target-app bring-up, not more setup archaeology
+* log in as `admin`
+* copy files as `admin`
+* install into `/opt/brewie`
+* run manually as `brewie`
+* do **not** assume `/home/brewie`
+* do **not** assume SSH login as `brewie`
+* `brewie.service` is the managed service path, but manual bring-up comes first

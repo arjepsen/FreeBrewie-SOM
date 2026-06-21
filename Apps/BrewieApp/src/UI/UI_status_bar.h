@@ -1,0 +1,4 @@
+#ifndef FREEBREWIE_UI_STATUS_BAR_H
+#define FREEBREWIE_UI_STATUS_BAR_H
+
+#endif
