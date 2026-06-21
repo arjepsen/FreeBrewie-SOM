@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "Platform/Logging.h"
+
 static lv_obj_t *screen_boot_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out)
 {
     lv_obj_t *row;
@@ -21,10 +23,12 @@ static lv_obj_t *screen_boot_create_row(lv_obj_t *parent, const char *label_text
     label = lv_label_create(row);
     lv_label_set_text(label, label_text);
     lv_obj_set_width(label, 100);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
 
     value = lv_label_create(row);
     lv_label_set_text(value, "-");
     lv_obj_set_flex_grow(value, 1);
+    lv_obj_set_style_text_color(value, lv_color_hex(0xFFFFFF), 0);
 
     *value_out = value;
     return row;
@@ -42,21 +46,25 @@ void screen_boot_init(screen_boot_t *boot)
     memset(boot, 0, sizeof(*boot));
 
     boot->screen = lv_screen_active();
+
     lv_obj_set_style_bg_color(boot->screen, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(boot->screen, LV_OPA_COVER, 0);
     lv_obj_set_style_text_color(boot->screen, lv_color_hex(0xFFFFFF), 0);
 
     container = lv_obj_create(boot->screen);
     lv_obj_set_size(container, lv_pct(100), lv_pct(100));
     lv_obj_center(container);
     lv_obj_set_style_bg_color(container, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(container, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(container, 0, 0);
-    lv_obj_set_style_pad_all(container, 10, 0);
+    lv_obj_set_style_pad_all(container, 12, 0);
     lv_obj_set_layout(container, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
 
     boot->title_label = lv_label_create(container);
-    lv_label_set_text(boot->title_label, "FreeBrewie SOM bring-up");
-    lv_obj_set_style_text_font(boot->title_label, &lv_font_montserrat_14, 0);
+    lv_label_set_text(boot->title_label, "BOOT SCREEN OK");
+    lv_obj_set_style_text_font(boot->title_label, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_color(boot->title_label, lv_color_hex(0xFFFFFF), 0);
 
     screen_boot_create_row(container, "display", &boot->display_value);
     screen_boot_create_row(container, "serial", &boot->serial_value);
@@ -64,6 +72,8 @@ void screen_boot_init(screen_boot_t *boot)
     screen_boot_create_row(container, "hb sent", &boot->hb_counter_value);
     screen_boot_create_row(container, "last rx", &boot->last_rx_value);
     screen_boot_create_row(container, "link", &boot->link_value);
+
+    log_info("screen_boot: built");
 }
 
 void screen_boot_update(screen_boot_t *boot, const boot_screen_view_model_t *view_model)
