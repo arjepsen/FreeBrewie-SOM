@@ -8,6 +8,7 @@
 #define LV_VER_RES_MAX 272
 #define LV_USE_SDL 0
 
+#define LV_USE_LINUX_DRM 1
 #define LV_USE_LINUX_FBDEV 1
 #define LV_USE_EVDEV 1
 #define LV_FONT_MONTSERRAT_20 1

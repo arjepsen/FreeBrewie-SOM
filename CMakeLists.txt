@@ -10,4 +10,20 @@ set(CONFIG_LV_BUILD_EXAMPLES OFF CACHE BOOL "Build LVGL examples" FORCE)
 set(CONFIG_LV_BUILD_DEMOS OFF CACHE BOOL "Build LVGL demos" FORCE)
 
 add_subdirectory(external/lvgl)
+
+if(CMAKE_CROSSCOMPILING)
+    target_include_directories(lvgl PUBLIC
+        /usr/include
+        /usr/include/libdrm
+    )
+
+    target_link_directories(lvgl PUBLIC
+        /usr/lib/arm-linux-gnueabihf
+    )
+
+    target_link_libraries(lvgl PUBLIC
+        drm
+    )
+endif()
+
 add_subdirectory(Apps/BrewieApp)

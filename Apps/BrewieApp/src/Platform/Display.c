@@ -9,6 +9,8 @@
 #include "src/drivers/sdl/lv_sdl_mouse.h"
 #include "src/drivers/sdl/lv_sdl_mousewheel.h"
 #include "src/drivers/sdl/lv_sdl_window.h"
+#else
+#include "src/drivers/display/drm/lv_linux_drm.h"
 #endif
 
 bool display_init(display_t *display)
@@ -33,17 +35,37 @@ bool display_init(display_t *display)
     lv_sdl_mouse_create();
     lv_sdl_mousewheel_create();
     lv_sdl_keyboard_create();
+
     display->ready = true;
     display->simulator = true;
     return true;
 #else
-    log_info("display_init: target display bypassed");
-    return false;
+    lv_display_t *lv_display;
+
+    lv_display = lv_linux_drm_create();
+    if (lv_display == NULL)
+    {
+        log_error("display_init: drm display create failed");
+        return false;
+    }
+
+    if (lv_linux_drm_set_file(lv_display, "/dev/dri/card0", -1) != LV_RESULT_OK)
+    {
+        log_error("display_init: drm set file failed");
+        return false;
+    }
+
+    display->ready = true;
+    display->simulator = false;
+    log_info("display_init: drm display ready");
+    return true;
 #endif
 }
 
 void display_update(display_t *display, uint64_t now_ms)
 {
+    uint32_t wait_ms;
+
     (void)now_ms;
 
     if (display == NULL || !display->ready)
@@ -51,7 +73,13 @@ void display_update(display_t *display, uint64_t now_ms)
         return;
     }
 
-    lv_timer_handler();
+    wait_ms = lv_timer_handler();
     lv_tick_inc(5);
-    usleep(5000);
+
+    if (wait_ms == LV_NO_TIMER_READY || wait_ms > 5)
+    {
+        wait_ms = 5;
+    }
+
+    usleep(wait_ms * 1000);
 }

@@ -30,6 +30,10 @@ if(CMAKE_CROSSCOMPILING)
         src/main.c
         ${BREWIE_APP_COMMON_SOURCES}
     )
+
+    target_include_directories(brewie_app PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    )
 else()
     find_package(SDL2 REQUIRED)
 
@@ -38,11 +42,18 @@ else()
         ${BREWIE_APP_COMMON_SOURCES}
     )
 
-    target_link_libraries(brewie_app PRIVATE SDL2::SDL2)
+    target_include_directories(brewie_app PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+    )
+
+    target_link_libraries(brewie_app PRIVATE
+        lvgl
+        SDL2::SDL2
+    )
 endif()
 
-target_include_directories(brewie_app PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-target_link_libraries(brewie_app PRIVATE lvgl)
+if(CMAKE_CROSSCOMPILING)
+    target_link_libraries(brewie_app PRIVATE
+        lvgl
+    )
+endif()
