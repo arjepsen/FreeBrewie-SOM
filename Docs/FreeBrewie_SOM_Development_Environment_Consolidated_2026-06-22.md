@@ -9,7 +9,8 @@ It is meant to keep the development environment, deployment path, runtime users,
 ---
 
 ## Development host
-Development is done on a Debian VM.
+Development is done on a Debian VM
+(bullseye - to fit the same version that is running on the SOM)
 
 Typical workflow:
 - edit and build on the VM

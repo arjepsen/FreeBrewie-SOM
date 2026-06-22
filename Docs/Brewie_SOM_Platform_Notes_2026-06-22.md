@@ -10,7 +10,7 @@ It is meant to keep machine-specific setup facts stable across future work and f
 
 ## Current SOM identity
 Current target machine:
-- A13 SOM platform
+- A13 SOM platform (Olimex)
 - appliance-style Linux system
 - maintenance and bring-up work done from the `admin` account
 - appliance/runtime app executed as `brewie`
@@ -125,7 +125,7 @@ What is currently true:
 - serial/comms continue working while display is initialized
 
 What is **not** yet done:
-- touch/input reintegration into BrewieApp
+- touch/input reintegration into BrewieApp (although early tests using lvgl did show touch was working)
 - final boot-screen layout logic
 - full home/fault screen flow on target
 - production-polished display startup behavior
