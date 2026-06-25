@@ -73,9 +73,18 @@ Observed previous state:
 - the service existed and was enabled
 - it was still launching an old placeholder script rather than the new target app during bring-up
 
+Observed 2026-06-25 state:
+- `brewie.service` is active and enabled
+- `ExecStart` still points at `/opt/brewie/hello.sh`
+- `/opt/brewie/brewie_app` is installed and owned by `brewie:brewie`
+- `brewie` is in the required `dialout` and `video` groups
+
 Practical rule:
 - early bring-up is still done manually first
 - service integration comes after manual behavior is proven
+
+Current service integration note:
+- the next service test is to replace the placeholder unit with the tracked unit in `Deploy/Systemd/brewie.service`
 
 ---
 
@@ -123,6 +132,7 @@ What is currently true:
 - first visible text output works
 - screen is no longer just black
 - serial/comms continue working while display is initialized
+- manually started BrewieApp shows updating MCU status information on the target display
 
 What is **not** yet done:
 - touch/input reintegration into BrewieApp (although early tests using lvgl did show touch was working)

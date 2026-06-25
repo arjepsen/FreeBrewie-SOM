@@ -72,6 +72,11 @@ void screen_boot_init(screen_boot_t *boot)
     screen_boot_create_row(container, "hb sent", &boot->hb_counter_value);
     screen_boot_create_row(container, "last rx", &boot->last_rx_value);
     screen_boot_create_row(container, "link", &boot->link_value);
+    screen_boot_create_row(container, "mcu", &boot->mcu_status_value);
+    screen_boot_create_row(container, "pressure", &boot->pressure_value);
+    screen_boot_create_row(container, "pumps", &boot->pump_value);
+    screen_boot_create_row(container, "inlets", &boot->solenoid_value);
+    screen_boot_create_row(container, "faults", &boot->fault_value);
 
     log_info("screen_boot: built");
 }
@@ -90,6 +95,11 @@ void screen_boot_update(screen_boot_t *boot, const boot_screen_view_model_t *vie
     lv_label_set_text(boot->heartbeat_value, view_model->heartbeat_text);
     lv_label_set_text(boot->last_rx_value, view_model->last_rx_text);
     lv_label_set_text(boot->link_value, view_model->link_text);
+    lv_label_set_text(boot->mcu_status_value, view_model->mcu_status_text);
+    lv_label_set_text(boot->pressure_value, view_model->pressure_text);
+    lv_label_set_text(boot->pump_value, view_model->pump_text);
+    lv_label_set_text(boot->solenoid_value, view_model->solenoid_text);
+    lv_label_set_text(boot->fault_value, view_model->fault_text);
 
     snprintf(text, sizeof(text), "%lu", (unsigned long)view_model->heartbeat_count);
     lv_label_set_text(boot->hb_counter_value, text);

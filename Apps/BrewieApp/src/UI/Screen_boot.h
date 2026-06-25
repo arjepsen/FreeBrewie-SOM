@@ -16,6 +16,11 @@ typedef struct
     lv_obj_t *last_rx_value;
     lv_obj_t *link_value;
     lv_obj_t *hb_counter_value;
+    lv_obj_t *mcu_status_value;
+    lv_obj_t *pressure_value;
+    lv_obj_t *pump_value;
+    lv_obj_t *solenoid_value;
+    lv_obj_t *fault_value;
 } screen_boot_t;
 
 void screen_boot_init(screen_boot_t *boot);
