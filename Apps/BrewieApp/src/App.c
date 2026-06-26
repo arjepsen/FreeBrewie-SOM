@@ -56,7 +56,7 @@ void app_update(app_t *app)
 
     if (app->display_enabled)
     {
-        ui_update_boot_screen(&app->ui, &app->logic.boot_screen);
+        ui_update_status_screen(&app->ui, &app->logic.status_screen);
         display_update(&app->platform.display, now_ms);
     }
     else

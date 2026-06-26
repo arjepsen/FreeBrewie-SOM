@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    boot_screen_view_model_t boot_screen;
+    status_screen_view_model_t status_screen;
 } app_logic_t;
 
 void app_logic_init(app_logic_t *logic);

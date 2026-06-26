@@ -198,10 +198,10 @@ Current file set:
 Owns:
 - app-level state progression
 - assembling compact screen-facing data from comms/platform facts
-- current boot-screen view model
+- current status-screen view model
 
 At the current stage, this is important because:
-- the boot screen is now driven through logic-owned text/status data
+- the status screen is now driven through logic-owned text/status data
 - communication facts are not supposed to be stuffed directly into widgets everywhere
 
 ### `Fault_logic`
@@ -239,8 +239,8 @@ Purpose:
 Own LVGL screen construction and screen updating.
 
 Current file set:
-- `Screen_boot.c`
-- `Screen_boot.h`
+- `Screen_status.c`
+- `Screen_status.h`
 - `Screen_fault.c`
 - `Screen_fault.h`
 - `Screen_home.c`
@@ -265,18 +265,18 @@ Must not own:
 - Linux DRM setup
 - raw protocol parsing
 
-### `Screen_boot`
+### `Screen_status`
 Owns:
-- the current first visible boot/debug screen
+- the current first visible status/debug screen
 - early visible bring-up path
 - current proof that target LVGL output works
 
 Important current fact:
-`Screen_boot` is intentionally the first visible screen used for bring-up and debugging.
+`Screen_status` is intentionally the first visible screen used for bring-up and debugging.
 It is not yet the finished product UI.
 
 Terminology/orientation note:
-- the current `Screen_boot` role is really a live status/debug screen
+- the current `Screen_status` role is really a live status/debug screen
 - a true animated boot/splash screen is wanted later and should be treated as a separate
   startup phase rather than mixed into the long-lived status screen
 - the current target render is landscape, while the final appliance orientation should be
@@ -285,7 +285,7 @@ Terminology/orientation note:
 
 At the current stage it is the correct place for:
 - unmistakable visible text
-- compact boot/debug status
+- compact status/debug information
 - simple proof that display + UI + logic are connected
 
 ### `Screen_home`
@@ -378,7 +378,7 @@ The intended current SOM-side flow is:
 1. `main.c` enters the app
 2. `App.c` initializes platform, comms, logic, and UI
 3. `Display.c` initializes LVGL backend
-4. `Screen_boot` becomes the first visible screen
+4. `Screen_status` becomes the first visible screen
 5. runtime loop continues:
    - comms update
    - logic update
@@ -416,7 +416,7 @@ This means:
 The current SOM app is still in early bring-up.
 
 Known limitations:
-- `Screen_boot` is still a bring-up/debug screen, not finished product UI
+- `Screen_status` is still a bring-up/debug screen, not finished product UI
 - touch/input path is not yet reintegrated into BrewieApp
 - DRM build path currently includes some build-environment friction/workarounds described in the development-environment doc
 - display output is proven, but the UI layer is not yet feature-complete
@@ -452,7 +452,7 @@ Given the current code and bring-up state, the most sensible next UI-side direct
 
 1. keep current comms baseline intact
 2. keep DRM target display path intact
-3. treat `Screen_boot` as the current live status/debug screen until it is renamed
+3. keep `Screen_status` as the current live status/debug screen
 4. keep a true animated boot/splash screen as a separate future startup phase
 5. improve the live status screen only enough to prove the data path cleanly
 6. bring touch/input back into `BrewieApp`

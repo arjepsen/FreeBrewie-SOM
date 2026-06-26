@@ -80,4 +80,6 @@ sudo systemctl restart brewie.service
 ```
 
 ## Notes
-The current screen is better described as an early status screen than a boot screen. A true boot screen would be a short transitional display while the appliance starts, then it would hand off to a status/home/fault flow.
+The current screen is an early live status/debug screen. A true boot screen would be a short
+transitional display while the appliance starts, then it would hand off to a status/home/fault
+flow.

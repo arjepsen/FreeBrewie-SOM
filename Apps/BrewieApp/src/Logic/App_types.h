@@ -16,8 +16,8 @@ typedef struct
     const char *solenoid_text;
     const char *fault_text;
     uint32_t heartbeat_count;
-} boot_screen_view_model_t;
+} status_screen_view_model_t;
 
-void boot_screen_view_model_init(boot_screen_view_model_t *view_model);
+void status_screen_view_model_init(status_screen_view_model_t *view_model);
 
 #endif

@@ -210,9 +210,9 @@ Confirm:
 - `STATUS_REPORT` frames are still received
 - target display still updates
 
-### 2. Rename/reframe the current status screen
+### 2. Keep the current status screen focused
 Confirm:
-- the current `Screen_boot` role is treated as live status/debug
+- the current `Screen_status` role is treated as live status/debug
 - a true future boot/splash screen remains a separate startup phase
 - the final portrait orientation is kept in mind
 
@@ -258,7 +258,7 @@ This makes it much easier to understand whether a failure belongs to:
 The immediate next step should therefore be:
 
 1. leave the current service/comms/display baseline intact
-2. reframe or rename the current live status/debug screen
+2. keep the current live status/debug screen focused
 3. keep `main.c` thin
 4. let `App.c` own orchestration
 5. keep comms outside the UI layer

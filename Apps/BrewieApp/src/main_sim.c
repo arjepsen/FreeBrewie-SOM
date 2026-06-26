@@ -8,7 +8,7 @@ int main()
 {
     display_t display;
     ui_t ui;
-    boot_screen_view_model_t vm;
+    status_screen_view_model_t vm;
 
     if (!display_init(&display))
     {
@@ -18,7 +18,7 @@ int main()
 
     ui_init(&ui);
 
-    boot_screen_view_model_init(&vm);
+    status_screen_view_model_init(&vm);
     vm.display_text = "simulator";
     vm.serial_text = "not used";
     vm.heartbeat_text = "simulator only";
@@ -28,7 +28,7 @@ int main()
 
     for (;;)
     {
-        ui_update_boot_screen(&ui, &vm);
+        ui_update_status_screen(&ui, &vm);
         display_update(&display, 0U);
         usleep(5000);
     }

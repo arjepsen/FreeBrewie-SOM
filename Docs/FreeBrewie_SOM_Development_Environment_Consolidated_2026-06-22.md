@@ -212,7 +212,7 @@ The intended order is:
 1. keep the working serial baseline intact
 2. keep communication separate from UI work
 3. keep the working DRM display path intact
-4. treat the current `Screen_boot` role as a live status/debug screen until it is renamed
+4. treat the current `Screen_status` role as a live status/debug screen
 5. keep a true animated boot/splash screen as a separate future phase
 6. bring touch/input back into `BrewieApp`
 7. only then grow into fuller UI behavior

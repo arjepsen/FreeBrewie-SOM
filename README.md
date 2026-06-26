@@ -95,7 +95,7 @@ The `brewie` user is the correct runtime identity for the application because it
 ## Immediate next steps
 
 1. Keep the current service/comms/display path as the known-good baseline.
-2. Rename or reframe the current `Screen_boot` role as a live status/debug screen.
+2. Keep `Screen_status` focused as the live status/debug screen.
 3. Keep any future animated boot/splash screen separate from the long-lived status screen.
 4. Bring touch/input back into `BrewieApp`.
 5. Grow toward the first manual-service UI while preserving MCU safety boundaries.

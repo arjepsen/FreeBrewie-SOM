@@ -186,8 +186,7 @@ The next goal is:
 - show real bring-up status through the existing architecture
 
 Naming/orientation note:
-- `Screen_boot` is not really a final boot screen; it is currently the first live
-  status/debug screen
+- `Screen_status` is currently the first live status/debug screen, not finished product UI
 - a true animated boot/splash screen should be a separate future startup phase
 - the current target render is landscape, but the finished appliance UI should be portrait
   relative to the current view, rotated 90 degrees clockwise

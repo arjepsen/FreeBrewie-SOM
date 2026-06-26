@@ -1,5 +1,5 @@
-#ifndef FREEBREWIE_SCREEN_BOOT_H
-#define FREEBREWIE_SCREEN_BOOT_H
+#ifndef FREEBREWIE_SCREEN_STATUS_H
+#define FREEBREWIE_SCREEN_STATUS_H
 
 #include <stdint.h>
 
@@ -21,9 +21,9 @@ typedef struct
     lv_obj_t *pump_value;
     lv_obj_t *solenoid_value;
     lv_obj_t *fault_value;
-} screen_boot_t;
+} screen_status_t;
 
-void screen_boot_init(screen_boot_t *boot);
-void screen_boot_update(screen_boot_t *boot, const boot_screen_view_model_t *view_model);
+void screen_status_init(screen_status_t *status);
+void screen_status_update(screen_status_t *status, const status_screen_view_model_t *view_model);
 
 #endif
