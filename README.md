@@ -7,13 +7,22 @@ This repository is the Linux-side stack that runs on the Olimex A13 SOM. Its fir
 ## Current status
 
 Working now:
-- Target build completes in VS Code.
+- Target build completes.
 - LVGL examples and demos are disabled for normal project builds.
 - `brewie_app` starts on the SOM when run as the `brewie` user.
+- `brewie.service` starts `/opt/brewie/brewie_app` automatically on the SOM.
 - The app can open `/dev/ttyS1`.
 - The app sends heartbeat frames to the MCU.
 - The MCU replies with `STATUS_REPORT` frames, and the SOM-side RX parser can decode them.
-- The current display/UI path is not yet stable. A temporary headless bring-up path was used to verify the serial protocol path first.
+- The app decodes `STATUS_REPORT` and `FAULT_REPORT` into compact app-facing status.
+- The target display initializes through LVGL on Linux DRM.
+- The current screen shows live status/debug information on the real target display.
+
+Still pending:
+- touch/input integration in `BrewieApp`
+- final portrait-oriented status/home/fault UI
+- simulator/local UI build cleanup
+- real manual-service, cleaning, and brewing workflows
 
 ## Repository structure
 
@@ -39,6 +48,7 @@ Current responsibility during bring-up:
 - open the MCU serial link
 - send heartbeat periodically
 - receive and decode MCU frames
+- drive the first live status/debug screen
 - provide the base application loop for later UI and control work
 
 Other SOM applications can be added later, but for now the focus should stay on `BrewieApp` until the main runtime path is solid.
@@ -78,20 +88,17 @@ The `brewie` user is the correct runtime identity for the application because it
 4. Verify serial open on `/dev/ttyS1`.
 5. Verify heartbeat TX.
 6. Verify MCU `STATUS_REPORT` RX.
-7. Keep the app headless until the serial/runtime side is stable.
-8. Reintroduce display and UI in very small steps afterward.
+7. Reintroduce DRM display and UI in small steps.
+8. Install the tracked `brewie.service`.
+9. Verify service autostart of `/opt/brewie/brewie_app`.
 
 ## Immediate next steps
 
-1. Keep the current working serial/heartbeat path as the known-good baseline.
-2. Clean up the temporary debug prints and bypasses without losing the working behavior.
-3. Log or decode a little more useful information from `STATUS_REPORT`.
-4. Reintroduce display bring-up with a minimal LVGL test:
-   - display only
-   - one label
-   - no touch first
-   - no full UI layer first
-5. Only after that, reconnect the proper UI module.
+1. Keep the current service/comms/display path as the known-good baseline.
+2. Rename or reframe the current `Screen_boot` role as a live status/debug screen.
+3. Keep any future animated boot/splash screen separate from the long-lived status screen.
+4. Bring touch/input back into `BrewieApp`.
+5. Grow toward the first manual-service UI while preserving MCU safety boundaries.
 
 ## Documentation policy
 
@@ -100,28 +107,32 @@ At this stage, keep documentation compact and practical.
 The current useful SOM doc set is:
 
 - `README.md`
-- `Docs/README.md`
-- `Docs/Brewie_SOM_Platform_Notes.md`
-- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-04-06.md`
+- `Docs/README_2026-06-22.md`
+- `Docs/Brewie_SOM_Platform_Notes_2026-06-22.md`
+- `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
+- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-06-22.md`
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-04-15.md`
-- `Docs/FreeBrewie_UI_Current_Status_2026-04-15.md`
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-06-22.md`
+- `Docs/FreeBrewie_UI_Current_Status_2026-06-22.md`
 
 Use them as follows:
 
-- `Docs/README.md`  
+- `Docs/README_2026-06-22.md`  
   Short index of the SOM-side document set.
-- `Docs/Brewie_SOM_Platform_Notes.md`  
+- `Docs/Brewie_SOM_Platform_Notes_2026-06-22.md`  
   Hardware/platform facts for the SOM target.
-- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-04-06.md`  
+- `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
+  Current systemd service install and autostart status.
+- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-06-22.md`  
   Development host, toolchain, build environment, and workflow notes.
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`  
   Practical SOM↔MCU integration notes and serial/protocol direction.
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-04-15.md`  
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-06-22.md`  
   SOM-side software structure, top-level groups, and intended file responsibilities.
-- `Docs/FreeBrewie_UI_Current_Status_2026-04-15.md`  
+- `Docs/FreeBrewie_UI_Current_Status_2026-06-22.md`  
   Current SOM/UI bring-up status and immediate next milestone.
 
-For the shared SOM↔MCU protocol truth, use the protocol document in the main project docs repo.
+For the shared SOM-MCU protocol truth, use
+`FreeBrewie-MCU/Documentation/Brewie_SOM_MCU_Protocol_2026-04-01.md`.
 
 Anything beyond this should be added only when it serves an active need.

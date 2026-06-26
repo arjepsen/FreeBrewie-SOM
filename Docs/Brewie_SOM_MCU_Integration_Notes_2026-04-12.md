@@ -170,62 +170,70 @@ The comms layer should not own widget construction.
 
 ---
 
-## First bring-up rule for current phase
+## Current bring-up rule
 At the current project stage, the right approach is:
 
-### keep the known-good serial baseline intact
-The current headless serial path is valuable because it already proves:
-- target process runs
+### keep the known-good service/comms/display baseline intact
+The current integrated path is valuable because it proves:
+- `brewie.service` starts `/opt/brewie/brewie_app`
+- target process runs as `brewie`
 - `/dev/ttyS1` opens
 - heartbeat transmit works
 - `STATUS_REPORT` reception works
+- `FAULT_REPORT` reception works
+- target DRM display init works
+- live status/debug information appears on the target screen
 
-That baseline should not be casually destabilized while display bring-up is still uncertain.
+That baseline should not be casually destabilized while touch, fuller UI, and actuator
+control paths are still immature.
 
-### bring up display separately first
-The next step should be a **display-only bring-up path** through the real application structure.
-
+### keep subsystems separated as the UI grows
 Meaning:
-- do not make disposable test programs if avoidable
 - do not integrate comms into the UI layer
-- do not force the first unstable display experiments into the same runtime path as the known-good serial baseline
+- do not put widget code into the raw protocol path
+- do not treat the current status/debug screen as the final boot animation
+- keep future boot/splash animation separate from the long-lived status/home/fault flow
 
 ---
 
 ## What should be tested first
-The project is now at the point where the right next step is narrow and controlled.
+The project is now past the first serial/display/service proof. The next steps should still
+be narrow and controlled.
 
 Recommended order:
 
-### 1. Preserve the headless serial baseline
+### 1. Preserve the integrated baseline
 Confirm:
-- target app still runs
+- service-started target app still runs
 - `/dev/ttyS1` still opens
 - heartbeat still sends
 - `STATUS_REPORT` frames are still received
+- target display still updates
 
-### 2. Minimal target display bring-up
+### 2. Rename/reframe the current status screen
 Confirm:
-- target-side display backend can initialize through the real app structure
-- LVGL can render the smallest possible visible output
-- this works without involving the UI layer beyond the minimum needed
+- the current `Screen_boot` role is treated as live status/debug
+- a true future boot/splash screen remains a separate startup phase
+- the final portrait orientation is kept in mind
 
-### 3. Stable display-only loop
+### 3. Bring touch/input back carefully
 Confirm:
-- the minimal display output remains stable
-- no obvious crash/hang/tearing issues appear immediately
+- input events reach the app without disturbing comms
+- input handling stays in `Platform/` or another dedicated input boundary
+- screen code receives user intent, not raw device details
 
-### 4. Reintroduce the UI layer above the minimal display path
+### 4. Build the first manual-service path
 Confirm:
-- `App.c` can initialize the display/backend module
-- `App.c` can then initialize the UI layer
-- widget/screen creation works without mixing in comms responsibilities
+- UI can request one controlled target change
+- SOM sends a `CONTROL_SNAPSHOT`
+- MCU ACK/NACK behavior is visible
+- status feedback returns to the UI
 
-### 5. Recombine display path with the proven comms path
+### 5. Expand only one actuator family at a time
 Confirm:
-- the display path and the serial path can coexist
-- UI still does not own protocol transport
-- the app still preserves the intended separation of concerns
+- MCU safety clamps remain final
+- actuator behavior is observed through status/fault feedback
+- broad recipe/cleaning flows wait until primitives are believable
 
 ---
 
@@ -234,9 +242,9 @@ The first SOM↔MCU tests should remain **small and easy to localize**.
 
 Do not begin with broad mixed behavior.
 Begin with:
-- one known-good serial baseline
-- one minimal display-only baseline
-- recombination only after both are independently believable
+- one known-good service/comms/display baseline
+- one small UI or control change at a time
+- target verification after every hardware-facing change
 
 This makes it much easier to understand whether a failure belongs to:
 - target display/backend bring-up
@@ -249,10 +257,11 @@ This makes it much easier to understand whether a failure belongs to:
 ## Immediate next step
 The immediate next step should therefore be:
 
-1. leave the current headless serial baseline intact
-2. add a very small display-only bring-up path through the real app structure
+1. leave the current service/comms/display baseline intact
+2. reframe or rename the current live status/debug screen
 3. keep `main.c` thin
 4. let `App.c` own orchestration
 5. keep comms outside the UI layer
+6. bring touch/input back before building broader navigation
 
 That is the cleanest path forward from the current known-good state.

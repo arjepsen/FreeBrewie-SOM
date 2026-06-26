@@ -16,7 +16,8 @@ Typical workflow:
 - edit and build on the VM
 - copy the target binary to the SOM
 - test manually on the SOM first
-- only later move behavior under the appliance service
+- install the binary into `/opt/brewie`
+- use `brewie.service` as the proven steady-state startup path
 
 The VM is a host build machine, not the SOM itself.
 
@@ -113,10 +114,15 @@ The managed service is:
 
 - `brewie.service`
 
-This is the appliance service that should eventually launch the application automatically.
+This is the appliance service that launches the application automatically.
 
-During early bring-up, manual testing should happen first.
-Only after manual runtime behavior is proven should the service path be updated or relied upon.
+Current status:
+- `brewie.service` is enabled on the SOM
+- the tracked service unit starts `/opt/brewie/brewie_app`
+- service-started `brewie_app` has shown the status screen and live MCU traffic
+
+Manual testing should still happen first for a newly copied binary. After that, restart or
+reboot through `brewie.service` to prove the appliance startup path.
 
 ---
 
@@ -128,7 +134,8 @@ The correct deployment pattern is:
 3. install the binary into `/opt/brewie`
 4. run the binary manually as `brewie`
 5. verify runtime behavior
-6. only afterward move back toward the managed service flow
+6. restart `brewie.service`
+7. verify service-started behavior
 
 ### Copy from VM to SOM
 Example:
@@ -166,7 +173,8 @@ The current known-good SOM-side baseline is:
 - the MCU responds with `STATUS_REPORT`
 - the SOM receives and prints parsed incoming frame information
 - `FAULT_REPORT` can also be received
-- first visible boot-screen text can be shown on the SOM display
+- live status/debug information can be shown on the SOM display
+- `brewie.service` can start `/opt/brewie/brewie_app` automatically
 
 This means the current known-good baseline is:
 
@@ -177,6 +185,7 @@ This means the current known-good baseline is:
 - **MCU response reception works**
 - **target LVGL/DRM display init works**
 - **first visible text render works**
+- **service autostart works**
 
 Touch/input is **not** yet reintegrated into BrewieApp.
 
@@ -190,7 +199,7 @@ When manually testing the app on the SOM, verify:
 - `/dev/ttyS1` opens
 - heartbeat is sent
 - MCU `STATUS_REPORT` frames are received
-- first visible boot text appears on screen
+- live status/debug text appears on screen
 
 At the current stage, the serial/comms baseline remains the anchor.
 Display/UI work should continue beside it, not by disturbing it.
@@ -202,9 +211,11 @@ The intended order is:
 
 1. keep the working serial baseline intact
 2. keep communication separate from UI work
-3. bring up the smallest possible display path
-4. use `Screen_boot` as the first visible startup/debug screen
-5. only then grow into fuller UI behavior
+3. keep the working DRM display path intact
+4. treat the current `Screen_boot` role as a live status/debug screen until it is renamed
+5. keep a true animated boot/splash screen as a separate future phase
+6. bring touch/input back into `BrewieApp`
+7. only then grow into fuller UI behavior
 
 ---
 
@@ -327,10 +338,10 @@ For this SOM setup, always remember:
 - log in as `admin`
 - copy files as `admin`
 - install into `/opt/brewie`
-- run manually as `brewie`
+- run manually as `brewie` for first proof of a newly copied binary
+- use `brewie.service` as the proven steady-state startup path
 - do **not** assume `/home/brewie`
 - do **not** assume SSH login as `brewie`
-- `brewie.service` is the managed service path, but manual bring-up comes first
 - target builds are `armhf`
 - DRM support added real VM/sysroot/runtime dependencies
 - current target display backend is DRM

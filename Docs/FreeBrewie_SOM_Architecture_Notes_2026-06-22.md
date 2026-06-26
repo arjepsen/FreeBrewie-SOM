@@ -275,6 +275,14 @@ Important current fact:
 `Screen_boot` is intentionally the first visible screen used for bring-up and debugging.
 It is not yet the finished product UI.
 
+Terminology/orientation note:
+- the current `Screen_boot` role is really a live status/debug screen
+- a true animated boot/splash screen is wanted later and should be treated as a separate
+  startup phase rather than mixed into the long-lived status screen
+- the current target render is landscape, while the final appliance orientation should be
+  portrait relative to the current view, rotated 90 degrees clockwise
+- final screen components should avoid assuming long horizontal text fields will fit
+
 At the current stage it is the correct place for:
 - unmistakable visible text
 - compact boot/debug status
@@ -390,11 +398,12 @@ The following is now proven on the SOM target:
 
 - target build succeeds
 - app runs as runtime user `brewie`
+- `brewie.service` starts `/opt/brewie/brewie_app`
 - `/dev/ttyS1` opens
 - heartbeat is sent
 - MCU `STATUS_REPORT` frames are received
 - target DRM display init succeeds
-- first visible text has been shown on screen
+- live status/debug text has been shown on screen
 
 This means:
 - the restructured app is alive
@@ -443,8 +452,10 @@ Given the current code and bring-up state, the most sensible next UI-side direct
 
 1. keep current comms baseline intact
 2. keep DRM target display path intact
-3. keep `Screen_boot` as the current visible bring-up screen
-4. improve the boot screen only enough to prove the data path cleanly
-5. only then grow toward fuller home/fault screens and later touch/input integration
+3. treat `Screen_boot` as the current live status/debug screen until it is renamed
+4. keep a true animated boot/splash screen as a separate future startup phase
+5. improve the live status screen only enough to prove the data path cleanly
+6. bring touch/input back into `BrewieApp`
+7. only then grow toward fuller home/fault screens
 
-This avoids mixing first-display bring-up with broader UI redesign.
+This avoids mixing live status, future boot animation, and broader UI redesign.

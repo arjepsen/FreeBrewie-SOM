@@ -51,7 +51,7 @@ It is being used to prove that:
 - DRM output is alive
 - the app can render visible objects while comms are also running
 
-The current visible proof is a high-contrast boot-screen text render.
+The current visible proof is a high-contrast live status/debug text render.
 
 This is intentional.
 At this stage, obvious visible output is more important than polished screen design.
@@ -89,14 +89,14 @@ Owns:
 ### `src/Logic/`
 Owns:
 - application-side logic/state interpretation
-- boot-screen view-model data
+- status-screen view-model data
 - non-UI machine/application reasoning
 
 ### `src/UI/`
 Owns:
 - screen creation/update
 - UI widgets and screen-level layout
-- current boot screen
+- current live status/debug screen
 
 ### `src/Platform/`
 Owns:
@@ -127,11 +127,11 @@ The SOM-side UI is still early bring-up work.
 The following are **not** yet finished:
 
 - proper touch/input integration in `brewie_app`
-- stable final boot screen design
-- real screen flow between boot / home / fault screens
+- stable final status/home/fault screen design
+- real screen flow between startup / status / home / fault screens
 - binding real machine state to a fuller UI
 - polished redraw/update behavior
-- final service-start behavior under `brewie.service`
+- true animated boot/splash screen during SOM startup
 
 Also important:
 the current visible text render proves that display output works,
@@ -147,7 +147,8 @@ The safest currently proven baseline is:
 3. `/dev/ttyS1` opens
 4. heartbeat is sent
 5. MCU reports are received
-6. a visible LVGL boot/debug text screen is shown
+6. a visible LVGL live status/debug screen is shown
+7. `brewie.service` starts `/opt/brewie/brewie_app` automatically
 
 This is the current anchor state.
 
@@ -175,14 +176,23 @@ Recommended next step:
 
 1. keep the comms path unchanged
 2. keep the DRM display path unchanged
-3. keep using `Screen_boot` as the first real screen
-4. replace forced debug-only text gradually with proper boot-screen data
+3. keep using the current status/debug screen as the first real screen
+4. replace forced debug-only text gradually with proper status data
 5. only after that, move toward `Screen_home` and fuller UI behavior
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:
-- make `Screen_boot` clean and intentional
+- make the current live status/debug screen clean and intentional
 - show real bring-up status through the existing architecture
+
+Naming/orientation note:
+- `Screen_boot` is not really a final boot screen; it is currently the first live
+  status/debug screen
+- a true animated boot/splash screen should be a separate future startup phase
+- the current target render is landscape, but the finished appliance UI should be portrait
+  relative to the current view, rotated 90 degrees clockwise
+- keep text lengths and layout density in mind when evolving this screen, because the final
+  portrait layout will have less horizontal room
 
 ---
 

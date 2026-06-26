@@ -2,19 +2,23 @@
 _Date: 2026-06-25_
 
 ## Purpose
-This note captures the current transition from manual BrewieApp bring-up to systemd-managed startup on the SOM.
+This note captures the transition from manual BrewieApp bring-up to systemd-managed startup on the SOM.
 
-The service already exists on the SOM and is enabled, but the observed service still launches the old placeholder script:
+Initial observed state:
 
 ```text
 ExecStart=/opt/brewie/hello.sh
 ```
 
-The next service test is therefore not creating autostart from scratch. It is replacing the placeholder command with the real BrewieApp command:
+Current proven state:
 
 ```text
 ExecStart=/opt/brewie/brewie_app
 ```
+
+`brewie.service` is enabled and has been observed running `brewie_app` as the main process.
+The target screen comes on through the service-started app, and the journal shows heartbeat
+transmit plus `STATUS_REPORT` receive.
 
 ## Current proven manual baseline
 The real BrewieApp has been manually installed at:
@@ -36,9 +40,9 @@ Current proven behavior:
 - the `brewie` user has access to `/dev/ttyS1`
 - the `brewie` user has access to `/dev/dri/card0`
 
-This is enough to test service startup.
+This manual baseline was enough to test service startup. Service startup is now proven too.
 
-## Install tracked service file on the SOM
+## Install or refresh tracked service file on the SOM
 From the development VM, copy the tracked service file to the SOM:
 
 ```bash
@@ -60,7 +64,7 @@ sudo systemctl status brewie.service --no-pager
 sudo journalctl -u brewie.service -n 100 --no-pager
 ```
 
-Expected result:
+Expected/current proven result:
 
 - `Main PID` should be `brewie_app`, not `hello.sh`
 - the screen should show the current status view without manually launching the app

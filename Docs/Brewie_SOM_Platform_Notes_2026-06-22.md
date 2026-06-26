@@ -79,12 +79,19 @@ Observed 2026-06-25 state:
 - `/opt/brewie/brewie_app` is installed and owned by `brewie:brewie`
 - `brewie` is in the required `dialout` and `video` groups
 
+Observed 2026-06-26 state:
+- the tracked unit in `Deploy/Systemd/brewie.service` has been installed on the SOM
+- `brewie.service` starts `/opt/brewie/brewie_app`
+- `Main PID` is `brewie_app`, not `hello.sh`
+- the target screen comes on through the service-started app
+- journal output shows `HEARTBEAT` transmit and `STATUS_REPORT` receive under systemd
+
 Practical rule:
-- early bring-up is still done manually first
-- service integration comes after manual behavior is proven
+- manual runs remain useful as the first test for a newly copied binary
+- the normal appliance startup path is now the managed `brewie.service`
 
 Current service integration note:
-- the next service test is to replace the placeholder unit with the tracked unit in `Deploy/Systemd/brewie.service`
+- service autostart is proven with the tracked unit in `Deploy/Systemd/brewie.service`
 
 ---
 
@@ -118,7 +125,7 @@ Observed target device nodes:
 Current result:
 - DRM display init succeeds on the SOM
 - the app can initialize display and serial together
-- a first visible boot-screen text has been shown on the real screen
+- a live status/debug screen has been shown on the real screen
 
 This is the first successful visible LVGL-on-target milestone.
 
@@ -133,10 +140,12 @@ What is currently true:
 - screen is no longer just black
 - serial/comms continue working while display is initialized
 - manually started BrewieApp shows updating MCU status information on the target display
+- service-started BrewieApp shows updating MCU status information on the target display
 
 What is **not** yet done:
 - touch/input reintegration into BrewieApp (although early tests using lvgl did show touch was working)
-- final boot-screen layout logic
+- final portrait-oriented status/home/fault layout logic
+- true animated boot/splash screen during SOM startup
 - full home/fault screen flow on target
 - production-polished display startup behavior
 
@@ -195,7 +204,8 @@ The following has now been proven together on the SOM:
 - `/dev/ttyS1` opens
 - heartbeat frames are sent
 - `STATUS_REPORT` frames are received
-- first visible boot text can be shown on the screen
+- live status/debug information can be shown on the screen
+- `brewie.service` can start the app automatically
 
 This is the current known-good combined baseline.
 
