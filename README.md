@@ -17,6 +17,8 @@ Working now:
 - The app decodes `STATUS_REPORT` and `FAULT_REPORT` into compact app-facing status.
 - The target display initializes through LVGL on Linux DRM.
 - The current screen shows live status/debug information on the real target display.
+- The physical LCD mode is 480x272, but the appliance uses the panel in portrait. The
+  simulator opens a portrait 272x480 window; target-side rotation is still blocked.
 
 Still pending:
 - touch/input integration in `BrewieApp`
@@ -68,6 +70,13 @@ configure:
 
 - simulator build should print `lv_conf_sim.h`
 - target build should print `lv_conf_target.h`
+
+Orientation is handled in the display platform layer:
+- the simulator uses a 272x480 SDL window, matching the user-facing portrait layout
+- the target currently opens the real 480x272 DRM mode without rotation
+- the current SOM DRM driver does not expose a hardware plane rotation property
+- LVGL target rotation on the current direct-buffer DRM backend needs more work before it
+  can be used safely
 
 ## Build policy
 

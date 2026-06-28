@@ -14,12 +14,11 @@
 #define LV_USE_LOG 1
 
 /*
- * These dimensions match the current landscape bring-up view. The final appliance UI is
- * expected to become portrait after rotation work, but keeping the simulator aligned with
- * today's target output makes the current status screen easier to compare.
+ * The physical LCD panel is 480x272, but it is mounted in the Brewie machine as portrait.
+ * The simulator should match what a user sees, so local UI work happens in 272x480.
  */
-#define LV_HOR_RES_MAX 480
-#define LV_VER_RES_MAX 272
+#define LV_HOR_RES_MAX 272
+#define LV_VER_RES_MAX 480
 
 #define LV_USE_SDL 1
 #define LV_USE_LINUX_DRM 0

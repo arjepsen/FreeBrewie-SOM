@@ -13,8 +13,21 @@
 #include "src/drivers/display/drm/lv_linux_drm.h"
 #endif
 
+/*
+ * The Brewie LCD panel is physically a 480x272 landscape panel, but it is mounted in
+ * the machine as a portrait display. Keep that fact centralized here so the UI code can
+ * be written in the natural user-facing orientation instead of every screen having to
+ * know that the panel is sideways.
+ */
+#define DISPLAY_PHYSICAL_WIDTH 480
+#define DISPLAY_PHYSICAL_HEIGHT 272
+#define DISPLAY_PORTRAIT_WIDTH DISPLAY_PHYSICAL_HEIGHT
+#define DISPLAY_PORTRAIT_HEIGHT DISPLAY_PHYSICAL_WIDTH
+
 bool display_init(display_t *display)
 {
+    lv_display_t *lv_display;
+
     if (display == NULL)
     {
         return false;
@@ -26,7 +39,13 @@ bool display_init(display_t *display)
     lv_init();
 
 #if !defined(__arm__) && !defined(__aarch64__)
-    if (lv_sdl_window_create(480, 272) == NULL)
+    /*
+     * The simulator is already a desktop window, so create it in the user-facing portrait
+     * shape directly. That makes local UI work match the appliance without spending time
+     * rotating pixels that only exist inside the developer's simulator window.
+     */
+    lv_display = lv_sdl_window_create(DISPLAY_PORTRAIT_WIDTH, DISPLAY_PORTRAIT_HEIGHT);
+    if (lv_display == NULL)
     {
         log_error("display_init: simulator display create failed");
         return false;
@@ -40,8 +59,6 @@ bool display_init(display_t *display)
     display->simulator = true;
     return true;
 #else
-    lv_display_t *lv_display;
-
     lv_display = lv_linux_drm_create();
     if (lv_display == NULL)
     {
@@ -54,6 +71,13 @@ bool display_init(display_t *display)
         log_error("display_init: drm set file failed");
         return false;
     }
+
+    /*
+     * Keep the target in the physical DRM orientation for now. The current sun4i DRM
+     * driver exposes only the 480x272 scanout mode, and early testing showed that LVGL
+     * rotation on this direct-buffer DRM backend can fail badly on the SOM. Portrait UI
+     * work continues in the simulator while target rotation gets a dedicated fix.
+     */
 
     display->ready = true;
     display->simulator = false;

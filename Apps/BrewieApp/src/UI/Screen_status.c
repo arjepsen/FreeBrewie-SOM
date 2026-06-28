@@ -5,6 +5,17 @@
 
 #include "Platform/Logging.h"
 
+/*
+ * The status screen is a bring-up/debug screen, not the final brewing UI. It is still
+ * important that it uses the same portrait shape as the finished appliance interface,
+ * because that keeps early development honest about the real amount of screen space.
+ */
+#define SCREEN_STATUS_LABEL_WIDTH 82
+#define SCREEN_STATUS_ROW_GAP 4
+#define SCREEN_STATUS_PANEL_PAD 8
+
+static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out);
+
 static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out)
 {
     lv_obj_t *row;
@@ -17,16 +28,24 @@ static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_te
     lv_obj_set_height(row, LV_SIZE_CONTENT);
     lv_obj_set_layout(row, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_style_pad_top(row, 2, 0);
-    lv_obj_set_style_pad_bottom(row, 2, 0);
+    lv_obj_set_style_pad_top(row, 1, 0);
+    lv_obj_set_style_pad_bottom(row, 1, 0);
+    lv_obj_set_style_pad_column(row, SCREEN_STATUS_ROW_GAP, 0);
 
     label = lv_label_create(row);
     lv_label_set_text(label, label_text);
-    lv_obj_set_width(label, 100);
-    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_width(label, SCREEN_STATUS_LABEL_WIDTH);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xA8C7FF), 0);
 
     value = lv_label_create(row);
     lv_label_set_text(value, "-");
+    /*
+     * Values can become longer than the portrait screen is wide, especially while the
+     * protocol and fault reporting are still changing. Wrapping keeps the debug screen
+     * readable instead of silently clipping the useful part of a message.
+     */
+    lv_label_set_long_mode(value, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(value, 0);
     lv_obj_set_flex_grow(value, 1);
     lv_obj_set_style_text_color(value, lv_color_hex(0xFFFFFF), 0);
 
@@ -57,12 +76,20 @@ void screen_status_init(screen_status_t *status)
     lv_obj_set_style_bg_color(container, lv_color_hex(0x000000), 0);
     lv_obj_set_style_bg_opa(container, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(container, 0, 0);
-    lv_obj_set_style_pad_all(container, 12, 0);
+    lv_obj_set_style_pad_all(container, SCREEN_STATUS_PANEL_PAD, 0);
+    lv_obj_set_style_pad_row(container, 3, 0);
     lv_obj_set_layout(container, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
+    /*
+     * The production UI should avoid requiring scrolling for normal workflows, but this
+     * screen is intentionally a dense live diagnostic view. Allowing vertical scrolling is
+     * better than hiding fields when a temporary debug value becomes too long.
+     */
+    lv_obj_set_scroll_dir(container, LV_DIR_VER);
+    lv_obj_set_scrollbar_mode(container, LV_SCROLLBAR_MODE_AUTO);
 
     status->title_label = lv_label_create(container);
-    lv_label_set_text(status->title_label, "STATUS SCREEN");
+    lv_label_set_text(status->title_label, "STATUS");
     lv_obj_set_style_text_font(status->title_label, &lv_font_montserrat_20, 0);
     lv_obj_set_style_text_color(status->title_label, lv_color_hex(0xFFFFFF), 0);
 

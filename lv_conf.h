@@ -13,8 +13,14 @@
 #define LV_COLOR_DEPTH 16
 #define LV_USE_OS 0
 #define LV_USE_LOG 1
-#define LV_HOR_RES_MAX 480
-#define LV_VER_RES_MAX 272
+
+/*
+ * Fallback tools should see the same user-facing portrait shape as the simulator. The
+ * target config keeps the physical 480x272 panel size because LVGL rotates it after DRM
+ * has opened the real display.
+ */
+#define LV_HOR_RES_MAX 272
+#define LV_VER_RES_MAX 480
 #define LV_USE_SDL 1
 
 #define LV_USE_LINUX_DRM 0

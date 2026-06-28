@@ -11,6 +11,12 @@
 #define LV_COLOR_DEPTH 16
 #define LV_USE_OS 0
 #define LV_USE_LOG 1
+
+/*
+ * These are the physical LCD timings exposed by the current sun4i DRM driver. The panel
+ * is mounted portrait in the appliance, but target-side LVGL rotation is disabled until
+ * the DRM direct-buffer rotation path has been fixed and tested on the SOM.
+ */
 #define LV_HOR_RES_MAX 480
 #define LV_VER_RES_MAX 272
 #define LV_USE_SDL 0
