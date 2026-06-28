@@ -10,6 +10,7 @@ typedef struct
 {
     bool ready;
     bool simulator;
+    uint64_t last_tick_ms;
 } display_t;
 
 bool display_init(display_t *display);

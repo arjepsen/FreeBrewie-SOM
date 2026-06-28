@@ -4,8 +4,9 @@
 /*
  * LVGL configuration for the real Olimex A13-SOM target.
  *
- * The target uses LVGL's Linux DRM backend on /dev/dri/card0. SDL is deliberately disabled
- * here because there is no desktop windowing environment on the appliance target.
+ * The target can be compiled for the known-good DRM backend or the experimental fbdev
+ * portrait backend. SDL is deliberately disabled because there is no desktop windowing
+ * environment on the appliance target.
  */
 
 #define LV_COLOR_DEPTH 16
@@ -13,9 +14,9 @@
 #define LV_USE_LOG 1
 
 /*
- * These are the physical LCD timings exposed by the current sun4i DRM driver. The panel
- * is mounted portrait in the appliance, but target-side LVGL rotation is disabled until
- * the DRM direct-buffer rotation path has been fixed and tested on the SOM.
+ * These are the physical LCD timings exposed by the current sun4i display stack. The panel
+ * is mounted portrait in the appliance. DRM currently stays in this physical orientation;
+ * the experimental fbdev build asks LVGL to rotate into portrait.
  */
 #define LV_HOR_RES_MAX 480
 #define LV_VER_RES_MAX 272

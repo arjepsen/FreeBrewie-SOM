@@ -18,7 +18,8 @@ Working now:
 - The target display initializes through LVGL on Linux DRM.
 - The current screen shows live status/debug information on the real target display.
 - The physical LCD mode is 480x272, but the appliance uses the panel in portrait. The
-  simulator opens a portrait 272x480 window; target-side rotation is still blocked.
+  simulator opens a portrait 272x480 window; target-side fbdev portrait mode is currently
+  experimental.
 
 Still pending:
 - touch/input integration in `BrewieApp`
@@ -73,10 +74,15 @@ configure:
 
 Orientation is handled in the display platform layer:
 - the simulator uses a 272x480 SDL window, matching the user-facing portrait layout
-- the target currently opens the real 480x272 DRM mode without rotation
+- the normal target build opens the real 480x272 DRM mode without rotation
+- the experimental target fbdev build opens `/dev/fb0` and asks LVGL to rotate to portrait
 - the current SOM DRM driver does not expose a hardware plane rotation property
-- LVGL target rotation on the current direct-buffer DRM backend needs more work before it
-  can be used safely
+- LVGL target rotation on the current direct-buffer DRM backend failed on hardware, so keep
+  DRM as the safe baseline while fbdev is tested
+
+The target display backend is selected with `BREWIE_TARGET_DISPLAY_BACKEND`:
+- `drm` is the default known-good backend
+- `fbdev` is the portrait rotation experiment
 
 ## Build policy
 

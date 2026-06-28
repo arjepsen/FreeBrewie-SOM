@@ -25,7 +25,10 @@ set(BREWIE_APP_COMMON_SOURCES
 
 if(CMAKE_CROSSCOMPILING)
     # Target builds use the real SOM entry point and the DRM-enabled LVGL config selected
-    # by the top-level CMakeLists.txt before LVGL is added.
+    # by the top-level CMakeLists.txt before LVGL is added. The display backend choice is
+    # deliberately a compile-time define while the target display stack is still being
+    # tested, so the known-good DRM binary and the experimental fbdev binary can be built
+    # in separate directories without runtime ambiguity.
     add_executable(brewie_app
         src/main.c
         ${BREWIE_APP_COMMON_SOURCES}
@@ -33,6 +36,10 @@ if(CMAKE_CROSSCOMPILING)
 
     target_include_directories(brewie_app PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+    )
+
+    target_compile_definitions(brewie_app PRIVATE
+        BREWIE_TARGET_DISPLAY_BACKEND_${BREWIE_TARGET_DISPLAY_BACKEND}=1
     )
 else()
     # Simulator builds use a local entry point and SDL. They should exercise the same app,

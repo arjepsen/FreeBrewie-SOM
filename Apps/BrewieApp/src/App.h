@@ -2,6 +2,7 @@
 #define FREEBREWIE_APP_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #include "Comms/Comms.h"
 #include "Logic/App_logic.h"
@@ -14,6 +15,7 @@ typedef struct
     comms_t comms;
     app_logic_t logic;
     ui_t ui;
+    uint64_t last_ui_update_ms;
     bool display_enabled;
 } app_t;
 

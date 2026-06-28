@@ -7,6 +7,7 @@
 #include "Platform/Time_base.h"
 
 #define APP_LOOP_SLEEP_US 10000
+#define APP_UI_REFRESH_PERIOD_MS 250U
 
 bool app_init(app_t *app)
 {
@@ -56,7 +57,18 @@ void app_update(app_t *app)
 
     if (app->display_enabled)
     {
-        ui_update_status_screen(&app->ui, &app->logic.status_screen);
+        /*
+         * The status screen is useful during bring-up, but rewriting every label on every
+         * loop makes LVGL redraw far more often than a human can read. Keep comms running
+         * every loop, but refresh this diagnostic UI at a modest rate so the SOM stays
+         * responsive and has CPU left for the real control work.
+         */
+        if ((now_ms - app->last_ui_update_ms) >= APP_UI_REFRESH_PERIOD_MS)
+        {
+            ui_update_status_screen(&app->ui, &app->logic.status_screen);
+            app->last_ui_update_ms = now_ms;
+        }
+
         display_update(&app->platform.display, now_ms);
     }
     else
