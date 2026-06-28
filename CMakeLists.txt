@@ -9,9 +9,28 @@ set(CMAKE_C_EXTENSIONS ON)
 set(CONFIG_LV_BUILD_EXAMPLES OFF CACHE BOOL "Build LVGL examples" FORCE)
 set(CONFIG_LV_BUILD_DEMOS OFF CACHE BOOL "Build LVGL demos" FORCE)
 
+# LVGL reads its configuration while external/lvgl is being added. Keep the simulator and
+# target configs as separate files so configuring one build directory cannot silently change
+# the behavior of the other. This matters because the target uses Linux DRM, while the local
+# simulator should use SDL and must not include DRM headers.
+if(CMAKE_CROSSCOMPILING)
+    set(LV_BUILD_CONF_PATH
+        "${CMAKE_SOURCE_DIR}/lv_conf_target.h"
+        CACHE PATH "LVGL configuration file for the Brewie SOM target" FORCE
+    )
+else()
+    set(LV_BUILD_CONF_PATH
+        "${CMAKE_SOURCE_DIR}/lv_conf_sim.h"
+        CACHE PATH "LVGL configuration file for the local simulator" FORCE
+    )
+endif()
+
 add_subdirectory(external/lvgl)
 
 if(CMAKE_CROSSCOMPILING)
+    # The target build links LVGL's Linux DRM backend against the armhf DRM headers and
+    # library from the Bullseye VM/sysroot setup. These paths are target-only; adding them
+    # to the simulator build is what previously caused local SDL builds to see drm.h.
     target_include_directories(lvgl PUBLIC
         /usr/include
         /usr/include/libdrm

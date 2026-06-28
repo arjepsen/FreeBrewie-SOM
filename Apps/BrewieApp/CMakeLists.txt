@@ -24,8 +24,8 @@ set(BREWIE_APP_COMMON_SOURCES
 )
 
 if(CMAKE_CROSSCOMPILING)
-    configure_file(${CMAKE_SOURCE_DIR}/lv_conf_target.h ${CMAKE_SOURCE_DIR}/lv_conf.h COPYONLY)
-
+    # Target builds use the real SOM entry point and the DRM-enabled LVGL config selected
+    # by the top-level CMakeLists.txt before LVGL is added.
     add_executable(brewie_app
         src/main.c
         ${BREWIE_APP_COMMON_SOURCES}
@@ -35,6 +35,9 @@ if(CMAKE_CROSSCOMPILING)
         ${CMAKE_CURRENT_SOURCE_DIR}/src
     )
 else()
+    # Simulator builds use a local entry point and SDL. They should exercise the same app,
+    # logic, UI, and comms source files where possible, while avoiding target-only Linux DRM
+    # headers and devices.
     find_package(SDL2 REQUIRED)
 
     add_executable(brewie_app

@@ -55,13 +55,19 @@ Other SOM applications can be added later, but for now the focus should stay on 
 
 ## Configuration
 
-The target build currently copies `lv_conf_target.h` over `lv_conf.h` during the target configure step.
+The build selects the LVGL configuration through CMake before LVGL itself is added.
+This avoids one build mode silently overwriting the configuration used by the other mode.
 
 That means:
-- simulator-oriented LVGL config belongs in `lv_conf.h`
+- simulator-oriented LVGL config belongs in `lv_conf_sim.h`
 - target-oriented LVGL config belongs in `lv_conf_target.h`
+- `lv_conf.h` is only a safe local-development fallback for tools that expect that filename
 
-If target display or font options appear to "revert", check `lv_conf_target.h` first.
+If display or font options appear to "revert", check which config path CMake printed during
+configure:
+
+- simulator build should print `lv_conf_sim.h`
+- target build should print `lv_conf_target.h`
 
 ## Build policy
 
