@@ -1,6 +1,6 @@
 # FreeBrewie UI Current Status
-_Date: 2026-06-22_
-_Updated: 2026-06-22_
+_Date: 2026-07-02_
+_Updated: 2026-07-02_
 
 ## Purpose
 This document captures the current real status of the SOM-side UI bring-up.
@@ -32,13 +32,16 @@ The following is currently proven on the real SOM target:
 - MCU `STATUS_REPORT` frames are received
 - `FAULT_REPORT` can also be received
 - target LVGL display bring-up now initializes through Linux DRM
-- a first visible text screen has now been shown on the real target display
+- a first visible portrait text screen has now been shown on the real target display
+- the target display path now uses custom rotated DRM flushing, so LVGL works in logical
+  272x480 portrait coordinates even though the physical panel scans out 480x272
+- the Goodix touchscreen is visible as `/dev/input/event0`
 
 So the project is no longer only at “headless serial baseline”.
 We now have:
 - working comms baseline
 - working target display initialization
-- first visible LVGL output on the real screen
+- first visible portrait LVGL output on the real screen
 
 ---
 
@@ -62,17 +65,21 @@ At this stage, obvious visible output is more important than polished screen des
 For the real SOM target, the current display path is:
 
 - LVGL
-- Linux DRM backend
+- custom Linux DRM scanout backend in `Platform/Display.c`
 - DRM device path: `/dev/dri/card0`
+- logical LVGL resolution: 272x480
+- physical DRM scanout: 480x272 RGB565
 
-This replaced the earlier target-side display bypass.
+This replaced the earlier target-side display bypass and the temporary landscape DRM proof.
+LVGL's built-in DRM rotation was tested on hardware and was not usable. The app now rotates
+dirty rectangles into a double-buffered DRM scanout buffer and page-flips on vblank.
 
 The simulator path still uses SDL.
 
 So the current split is:
 
 - simulator build -> SDL
-- target build -> DRM
+- target build -> custom rotated DRM
 
 ---
 
@@ -139,6 +146,22 @@ but it does **not** yet prove that the full UI layer is complete or stable.
 
 ---
 
+## Current touch discovery
+The target touchscreen has been identified:
+
+- device: `/dev/input/event0`
+- name: `Goodix Capacitive TouchScreen`
+- event types include `BTN_TOUCH`, `ABS_X`, `ABS_Y`, and multitouch fields
+- ABS ranges observed through `evtest`:
+  - X 0..799
+  - Y 0..479
+
+The runtime `brewie` user is already in the `input` group. The next task is to wire this
+input device into LVGL and verify the coordinate transform against the portrait display
+orientation.
+
+---
+
 ## Current known-good bring-up baseline
 The safest currently proven baseline is:
 
@@ -147,7 +170,7 @@ The safest currently proven baseline is:
 3. `/dev/ttyS1` opens
 4. heartbeat is sent
 5. MCU reports are received
-6. a visible LVGL live status/debug screen is shown
+6. a visible portrait LVGL live status/debug screen is shown
 7. `brewie.service` starts `/opt/brewie/brewie_app` automatically
 
 This is the current anchor state.
@@ -160,6 +183,7 @@ Any further UI work should preserve this baseline.
 At this point, the SOM-side application has reached:
 
 - first real target display output
+- correct target portrait orientation
 - while preserving the already-working MCU serial link
 
 That is a meaningful milestone because it proves:
@@ -175,10 +199,11 @@ The next UI step should stay small and controlled.
 Recommended next step:
 
 1. keep the comms path unchanged
-2. keep the DRM display path unchanged
+2. keep the rotated DRM display path unchanged
 3. keep using the current status/debug screen as the first real screen
-4. replace forced debug-only text gradually with proper status data
-5. only after that, move toward `Screen_home` and fuller UI behavior
+4. integrate touch/input through `Platform/`, not directly inside screen code
+5. prove one simple status-screen touch interaction
+6. only after that, move toward `Screen_home` and fuller UI behavior
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:
@@ -188,10 +213,9 @@ The next goal is:
 Naming/orientation note:
 - `Screen_status` is currently the first live status/debug screen, not finished product UI
 - a true animated boot/splash screen should be a separate future startup phase
-- the current target render is landscape, but the finished appliance UI should be portrait
-  relative to the current view, rotated 90 degrees clockwise
-- keep text lengths and layout density in mind when evolving this screen, because the final
-  portrait layout will have less horizontal room
+- the target render is now portrait
+- continuous full-screen animation is visibly choppy on the A13 SOM; keep the final UI
+  pleasant by using partial redraws, short transitions, and targeted motion
 
 ---
 
@@ -202,6 +226,7 @@ In particular:
 - DRM enablement introduced extra VM/sysroot dependency handling
 - runtime `libdrm2` is required on the SOM
 - current visible screen content is still a deliberate test-oriented render
+- touch coordinates still need to be mapped and tested against the rotated portrait UI
 
 So Claude or any later assistant should not assume:
 - the display stack is fully polished
@@ -217,8 +242,9 @@ Current real status is now:
 - serial link proven
 - heartbeat proven
 - MCU reports proven
-- target DRM display init proven
-- first visible LVGL target output proven
+- target portrait DRM display init proven
+- first visible portrait LVGL target output proven
+- touch device identified, but not yet integrated
 
 The UI is therefore no longer “not working”.
 A more accurate description is:

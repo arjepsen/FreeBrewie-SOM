@@ -20,6 +20,8 @@ Working now:
 - The physical LCD mode is 480x272, but the appliance uses the panel in portrait. The
   simulator opens a portrait 272x480 window, and the target DRM path now gives LVGL the
   same logical portrait size by rotating dirty rectangles into the physical scanout buffer.
+- The target touchscreen is visible as `Goodix Capacitive TouchScreen` on
+  `/dev/input/event0`.
 
 Still pending:
 - touch/input integration in `BrewieApp`
@@ -99,6 +101,17 @@ continuous full-screen redrawing is visibly choppy. Design the appliance UI arou
 redraws, short transitions, and targeted motion rather than long full-screen sliding
 animations.
 
+Touch/input facts observed on the target:
+- device node: `/dev/input/event0`
+- device name: `Goodix Capacitive TouchScreen`
+- ABS ranges:
+  - X 0..799
+  - Y 0..479
+- `BTN_TOUCH` and multitouch events are present
+- `brewie` is already in the `input` group
+
+Touch still needs to be mapped into LVGL and verified against the portrait coordinate system.
+
 ## Build policy
 
 Normal project builds should stay lean.
@@ -133,8 +146,9 @@ The `brewie` user is the correct runtime identity for the application because it
 1. Keep the current service/comms/display path as the known-good baseline.
 2. Keep `Screen_status` focused as the live status/debug screen.
 3. Keep any future animated boot/splash screen separate from the long-lived status screen.
-4. Bring touch/input back into `BrewieApp`.
-5. Grow toward the first manual-service UI while preserving MCU safety boundaries.
+4. Bring touch/input into `BrewieApp` through the platform layer.
+5. Prove one simple touch interaction on the live status/debug screen.
+6. Grow toward the first manual-service UI while preserving MCU safety boundaries.
 
 ## Documentation policy
 
@@ -143,29 +157,29 @@ At this stage, keep documentation compact and practical.
 The current useful SOM doc set is:
 
 - `README.md`
-- `Docs/README_2026-06-22.md`
-- `Docs/Brewie_SOM_Platform_Notes_2026-06-22.md`
+- `Docs/README_2026-07-02.md`
+- `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
 - `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-06-22.md`
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-06-22.md`
-- `Docs/FreeBrewie_UI_Current_Status_2026-06-22.md`
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-02.md`
+- `Docs/FreeBrewie_UI_Current_Status_2026-07-02.md`
 
 Use them as follows:
 
-- `Docs/README_2026-06-22.md`  
+- `Docs/README_2026-07-02.md`
   Short index of the SOM-side document set.
-- `Docs/Brewie_SOM_Platform_Notes_2026-06-22.md`  
+- `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
   Hardware/platform facts for the SOM target.
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
   Current systemd service install and autostart status.
-- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-06-22.md`  
+- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-06-22.md`
   Development host, toolchain, build environment, and workflow notes.
-- `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`  
+- `Docs/Brewie_SOM_MCU_Integration_Notes_2026-04-12.md`
   Practical SOM↔MCU integration notes and serial/protocol direction.
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-06-22.md`  
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-02.md`
   SOM-side software structure, top-level groups, and intended file responsibilities.
-- `Docs/FreeBrewie_UI_Current_Status_2026-06-22.md`  
+- `Docs/FreeBrewie_UI_Current_Status_2026-07-02.md`
   Current SOM/UI bring-up status and immediate next milestone.
 
 For the shared SOM-MCU protocol truth, use

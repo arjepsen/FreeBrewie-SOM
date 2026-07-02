@@ -1,5 +1,5 @@
 # Brewie SOM Platform Notes
-_Date: 2026-06-22_
+_Date: 2026-07-02_
 
 ## Purpose
 This document captures the current practical SOM platform facts for the FreeBrewie project.
@@ -114,8 +114,14 @@ Current target display path in BrewieApp:
 - LVGL on Linux DRM
 - DRM device path: `/dev/dri/card0`
 
-This is now the chosen target display direction.
-Framebuffer-first bring-up was considered, but DRM was selected because the SOM already exposes `/dev/dri/card0` and LVGL includes a Linux DRM backend.
+This is now the chosen target display direction. The current product path is a custom
+rotated DRM backend: LVGL sees a logical 272x480 portrait display, while the real DRM
+scanout stays at the physical 480x272 RGB565 panel mode. Dirty LVGL rectangles are rotated
+into a non-visible DRM buffer and page-flipped on vblank.
+
+Framebuffer-first bring-up was considered, but DRM was selected because the SOM already
+exposes `/dev/dri/card0`. LVGL's built-in DRM rotation paths were tested and failed on this
+SOM image; the fbdev rotation path used unacceptable CPU.
 
 Observed target device nodes:
 - `/dev/fb0`
@@ -125,9 +131,9 @@ Observed target device nodes:
 Current result:
 - DRM display init succeeds on the SOM
 - the app can initialize display and serial together
-- a live status/debug screen has been shown on the real screen
+- a live portrait status/debug screen has been shown on the real screen
 
-This is the first successful visible LVGL-on-target milestone.
+This is the first successful visible portrait LVGL-on-target milestone.
 
 ---
 
@@ -136,21 +142,44 @@ Current status is **not** “full UI working”.
 
 What is currently true:
 - target DRM display init works
-- first visible text output works
+- first visible portrait text output works
 - screen is no longer just black
 - serial/comms continue working while display is initialized
 - manually started BrewieApp shows updating MCU status information on the target display
 - service-started BrewieApp shows updating MCU status information on the target display
+- partial redraw animation is acceptable
+- continuous full-screen redraw animation is visibly choppy and should not be the default
+  UI transition style
 
 What is **not** yet done:
-- touch/input reintegration into BrewieApp (although early tests using lvgl did show touch was working)
+- touch/input integration into BrewieApp
 - final portrait-oriented status/home/fault layout logic
 - true animated boot/splash screen during SOM startup
 - full home/fault screen flow on target
 - production-polished display startup behavior
 
 So the current display milestone is:
-- **first visible LVGL proof on the real SOM target**
+- **first visible portrait LVGL proof on the real SOM target**
+
+---
+
+## Current touch/input fact
+Current detected touch device:
+- `/dev/input/event0`
+- name: `Goodix Capacitive TouchScreen`
+- sysfs path: `/devices/platform/soc/1c2b400.i2c/i2c-2/2-0014/input/input0`
+- event capabilities include `BTN_TOUCH`, `ABS_X`, `ABS_Y`, and multitouch fields
+- ABS ranges observed through `evtest`:
+  - `ABS_X`: 0..799
+  - `ABS_Y`: 0..479
+  - `ABS_MT_POSITION_X`: 0..799
+  - `ABS_MT_POSITION_Y`: 0..479
+
+Practical note:
+- the runtime `brewie` user is already in the `input` group, so the app should be able to
+  open `/dev/input/event0`
+- coordinate mapping still needs to be proven against the portrait LVGL coordinate system
+  before real UI buttons are trusted
 
 ---
 

@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-06-22_
+_Date: 2026-07-02_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -7,9 +7,9 @@ This document defines the current target architecture for the Brewie SOM applica
 It is meant to keep file ownership, module boundaries, and subsystem responsibilities clear while the SOM app is still in early bring-up.
 
 It should be read together with:
-- `FreeBrewie_UI_Current_Status_2026-06-22.md`
+- `FreeBrewie_UI_Current_Status_2026-07-02.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-06-22.md`
-- `Brewie_SOM_Platform_Notes_2026-06-22.md`
+- `Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
 
 ---
@@ -279,8 +279,10 @@ Terminology/orientation note:
 - the current `Screen_status` role is really a live status/debug screen
 - a true animated boot/splash screen is wanted later and should be treated as a separate
   startup phase rather than mixed into the long-lived status screen
-- the current target render is landscape, while the final appliance orientation should be
-  portrait relative to the current view, rotated 90 degrees clockwise
+- the current target render is now portrait through the platform display layer; UI code
+  should treat 272x480 as the target shape
+- continuous full-screen animation is visibly choppy on the A13 SOM, so final screen
+  transitions should favor partial redraws and targeted motion
 - final screen components should avoid assuming long horizontal text fields will fit
 
 At the current stage it is the correct place for:
