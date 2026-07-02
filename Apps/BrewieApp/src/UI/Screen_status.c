@@ -15,6 +15,9 @@
 #define SCREEN_STATUS_PANEL_PAD 8
 
 static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out);
+static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_status_t *status);
+static void screen_status_touch_event_cb(lv_event_t *event);
+static void screen_status_button_event_cb(lv_event_t *event);
 
 static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out)
 {
@@ -53,6 +56,102 @@ static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_te
     return row;
 }
 
+static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_status_t *status)
+{
+    lv_obj_t *button;
+    lv_obj_t *label;
+
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(100));
+    lv_obj_set_height(button, 38);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x1B7D5A), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x249B70), LV_STATE_PRESSED);
+    lv_obj_set_style_radius(button, 4, 0);
+    lv_obj_set_style_pad_all(button, 0, 0);
+    lv_obj_add_event_cb(button, screen_status_button_event_cb, LV_EVENT_CLICKED, status);
+
+    label = lv_label_create(button);
+    lv_label_set_text(label, "Touch OK");
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(label);
+
+    return button;
+}
+
+static void screen_status_touch_event_cb(lv_event_t *event)
+{
+    screen_status_t *status;
+    lv_indev_t *indev;
+    lv_point_t point;
+    char text[48];
+
+    status = lv_event_get_user_data(event);
+    if (status == NULL || status->touch_value == NULL)
+    {
+        return;
+    }
+
+    indev = lv_indev_active();
+    if (indev == NULL)
+    {
+        return;
+    }
+
+    lv_indev_get_point(indev, &point);
+    status->touch_event_count++;
+
+    /*
+     * This is a temporary hardware bring-up indicator. It proves that the Linux input
+     * device reaches LVGL and that the portrait coordinate mapping is plausible before
+     * the real UI depends on touch buttons for machine control.
+     */
+    if (lv_event_get_code(event) == LV_EVENT_RELEASED)
+    {
+        snprintf(text,
+                 sizeof(text),
+                 "up %ld,%ld #%lu",
+                 (long)point.x,
+                 (long)point.y,
+                 (unsigned long)status->touch_event_count);
+    }
+    else
+    {
+        snprintf(text,
+                 sizeof(text),
+                 "down %ld,%ld #%lu",
+                 (long)point.x,
+                 (long)point.y,
+                 (unsigned long)status->touch_event_count);
+    }
+
+    lv_label_set_text(status->touch_value, text);
+}
+
+static void screen_status_button_event_cb(lv_event_t *event)
+{
+    screen_status_t *status;
+    char text[40];
+
+    status = lv_event_get_user_data(event);
+    if (status == NULL || status->button_value == NULL)
+    {
+        return;
+    }
+
+    status->button_click_count++;
+
+    /*
+     * This proves the next layer after raw touch: LVGL hit-testing and button click events.
+     * Keep it harmless and visible while touch is being brought up, then replace it with a
+     * real navigation or service-mode action once we trust the input path.
+     */
+    snprintf(text,
+             sizeof(text),
+             "clicked #%lu",
+             (unsigned long)status->button_click_count);
+    lv_label_set_text(status->button_value, text);
+}
+
 void screen_status_init(screen_status_t *status)
 {
     lv_obj_t *container;
@@ -87,12 +186,18 @@ void screen_status_init(screen_status_t *status)
      */
     lv_obj_set_scroll_dir(container, LV_DIR_VER);
     lv_obj_set_scrollbar_mode(container, LV_SCROLLBAR_MODE_AUTO);
+    lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(container, screen_status_touch_event_cb, LV_EVENT_PRESSED, status);
+    lv_obj_add_event_cb(container, screen_status_touch_event_cb, LV_EVENT_RELEASED, status);
 
     status->title_label = lv_label_create(container);
     lv_label_set_text(status->title_label, "STATUS");
     lv_obj_set_style_text_font(status->title_label, &lv_font_montserrat_20, 0);
     lv_obj_set_style_text_color(status->title_label, lv_color_hex(0xFFFFFF), 0);
 
+    screen_status_create_touch_button(container, status);
+    screen_status_create_row(container, "button", &status->button_value);
+    lv_label_set_text(status->button_value, "not clicked");
     screen_status_create_row(container, "display", &status->display_value);
     screen_status_create_row(container, "serial", &status->serial_value);
     screen_status_create_row(container, "heartbeat", &status->heartbeat_value);
@@ -104,6 +209,8 @@ void screen_status_init(screen_status_t *status)
     screen_status_create_row(container, "pumps", &status->pump_value);
     screen_status_create_row(container, "inlets", &status->solenoid_value);
     screen_status_create_row(container, "faults", &status->fault_value);
+    screen_status_create_row(container, "touch", &status->touch_value);
+    lv_label_set_text(status->touch_value, "tap screen");
 
     log_info("screen_status: built");
 }

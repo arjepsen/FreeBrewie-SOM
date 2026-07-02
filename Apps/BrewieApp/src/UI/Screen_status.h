@@ -21,6 +21,10 @@ typedef struct
     lv_obj_t *pump_value;
     lv_obj_t *solenoid_value;
     lv_obj_t *fault_value;
+    lv_obj_t *touch_value;
+    lv_obj_t *button_value;
+    uint32_t touch_event_count;
+    uint32_t button_click_count;
 } screen_status_t;
 
 void screen_status_init(screen_status_t *status);

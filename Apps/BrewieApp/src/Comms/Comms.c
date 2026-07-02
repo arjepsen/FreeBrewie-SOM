@@ -12,7 +12,6 @@
 #define COMMS_STATUS_REPORT_PAYLOAD_LEN 27U
 #define COMMS_FAULT_REPORT_PAYLOAD_LEN 5U
 
-static const char *comms_protocol_type_name(uint8_t type);
 static void comms_process_serial_rx(comms_t *comms, uint64_t now_ms);
 static void comms_send_heartbeat(comms_t *comms, uint64_t now_ms);
 static void comms_decode_frame(comms_t *comms, const protocol_frame_t *frame);
@@ -95,31 +94,6 @@ bool comms_is_serial_ready(const comms_t *comms)
     return (comms != NULL) && comms->status.serial_ready;
 }
 
-static const char *comms_protocol_type_name(uint8_t type)
-{
-    switch (type)
-    {
-    case PROTOCOL_MSG_CONTROL_SNAPSHOT:
-        return "CONTROL_SNAPSHOT";
-    case PROTOCOL_MSG_HEARTBEAT:
-        return "HEARTBEAT";
-    case PROTOCOL_MSG_STATUS_REPORT:
-        return "STATUS_REPORT";
-    case PROTOCOL_MSG_FAULT_REPORT:
-        return "FAULT_REPORT";
-    case PROTOCOL_MSG_ACK:
-        return "ACK";
-    case PROTOCOL_MSG_NACK:
-        return "NACK";
-    case PROTOCOL_MSG_SHUTDOWN_REQUEST:
-        return "SHUTDOWN_REQUEST";
-    case PROTOCOL_MSG_FAULT_CLEAR_REQUEST:
-        return "FAULT_CLEAR_REQUEST";
-    default:
-        return "UNKNOWN";
-    }
-}
-
 static void comms_process_serial_rx(comms_t *comms, uint64_t now_ms)
 {
     uint8_t buffer[128];
@@ -137,11 +111,6 @@ static void comms_process_serial_rx(comms_t *comms, uint64_t now_ms)
     {
         if (protocol_rx_consume(&comms->protocol_rx, buffer[index], &frame))
         {
-            log_infof("rx: %s seq=%u len=%u",
-                      comms_protocol_type_name(frame.type),
-                      (unsigned int)frame.seq,
-                      (unsigned int)frame.len);
-
             comms->status.last_rx_ms = now_ms;
             comms->status.last_rx_type = frame.type;
             comms->status.last_rx_seq = frame.seq;
@@ -177,7 +146,6 @@ static void comms_send_heartbeat(comms_t *comms, uint64_t now_ms)
         comms->status.heartbeat_count++;
         comms->status.heartbeat_running = true;
         comms->last_heartbeat_ms = now_ms;
-        log_infof("heartbeat sent %lu", (unsigned long)comms->status.heartbeat_count);
     }
 }
 

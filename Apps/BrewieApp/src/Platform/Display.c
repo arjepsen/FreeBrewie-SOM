@@ -23,6 +23,7 @@
 #include <drm_fourcc.h>
 #include <xf86drm.h>
 #include <xf86drmMode.h>
+#include "src/drivers/evdev/lv_evdev.h"
 #endif
 #endif
 
@@ -39,6 +40,11 @@
 #define DISPLAY_IDLE_SLEEP_MAX_MS 25U
 #define DISPLAY_DRAW_BUFFER_ROWS 48U
 #define DISPLAY_DRM_BUFFER_COUNT 2U
+#define DISPLAY_TOUCH_DEVICE_PATH "/dev/input/event0"
+#define DISPLAY_TOUCH_RAW_X_MIN 0
+#define DISPLAY_TOUCH_RAW_X_MAX 799
+#define DISPLAY_TOUCH_RAW_Y_MIN 0
+#define DISPLAY_TOUCH_RAW_Y_MAX 479
 
 #if defined(__arm__) || defined(__aarch64__)
 #if !defined(BREWIE_TARGET_DISPLAY_BACKEND_fbdev)
@@ -82,6 +88,7 @@ static void display_drm_page_flip_handler(int fd,
                                           unsigned int tv_sec,
                                           unsigned int tv_usec,
                                           void *user_data);
+static void display_touch_init(lv_display_t *lv_display);
 
 static display_drm_context_t target_drm_context;
 #endif
@@ -201,6 +208,7 @@ bool display_init(display_t *display)
                            draw_buffer_2,
                            (uint32_t)(draw_buffer_pixels * sizeof(*draw_buffer_1)),
                            LV_DISPLAY_RENDER_MODE_PARTIAL);
+    display_touch_init(lv_display);
 
     display->ready = true;
     display->simulator = false;
@@ -677,6 +685,37 @@ static void display_drm_page_flip_handler(int fd,
 
     page_flip_complete = user_data;
     *page_flip_complete = true;
+}
+
+static void display_touch_init(lv_display_t *lv_display)
+{
+    lv_indev_t *touch;
+
+    /*
+     * The Goodix controller reports the touch surface in the panel's raw landscape axes:
+     * X is 0..799 and Y is 0..479. The UI is logical portrait 272x480, so input must take
+     * the same physical mounting into account as the display flush path:
+     *
+     *   logical x = inverted/scaled raw Y
+     *   logical y = scaled raw X
+     *
+     * LVGL's evdev driver can express that with axis swap plus reversed raw-Y calibration.
+     */
+    touch = lv_evdev_create(LV_INDEV_TYPE_POINTER, DISPLAY_TOUCH_DEVICE_PATH);
+    if (touch == NULL)
+    {
+        log_error("display_touch_init: Goodix evdev open failed");
+        return;
+    }
+
+    lv_indev_set_display(touch, lv_display);
+    lv_evdev_set_swap_axes(touch, true);
+    lv_evdev_set_calibration(touch,
+                             DISPLAY_TOUCH_RAW_Y_MAX,
+                             DISPLAY_TOUCH_RAW_X_MIN,
+                             DISPLAY_TOUCH_RAW_Y_MIN,
+                             DISPLAY_TOUCH_RAW_X_MAX);
+    log_info("display_touch_init: Goodix touch ready");
 }
 #endif
 #endif
