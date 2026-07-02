@@ -1,0 +1,3 @@
+add_executable(lvgl_drm_rotation_probe LvglDrmRotationProbe.c)
+target_compile_options(lvgl_drm_rotation_probe PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(lvgl_drm_rotation_probe PRIVATE lvgl)

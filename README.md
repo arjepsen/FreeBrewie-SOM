@@ -18,8 +18,8 @@ Working now:
 - The target display initializes through LVGL on Linux DRM.
 - The current screen shows live status/debug information on the real target display.
 - The physical LCD mode is 480x272, but the appliance uses the panel in portrait. The
-  simulator opens a portrait 272x480 window; target-side fbdev portrait mode is currently
-  experimental.
+  simulator opens a portrait 272x480 window, and the target DRM path now gives LVGL the
+  same logical portrait size by rotating dirty rectangles into the physical scanout buffer.
 
 Still pending:
 - touch/input integration in `BrewieApp`
@@ -74,15 +74,30 @@ configure:
 
 Orientation is handled in the display platform layer:
 - the simulator uses a 272x480 SDL window, matching the user-facing portrait layout
-- the normal target build opens the real 480x272 DRM mode without rotation
+- the normal target build opens the real 480x272 DRM mode, creates a logical 272x480 LVGL
+  display, rotates LVGL's dirty rectangles into a double-buffered RGB565 DRM scanout buffer,
+  and page-flips on vblank
 - the experimental target fbdev build opens `/dev/fb0` and asks LVGL to rotate to portrait
 - the current SOM DRM driver does not expose a hardware plane rotation property
-- LVGL target rotation on the current direct-buffer DRM backend failed on hardware, so keep
-  DRM as the safe baseline while fbdev is tested
+- LVGL target rotation on the current direct-buffer DRM backend failed on hardware, so the
+  product path avoids LVGL's built-in DRM rotation and uses the custom rotated flush path
 
 The target display backend is selected with `BREWIE_TARGET_DISPLAY_BACKEND`:
-- `drm` is the default known-good backend
-- `fbdev` is the portrait rotation experiment
+- `drm` is the default backend and current product path
+- `fbdev` is a portrait rotation experiment, but early SOM testing showed unacceptable CPU
+  use and it should not be treated as the product path
+
+Display probe tools:
+- `Tools/DisplayRotateProbe` measures raw RGB565 portrait-to-landscape rotation cost.
+- `Tools/LvglDrmRotationProbe` documents that LVGL's built-in DRM rotation paths hang or
+  crash on the current SOM image.
+- `Tools/LvglRotatedDrmProbe` is the isolated benchmark for the custom double-buffered
+  rotated DRM flush path now used by `BrewieApp`.
+
+Hardware testing showed that partial redraw animation is acceptable on the A13 SOM, while
+continuous full-screen redrawing is visibly choppy. Design the appliance UI around selective
+redraws, short transitions, and targeted motion rather than long full-screen sliding
+animations.
 
 ## Build policy
 

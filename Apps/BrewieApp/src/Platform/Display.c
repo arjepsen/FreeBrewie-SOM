@@ -1,5 +1,12 @@
 #include "Display.h"
 
+#include <errno.h>
+#include <fcntl.h>
+#include <poll.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 #include "Platform/Logging.h"
@@ -13,7 +20,9 @@
 #if defined(BREWIE_TARGET_DISPLAY_BACKEND_fbdev)
 #include "src/drivers/display/fb/lv_linux_fbdev.h"
 #else
-#include "src/drivers/display/drm/lv_linux_drm.h"
+#include <drm_fourcc.h>
+#include <xf86drm.h>
+#include <xf86drmMode.h>
 #endif
 #endif
 
@@ -28,10 +37,62 @@
 #define DISPLAY_PORTRAIT_WIDTH DISPLAY_PHYSICAL_HEIGHT
 #define DISPLAY_PORTRAIT_HEIGHT DISPLAY_PHYSICAL_WIDTH
 #define DISPLAY_IDLE_SLEEP_MAX_MS 25U
+#define DISPLAY_DRAW_BUFFER_ROWS 48U
+#define DISPLAY_DRM_BUFFER_COUNT 2U
+
+#if defined(__arm__) || defined(__aarch64__)
+#if !defined(BREWIE_TARGET_DISPLAY_BACKEND_fbdev)
+typedef struct
+{
+    uint32_t handle;
+    uint32_t pitch;
+    uint64_t size;
+    uint32_t framebuffer_id;
+    uint8_t *map;
+} display_drm_buffer_t;
+
+typedef struct
+{
+    int fd;
+    uint32_t connector_id;
+    uint32_t crtc_id;
+    drmModeModeInfo mode;
+    drmModeCrtc *saved_crtc;
+    display_drm_buffer_t buffers[DISPLAY_DRM_BUFFER_COUNT];
+    unsigned int front_buffer_index;
+    unsigned int back_buffer_index;
+    bool frame_prepared;
+} display_drm_context_t;
+
+static bool display_drm_init(display_drm_context_t *context);
+static bool display_drm_open_card(display_drm_context_t *context, const char *device_path);
+static bool display_drm_find_connector_and_crtc(display_drm_context_t *context);
+static bool display_drm_create_buffers(display_drm_context_t *context);
+static bool display_drm_create_buffer(display_drm_context_t *context, display_drm_buffer_t *buffer);
+static bool display_drm_set_scanout(display_drm_context_t *context);
+static bool display_drm_page_flip(display_drm_context_t *context);
+static void display_drm_destroy_buffers(display_drm_context_t *context);
+static void display_drm_destroy_buffer(display_drm_context_t *context, display_drm_buffer_t *buffer);
+static void display_drm_flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px_map);
+static void display_drm_copy_area_counterclockwise(display_drm_context_t *context,
+                                                   const lv_area_t *area,
+                                                   const uint16_t *pixels);
+static void display_drm_page_flip_handler(int fd,
+                                          unsigned int sequence,
+                                          unsigned int tv_sec,
+                                          unsigned int tv_usec,
+                                          void *user_data);
+
+static display_drm_context_t target_drm_context;
+#endif
+#endif
 
 bool display_init(display_t *display)
 {
     lv_display_t *lv_display;
+    size_t draw_buffer_pixels;
+    uint16_t *draw_buffer_1;
+    uint16_t *draw_buffer_2;
 
     if (display == NULL)
     {
@@ -41,6 +102,8 @@ bool display_init(display_t *display)
     display->ready = false;
     display->simulator = false;
     display->last_tick_ms = 0U;
+    draw_buffer_1 = NULL;
+    draw_buffer_2 = NULL;
 
     lv_init();
 
@@ -94,29 +157,54 @@ bool display_init(display_t *display)
     log_info("display_init: fbdev display ready");
     return true;
 #else
-    lv_display = lv_linux_drm_create();
+    /*
+     * Normal target path.
+     *
+     * LVGL's built-in DRM rotation was tested on the A13 SOM and either hung or crashed.
+     * The framebuffer backend rotated correctly but used too much CPU. This custom backend
+     * keeps the reliable DRM scanout path while letting LVGL draw in the user-facing
+     * portrait orientation. Each LVGL dirty rectangle is rotated into a non-visible DRM
+     * buffer, then page-flipped on vblank so moving widgets do not tear.
+     */
+    memset(&target_drm_context, 0, sizeof(target_drm_context));
+    target_drm_context.fd = -1;
+    if (!display_drm_init(&target_drm_context))
+    {
+        log_error("display_init: rotated DRM init failed");
+        return false;
+    }
+
+    draw_buffer_pixels = DISPLAY_PORTRAIT_WIDTH * DISPLAY_DRAW_BUFFER_ROWS;
+    draw_buffer_1 = calloc(draw_buffer_pixels, sizeof(*draw_buffer_1));
+    draw_buffer_2 = calloc(draw_buffer_pixels, sizeof(*draw_buffer_2));
+    if (draw_buffer_1 == NULL || draw_buffer_2 == NULL)
+    {
+        log_error("display_init: LVGL draw buffer allocation failed");
+        free(draw_buffer_2);
+        free(draw_buffer_1);
+        return false;
+    }
+
+    lv_display = lv_display_create(DISPLAY_PORTRAIT_WIDTH, DISPLAY_PORTRAIT_HEIGHT);
     if (lv_display == NULL)
     {
-        log_error("display_init: drm display create failed");
+        log_error("display_init: rotated DRM LVGL display create failed");
+        free(draw_buffer_2);
+        free(draw_buffer_1);
         return false;
     }
 
-    if (lv_linux_drm_set_file(lv_display, "/dev/dri/card0", -1) != LV_RESULT_OK)
-    {
-        log_error("display_init: drm set file failed");
-        return false;
-    }
-
-    /*
-     * Keep the target in the physical DRM orientation for now. The current sun4i DRM
-     * driver exposes only the 480x272 scanout mode, and early testing showed that LVGL
-     * rotation on this direct-buffer DRM backend can fail badly on the SOM. Portrait UI
-     * work continues in the simulator while target rotation gets a dedicated fix.
-     */
+    lv_display_set_driver_data(lv_display, &target_drm_context);
+    lv_display_set_flush_cb(lv_display, display_drm_flush_cb);
+    lv_display_set_buffers(lv_display,
+                           draw_buffer_1,
+                           draw_buffer_2,
+                           (uint32_t)(draw_buffer_pixels * sizeof(*draw_buffer_1)),
+                           LV_DISPLAY_RENDER_MODE_PARTIAL);
 
     display->ready = true;
     display->simulator = false;
-    log_info("display_init: drm display ready");
+    log_info("display_init: rotated DRM display ready");
     return true;
 #endif
 #endif
@@ -172,3 +260,423 @@ void display_update(display_t *display, uint64_t now_ms)
         usleep(wait_ms * 1000U);
     }
 }
+
+#if defined(__arm__) || defined(__aarch64__)
+#if !defined(BREWIE_TARGET_DISPLAY_BACKEND_fbdev)
+static bool display_drm_init(display_drm_context_t *context)
+{
+    if (!display_drm_open_card(context, "/dev/dri/card0"))
+    {
+        return false;
+    }
+
+    if (!display_drm_find_connector_and_crtc(context))
+    {
+        return false;
+    }
+
+    if (!display_drm_create_buffers(context))
+    {
+        return false;
+    }
+
+    if (!display_drm_set_scanout(context))
+    {
+        return false;
+    }
+
+    log_info("display_drm_init: physical 480x272 scanout, logical 272x480 UI");
+    return true;
+}
+
+static bool display_drm_open_card(display_drm_context_t *context, const char *device_path)
+{
+    uint64_t has_dumb_buffer;
+
+    context->fd = open(device_path, O_RDWR | O_CLOEXEC);
+    if (context->fd < 0)
+    {
+        log_error("display_drm_open_card: open failed");
+        return false;
+    }
+
+    if (drmGetCap(context->fd, DRM_CAP_DUMB_BUFFER, &has_dumb_buffer) != 0 || has_dumb_buffer == 0U)
+    {
+        log_error("display_drm_open_card: DRM dumb buffers unavailable");
+        return false;
+    }
+
+    return true;
+}
+
+static bool display_drm_find_connector_and_crtc(display_drm_context_t *context)
+{
+    drmModeRes *resources;
+    drmModeConnector *connector;
+    drmModeEncoder *encoder;
+    int crtc_index;
+    int connector_index;
+    int encoder_index;
+
+    resources = drmModeGetResources(context->fd);
+    if (resources == NULL)
+    {
+        log_error("display_drm_find_connector_and_crtc: resources unavailable");
+        return false;
+    }
+
+    for (connector_index = 0; connector_index < resources->count_connectors; ++connector_index)
+    {
+        connector = drmModeGetConnector(context->fd, resources->connectors[connector_index]);
+        if (connector == NULL)
+        {
+            continue;
+        }
+
+        if (connector->connection == DRM_MODE_CONNECTED && connector->count_modes > 0)
+        {
+            context->connector_id = connector->connector_id;
+            context->mode = connector->modes[0];
+
+            for (encoder_index = 0; encoder_index < connector->count_encoders; ++encoder_index)
+            {
+                encoder = drmModeGetEncoder(context->fd, connector->encoders[encoder_index]);
+                if (encoder == NULL)
+                {
+                    continue;
+                }
+
+                if (encoder->crtc_id != 0U)
+                {
+                    context->crtc_id = encoder->crtc_id;
+                }
+                else
+                {
+                    /*
+                     * If the display was idle before the service started, no CRTC may be
+                     * active yet. Pick the first compatible CRTC from the encoder mask.
+                     */
+                    for (crtc_index = 0; crtc_index < resources->count_crtcs; ++crtc_index)
+                    {
+                        if ((encoder->possible_crtcs & (1 << crtc_index)) != 0)
+                        {
+                            context->crtc_id = resources->crtcs[crtc_index];
+                            break;
+                        }
+                    }
+                }
+
+                drmModeFreeEncoder(encoder);
+                if (context->crtc_id != 0U)
+                {
+                    break;
+                }
+            }
+
+            drmModeFreeConnector(connector);
+            break;
+        }
+
+        drmModeFreeConnector(connector);
+    }
+
+    drmModeFreeResources(resources);
+
+    if (context->connector_id == 0U || context->crtc_id == 0U)
+    {
+        log_error("display_drm_find_connector_and_crtc: connected pipe not found");
+        return false;
+    }
+
+    if (context->mode.hdisplay != DISPLAY_PHYSICAL_WIDTH || context->mode.vdisplay != DISPLAY_PHYSICAL_HEIGHT)
+    {
+        log_error("display_drm_find_connector_and_crtc: unexpected physical mode");
+        return false;
+    }
+
+    context->saved_crtc = drmModeGetCrtc(context->fd, context->crtc_id);
+    return true;
+}
+
+static bool display_drm_create_buffers(display_drm_context_t *context)
+{
+    context->front_buffer_index = 0U;
+    context->back_buffer_index = 1U;
+
+    if (!display_drm_create_buffer(context, &context->buffers[0]))
+    {
+        return false;
+    }
+
+    if (!display_drm_create_buffer(context, &context->buffers[1]))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+static bool display_drm_create_buffer(display_drm_context_t *context, display_drm_buffer_t *buffer)
+{
+    struct drm_mode_create_dumb create_request;
+    struct drm_mode_map_dumb map_request;
+    uint32_t handles[4];
+    uint32_t pitches[4];
+    uint32_t offsets[4];
+
+    memset(&create_request, 0, sizeof(create_request));
+    create_request.width = DISPLAY_PHYSICAL_WIDTH;
+    create_request.height = DISPLAY_PHYSICAL_HEIGHT;
+    create_request.bpp = 16U;
+
+    if (drmIoctl(context->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_request) != 0)
+    {
+        log_error("display_drm_create_buffer: create dumb buffer failed");
+        return false;
+    }
+
+    buffer->handle = create_request.handle;
+    buffer->pitch = create_request.pitch;
+    buffer->size = create_request.size;
+
+    memset(&map_request, 0, sizeof(map_request));
+    map_request.handle = buffer->handle;
+    if (drmIoctl(context->fd, DRM_IOCTL_MODE_MAP_DUMB, &map_request) != 0)
+    {
+        log_error("display_drm_create_buffer: map dumb buffer failed");
+        return false;
+    }
+
+    buffer->map = mmap(NULL, buffer->size, PROT_READ | PROT_WRITE, MAP_SHARED, context->fd, map_request.offset);
+    if (buffer->map == MAP_FAILED)
+    {
+        buffer->map = NULL;
+        log_error("display_drm_create_buffer: mmap failed");
+        return false;
+    }
+
+    memset(buffer->map, 0, (size_t)buffer->size);
+    memset(handles, 0, sizeof(handles));
+    memset(pitches, 0, sizeof(pitches));
+    memset(offsets, 0, sizeof(offsets));
+    handles[0] = buffer->handle;
+    pitches[0] = buffer->pitch;
+
+    if (drmModeAddFB2(context->fd,
+                      DISPLAY_PHYSICAL_WIDTH,
+                      DISPLAY_PHYSICAL_HEIGHT,
+                      DRM_FORMAT_RGB565,
+                      handles,
+                      pitches,
+                      offsets,
+                      &buffer->framebuffer_id,
+                      0) != 0)
+    {
+        log_error("display_drm_create_buffer: framebuffer create failed");
+        return false;
+    }
+
+    return true;
+}
+
+static bool display_drm_set_scanout(display_drm_context_t *context)
+{
+    if (drmModeSetCrtc(context->fd,
+                       context->crtc_id,
+                       context->buffers[context->front_buffer_index].framebuffer_id,
+                       0,
+                       0,
+                       &context->connector_id,
+                       1,
+                       &context->mode) != 0)
+    {
+        log_error("display_drm_set_scanout: set CRTC failed");
+        return false;
+    }
+
+    return true;
+}
+
+static bool display_drm_page_flip(display_drm_context_t *context)
+{
+    drmEventContext event_context;
+    struct pollfd poll_fd;
+    bool page_flip_complete;
+
+    page_flip_complete = false;
+    if (drmModePageFlip(context->fd,
+                        context->crtc_id,
+                        context->buffers[context->back_buffer_index].framebuffer_id,
+                        DRM_MODE_PAGE_FLIP_EVENT,
+                        &page_flip_complete) != 0)
+    {
+        log_error("display_drm_page_flip: page flip request failed");
+        return false;
+    }
+
+    memset(&event_context, 0, sizeof(event_context));
+    event_context.version = DRM_EVENT_CONTEXT_VERSION;
+    event_context.page_flip_handler = display_drm_page_flip_handler;
+
+    while (!page_flip_complete)
+    {
+        poll_fd.fd = context->fd;
+        poll_fd.events = POLLIN;
+        poll_fd.revents = 0;
+
+        if (poll(&poll_fd, 1, 1000) <= 0)
+        {
+            log_error("display_drm_page_flip: timed out waiting for vblank");
+            return false;
+        }
+
+        if (drmHandleEvent(context->fd, &event_context) != 0)
+        {
+            log_error("display_drm_page_flip: event handling failed");
+            return false;
+        }
+    }
+
+    context->front_buffer_index = context->back_buffer_index;
+    context->back_buffer_index = 1U - context->front_buffer_index;
+    return true;
+}
+
+static void display_drm_destroy_buffers(display_drm_context_t *context)
+{
+    unsigned int index;
+
+    for (index = 0U; index < DISPLAY_DRM_BUFFER_COUNT; ++index)
+    {
+        display_drm_destroy_buffer(context, &context->buffers[index]);
+    }
+}
+
+static void display_drm_destroy_buffer(display_drm_context_t *context, display_drm_buffer_t *buffer)
+{
+    struct drm_mode_destroy_dumb destroy_request;
+
+    if (buffer->map != NULL)
+    {
+        munmap(buffer->map, (size_t)buffer->size);
+        buffer->map = NULL;
+    }
+
+    if (buffer->framebuffer_id != 0U)
+    {
+        drmModeRmFB(context->fd, buffer->framebuffer_id);
+        buffer->framebuffer_id = 0U;
+    }
+
+    if (buffer->handle != 0U)
+    {
+        memset(&destroy_request, 0, sizeof(destroy_request));
+        destroy_request.handle = buffer->handle;
+        drmIoctl(context->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_request);
+        buffer->handle = 0U;
+    }
+}
+
+static void display_drm_flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px_map)
+{
+    display_drm_context_t *context;
+    display_drm_buffer_t *front_buffer;
+    display_drm_buffer_t *back_buffer;
+
+    context = lv_display_get_driver_data(display);
+    if (context == NULL || area == NULL || px_map == NULL)
+    {
+        lv_display_flush_ready(display);
+        return;
+    }
+
+    front_buffer = &context->buffers[context->front_buffer_index];
+    back_buffer = &context->buffers[context->back_buffer_index];
+    if (!context->frame_prepared)
+    {
+        /*
+         * LVGL sends only dirty rectangles. Copy the visible frame into the back buffer
+         * before applying those dirty rectangles, otherwise unchanged pixels would contain
+         * stale data from an older frame.
+         */
+        memcpy(back_buffer->map, front_buffer->map, (size_t)front_buffer->size);
+        context->frame_prepared = true;
+    }
+
+    display_drm_copy_area_counterclockwise(context, area, (const uint16_t *)px_map);
+
+    if (lv_display_flush_is_last(display))
+    {
+        if (!display_drm_page_flip(context))
+        {
+            log_error("display_drm_flush_cb: page flip failed");
+        }
+
+        context->frame_prepared = false;
+    }
+
+    lv_display_flush_ready(display);
+}
+
+static void display_drm_copy_area_counterclockwise(display_drm_context_t *context,
+                                                   const lv_area_t *area,
+                                                   const uint16_t *pixels)
+{
+    int32_t area_width;
+    int32_t source_x;
+    int32_t source_y;
+
+    area_width = area->x2 - area->x1 + 1;
+
+    /*
+     * The panel is mounted portrait, while DRM scans out the physical landscape buffer.
+     * Counterclockwise mapping matched the physical appliance during probe testing:
+     *
+     *   portrait x,y -> landscape x = portrait_height - 1 - y
+     *                   landscape y = x
+     *
+     * Iterate by source X first so each inner loop writes mostly along one framebuffer row.
+     */
+    for (source_x = area->x1; source_x <= area->x2; ++source_x)
+    {
+        uint32_t destination_y;
+        uint8_t *destination_row;
+        uint16_t *destination_pixels;
+        int32_t local_x;
+
+        destination_y = (uint32_t)source_x;
+        destination_row = context->buffers[context->back_buffer_index].map +
+                          ((size_t)destination_y * context->buffers[context->back_buffer_index].pitch);
+        destination_pixels = (uint16_t *)destination_row;
+        local_x = source_x - area->x1;
+
+        for (source_y = area->y1; source_y <= area->y2; ++source_y)
+        {
+            int32_t local_y;
+            uint32_t destination_x;
+
+            local_y = source_y - area->y1;
+            destination_x = (uint32_t)((int32_t)DISPLAY_PORTRAIT_HEIGHT - 1 - source_y);
+            destination_pixels[destination_x] = pixels[(size_t)local_y * (size_t)area_width + (size_t)local_x];
+        }
+    }
+}
+
+static void display_drm_page_flip_handler(int fd,
+                                          unsigned int sequence,
+                                          unsigned int tv_sec,
+                                          unsigned int tv_usec,
+                                          void *user_data)
+{
+    bool *page_flip_complete;
+
+    (void)fd;
+    (void)sequence;
+    (void)tv_sec;
+    (void)tv_usec;
+
+    page_flip_complete = user_data;
+    *page_flip_complete = true;
+}
+#endif
+#endif

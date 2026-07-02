@@ -9,6 +9,7 @@ set(CMAKE_C_EXTENSIONS ON)
 set(CONFIG_LV_BUILD_EXAMPLES OFF CACHE BOOL "Build LVGL examples" FORCE)
 set(CONFIG_LV_BUILD_DEMOS OFF CACHE BOOL "Build LVGL demos" FORCE)
 
+set(BREWIE_ENABLE_LVGL_MATRIX_ROTATION OFF CACHE BOOL "Enable LVGL matrix rotation for isolated display probes")
 set(BREWIE_TARGET_DISPLAY_BACKEND "drm" CACHE STRING "Target display backend: drm or fbdev")
 set_property(CACHE BREWIE_TARGET_DISPLAY_BACKEND PROPERTY STRINGS drm fbdev)
 if(NOT BREWIE_TARGET_DISPLAY_BACKEND STREQUAL "drm" AND
@@ -36,6 +37,13 @@ add_subdirectory(external/lvgl)
 
 if(CMAKE_CROSSCOMPILING)
     message(STATUS "Brewie target display backend: ${BREWIE_TARGET_DISPLAY_BACKEND}")
+    message(STATUS "Brewie LVGL matrix rotation support: ${BREWIE_ENABLE_LVGL_MATRIX_ROTATION}")
+
+    if(BREWIE_ENABLE_LVGL_MATRIX_ROTATION)
+        target_compile_definitions(lvgl PUBLIC
+            BREWIE_ENABLE_LVGL_MATRIX_ROTATION=1
+        )
+    endif()
 
     # The target build links LVGL's Linux DRM backend against the armhf DRM headers and
     # library from the Bullseye VM/sysroot setup. These paths are target-only; adding them
@@ -52,6 +60,18 @@ if(CMAKE_CROSSCOMPILING)
     target_link_libraries(lvgl PUBLIC
         drm
     )
+
+    if(BREWIE_ENABLE_LVGL_MATRIX_ROTATION)
+        target_link_libraries(lvgl PUBLIC
+            m
+        )
+    endif()
 endif()
 
 add_subdirectory(Apps/BrewieApp)
+add_subdirectory(Tools/DisplayRotateProbe)
+
+if(CMAKE_CROSSCOMPILING)
+    add_subdirectory(Tools/LvglDrmRotationProbe)
+    add_subdirectory(Tools/LvglRotatedDrmProbe)
+endif()

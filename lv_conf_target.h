@@ -13,6 +13,17 @@
 #define LV_USE_OS 0
 #define LV_USE_LOG 1
 
+#if defined(BREWIE_ENABLE_LVGL_MATRIX_ROTATION) && BREWIE_ENABLE_LVGL_MATRIX_ROTATION
+/*
+ * Matrix rotation is disabled in normal target builds because it crashed during early
+ * BrewieApp testing on the SOM. Keep it behind an explicit CMake switch so isolated probe
+ * binaries can investigate LVGL's DRM behavior without changing the safe appliance build.
+ */
+#define LV_USE_FLOAT 1
+#define LV_USE_MATRIX 1
+#define LV_DRAW_TRANSFORM_USE_MATRIX 1
+#endif
+
 /*
  * These are the physical LCD timings exposed by the current sun4i display stack. The panel
  * is mounted portrait in the appliance. DRM currently stays in this physical orientation;
