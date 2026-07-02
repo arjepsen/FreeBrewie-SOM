@@ -36,12 +36,16 @@ The following is currently proven on the real SOM target:
 - the target display path now uses custom rotated DRM flushing, so LVGL works in logical
   272x480 portrait coordinates even though the physical panel scans out 480x272
 - the Goodix touchscreen is visible as `/dev/input/event0`
+- touch is now wired into LVGL and mapped into the portrait coordinate system
+- a temporary status-screen button proves LVGL receives click events
+- normal heartbeat/status report logging has been reduced so the journal stays useful
 
 So the project is no longer only at “headless serial baseline”.
 We now have:
 - working comms baseline
 - working target display initialization
 - first visible portrait LVGL output on the real screen
+- first target touch integration proof
 
 ---
 
@@ -133,7 +137,6 @@ The SOM-side UI is still early bring-up work.
 
 The following are **not** yet finished:
 
-- proper touch/input integration in `brewie_app`
 - stable final status/home/fault screen design
 - real screen flow between startup / status / home / fault screens
 - binding real machine state to a fuller UI
@@ -156,9 +159,10 @@ The target touchscreen has been identified:
   - X 0..799
   - Y 0..479
 
-The runtime `brewie` user is already in the `input` group. The next task is to wire this
-input device into LVGL and verify the coordinate transform against the portrait display
-orientation.
+The runtime `brewie` user is already in the `input` group. The app now wires this input
+device into LVGL through the platform display layer. Corner testing on the physical screen
+showed plausible portrait coordinates, and the temporary `Touch OK` button proves normal
+LVGL button click events.
 
 ---
 
@@ -171,7 +175,8 @@ The safest currently proven baseline is:
 4. heartbeat is sent
 5. MCU reports are received
 6. a visible portrait LVGL live status/debug screen is shown
-7. `brewie.service` starts `/opt/brewie/brewie_app` automatically
+7. touch input reaches LVGL in portrait coordinates
+8. `brewie.service` starts `/opt/brewie/brewie_app` automatically
 
 This is the current anchor state.
 
@@ -201,13 +206,14 @@ Recommended next step:
 1. keep the comms path unchanged
 2. keep the rotated DRM display path unchanged
 3. keep using the current status/debug screen as the first real screen
-4. integrate touch/input through `Platform/`, not directly inside screen code
-5. prove one simple status-screen touch interaction
-6. only after that, move toward `Screen_home` and fuller UI behavior
+4. keep touch/input owned by `Platform/`, not directly inside screen code
+5. move toward `Screen_home` and fuller UI behavior
+6. keep the status/debug screen available as a service/developer screen
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:
-- make the current live status/debug screen clean and intentional
+- add the first product-shaped home/navigation shell
+- keep the current live status/debug screen as a diagnostic destination
 - show real bring-up status through the existing architecture
 
 Naming/orientation note:
@@ -226,7 +232,8 @@ In particular:
 - DRM enablement introduced extra VM/sysroot dependency handling
 - runtime `libdrm2` is required on the SOM
 - current visible screen content is still a deliberate test-oriented render
-- touch coordinates still need to be mapped and tested against the rotated portrait UI
+- touch mapping has only been proven through simple corner/button testing, not through a
+  finished production UI
 
 So Claude or any later assistant should not assume:
 - the display stack is fully polished
@@ -244,9 +251,9 @@ Current real status is now:
 - MCU reports proven
 - target portrait DRM display init proven
 - first visible portrait LVGL target output proven
-- touch device identified, but not yet integrated
+- touch device integrated and simple LVGL click events proven
 
 The UI is therefore no longer “not working”.
 A more accurate description is:
 
-**The first target display milestone is achieved, but the real UI is still in early bring-up.**
+**The first target display and touch milestones are achieved, but the real UI is still in early bring-up.**

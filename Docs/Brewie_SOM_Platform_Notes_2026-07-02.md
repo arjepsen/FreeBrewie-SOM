@@ -152,7 +152,6 @@ What is currently true:
   UI transition style
 
 What is **not** yet done:
-- touch/input integration into BrewieApp
 - final portrait-oriented status/home/fault layout logic
 - true animated boot/splash screen during SOM startup
 - full home/fault screen flow on target
@@ -178,8 +177,11 @@ Current detected touch device:
 Practical note:
 - the runtime `brewie` user is already in the `input` group, so the app should be able to
   open `/dev/input/event0`
-- coordinate mapping still needs to be proven against the portrait LVGL coordinate system
-  before real UI buttons are trusted
+- `BrewieApp` now opens the Goodix event device through LVGL evdev support
+- the target display layer maps the touchscreen into the 272x480 portrait coordinate system
+- physical corner taps and a temporary LVGL status-screen button have proven basic touch
+  mapping and button click events
+- this is still a bring-up proof, not a finished touch calibration/settings UI
 
 ---
 
@@ -234,6 +236,7 @@ The following has now been proven together on the SOM:
 - heartbeat frames are sent
 - `STATUS_REPORT` frames are received
 - live status/debug information can be shown on the screen
+- touch input reaches LVGL and a button click can be detected
 - `brewie.service` can start the app automatically
 
 This is the current known-good combined baseline.

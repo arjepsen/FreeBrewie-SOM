@@ -1,0 +1,827 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>FreeBrewie UI Design Spec 2026-07-02</title>
+    <style>
+        :root {
+            --screen-w: 272px;
+            --screen-h: 480px;
+            --page-bg: #202020;
+            --bg: #000000;
+            --panel: #141414;
+            --panel-2: #292929;
+            --header: #1f1d1b;
+            --line: #3f3f3f;
+            --text: #f4f7f8;
+            --muted: #9b9b9b;
+            --accent: #f47b32;
+            --accent-dark: #c85f22;
+            --accent-hi: #ff934d;
+            --green: #557d45;
+            --amber: #d39c35;
+            --red: #b94343;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 24px;
+            background: var(--page-bg);
+            color: var(--text);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            max-width: 1040px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+            line-height: 1.15;
+        }
+
+        h2 {
+            margin: 34px 0 12px;
+            padding-top: 12px;
+            border-top: 1px solid #484848;
+            font-size: 20px;
+        }
+
+        h3 {
+            margin: 0 0 8px;
+            font-size: 15px;
+        }
+
+        p {
+            margin: 0 0 14px;
+            color: #c8c8c8;
+            line-height: 1.45;
+        }
+
+        ul,
+        ol {
+            max-width: 1040px;
+            margin: 0 0 16px;
+            padding-left: 22px;
+            color: #d6d6d6;
+            line-height: 1.45;
+        }
+
+        code {
+            color: #ffffff;
+            background: #303030;
+            padding: 1px 4px;
+            border-radius: 3px;
+        }
+
+        .note {
+            max-width: 1040px;
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--accent);
+            background: #181818;
+            padding: 10px 12px;
+            color: #d6d6d6;
+            line-height: 1.45;
+        }
+
+        .spec_grid {
+            display: grid;
+            max-width: 1040px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+        }
+
+        .spec_card {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            padding: 12px;
+        }
+
+        .spec_card strong {
+            color: var(--accent);
+        }
+
+        .palette {
+            display: grid;
+            max-width: 1040px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .swatch {
+            border: 1px solid var(--line);
+            background: var(--panel);
+            padding: 8px;
+        }
+
+        .chip {
+            height: 36px;
+            margin-bottom: 8px;
+            border: 1px solid #555555;
+        }
+
+        .chip.bg { background: var(--bg); }
+        .chip.header { background: var(--header); }
+        .chip.panel { background: var(--panel-2); }
+        .chip.accent { background: var(--accent); }
+        .chip.accent_hi { background: var(--accent-hi); }
+        .chip.green { background: var(--green); }
+        .chip.amber { background: var(--amber); }
+        .chip.red { background: var(--red); }
+
+        .swatch_name {
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .swatch_value {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .flow {
+            display: grid;
+            max-width: 1040px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .flow_node {
+            min-height: 66px;
+            border: 1px solid var(--line);
+            background: var(--panel);
+            padding: 10px;
+        }
+
+        .flow_node.primary {
+            border-color: var(--accent);
+            background: #24160f;
+        }
+
+        .flow_node.warning {
+            border-color: var(--red);
+            background: #230e0e;
+        }
+
+        .flow_title {
+            margin-bottom: 4px;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .flow_text {
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .mockup_grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(272px, 1fr));
+            gap: 28px;
+            align-items: start;
+        }
+
+        .mockup {
+            width: var(--screen-w);
+        }
+
+        .mockup_title {
+            margin: 0 0 8px;
+            color: #e2e8ea;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .screen {
+            position: relative;
+            width: var(--screen-w);
+            height: var(--screen-h);
+            overflow: hidden;
+            background: var(--bg);
+            border: 1px solid #3f3f3f;
+            color: var(--text);
+        }
+
+        .screen_inner {
+            display: flex;
+            min-height: 100%;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px;
+        }
+
+        .topbar {
+            display: flex;
+            min-height: 36px;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            border-bottom: 1px solid var(--line);
+            background: var(--header);
+            margin: -8px -8px 0;
+            padding: 0 8px;
+        }
+
+        .brand {
+            min-width: 0;
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .state_pill {
+            min-width: 72px;
+            padding: 5px 7px;
+            border-radius: 4px;
+            background: var(--green);
+            color: #ffffff;
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .state_pill.warning {
+            background: var(--amber);
+            color: #111111;
+        }
+
+        .state_pill.fault {
+            background: var(--red);
+        }
+
+        .subline {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            background: var(--panel);
+            padding: 8px;
+        }
+
+        .section_label {
+            margin: 0 0 6px;
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .machine_pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .tank {
+            min-height: 82px;
+            border: 1px solid var(--line);
+            border-radius: 4px;
+            background: var(--panel-2);
+            padding: 7px;
+        }
+
+        .tank_name {
+            margin-bottom: 9px;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .temp {
+            margin-bottom: 5px;
+            font-size: 23px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .small {
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.35;
+        }
+
+        .button_stack {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .button {
+            display: flex;
+            min-height: 48px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--accent-dark);
+            border-radius: 4px;
+            background: var(--accent);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .button.primary {
+            grid-column: 1 / -1;
+            min-height: 56px;
+            background: var(--accent-hi);
+            color: #15100c;
+            font-size: 18px;
+        }
+
+        .button.secondary {
+            background: #393939;
+            border-color: #555555;
+        }
+
+        .button.disabled {
+            background: #30373a;
+            border-color: #464f53;
+            color: #9ea8ac;
+        }
+
+        .footer {
+            margin-top: auto;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 82px 1fr;
+            gap: 4px;
+            padding: 2px 0;
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .row .label {
+            color: var(--accent);
+        }
+
+        .row .value {
+            color: var(--text);
+            overflow-wrap: anywhere;
+        }
+
+        .status_button {
+            display: flex;
+            height: 38px;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            background: var(--accent);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .placeholder_body {
+            display: flex;
+            min-height: 270px;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+        }
+
+        .placeholder_icon {
+            margin: 0 auto;
+            width: 72px;
+            height: 72px;
+            border: 2px solid var(--line);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .message {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .fault_box {
+            margin-top: 28px;
+            border: 2px solid var(--red);
+            border-radius: 4px;
+            background: #230e0e;
+            padding: 12px;
+        }
+
+        .fault_title {
+            margin-bottom: 10px;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .fault_code {
+            margin-bottom: 10px;
+            color: #ffb8b8;
+            font-size: 13px;
+        }
+
+        .splash {
+            display: flex;
+            min-height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .splash_name {
+            font-size: 31px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .splash_line {
+            width: 120px;
+            height: 4px;
+            margin: 18px auto;
+            border-radius: 2px;
+            background: var(--accent);
+        }
+
+        .splash_status {
+            color: var(--muted);
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <h1>FreeBrewie UI Design Spec</h1>
+    <p>
+        Date: 2026-07-02. This is the working design document for the first product-shaped
+        FreeBrewie SOM UI. It combines navigation, visual direction, screen roles, and
+        272x480 mockups in one place so the implementation can follow a concrete target.
+    </p>
+
+    <div class="note">
+        The mockups are intentionally close to what we should build in LVGL first: dark charcoal
+        backgrounds, original Brewie-like orange accents, compact labels, large touch targets,
+        stable live data regions, and no expensive full-screen animation.
+    </div>
+
+    <h2>Current Hardware Constraints</h2>
+    <div class="spec_grid">
+        <div class="spec_card">
+            <h3>Display</h3>
+            <p><strong>Logical:</strong> 272x480 portrait</p>
+            <p><strong>Physical:</strong> 480x272 landscape scanout</p>
+            <p><strong>Backend:</strong> custom rotated DRM</p>
+        </div>
+        <div class="spec_card">
+            <h3>Touch</h3>
+            <p><strong>Device:</strong> Goodix touchscreen</p>
+            <p><strong>Path:</strong> <code>/dev/input/event0</code></p>
+            <p><strong>Status:</strong> LVGL click events proven</p>
+        </div>
+        <div class="spec_card">
+            <h3>Performance</h3>
+            <p><strong>Good:</strong> partial redraws and local movement</p>
+            <p><strong>Avoid:</strong> continuous full-screen redraws</p>
+            <p><strong>Goal:</strong> calm, responsive appliance UI</p>
+        </div>
+        <div class="spec_card">
+            <h3>Safety</h3>
+            <p><strong>Now:</strong> diagnostics and placeholders</p>
+            <p><strong>Later:</strong> actions gated by logic and MCU interlocks</p>
+        </div>
+    </div>
+
+    <h2>Visual Direction</h2>
+    <p>
+        The palette is based on the original Brewie UI family, especially its charcoal surfaces
+        and warm orange accent colors such as <code>#f47b32</code> and <code>#e67526</code>.
+    </p>
+    <div class="palette">
+        <div class="swatch">
+            <div class="chip bg"></div>
+            <div class="swatch_name">Screen black</div>
+            <div class="swatch_value">#000000</div>
+        </div>
+        <div class="swatch">
+            <div class="chip header"></div>
+            <div class="swatch_name">Header charcoal</div>
+            <div class="swatch_value">#1f1d1b</div>
+        </div>
+        <div class="swatch">
+            <div class="chip panel"></div>
+            <div class="swatch_name">Panel charcoal</div>
+            <div class="swatch_value">#292929</div>
+        </div>
+        <div class="swatch">
+            <div class="chip accent"></div>
+            <div class="swatch_name">Brewie orange</div>
+            <div class="swatch_value">#f47b32</div>
+        </div>
+        <div class="swatch">
+            <div class="chip accent_hi"></div>
+            <div class="swatch_name">Primary orange</div>
+            <div class="swatch_value">#ff934d</div>
+        </div>
+        <div class="swatch">
+            <div class="chip green"></div>
+            <div class="swatch_name">Ready</div>
+            <div class="swatch_value">#557d45</div>
+        </div>
+        <div class="swatch">
+            <div class="chip amber"></div>
+            <div class="swatch_name">Warning</div>
+            <div class="swatch_value">#d39c35</div>
+        </div>
+        <div class="swatch">
+            <div class="chip red"></div>
+            <div class="swatch_name">Fault</div>
+            <div class="swatch_value">#b94343</div>
+        </div>
+    </div>
+
+    <h2>Near-Term Navigation</h2>
+    <p>
+        The first implementation should be small: Home starts the product-shaped app, Status
+        keeps the proven diagnostics, and the other sections are safe placeholders until their
+        logic exists.
+    </p>
+    <div class="flow">
+        <div class="flow_node">
+            <div class="flow_title">Startup</div>
+            <div class="flow_text">Later splash. For now, app can enter Home after init.</div>
+        </div>
+        <div class="flow_node primary">
+            <div class="flow_title">Home</div>
+            <div class="flow_text">Machine summary, MCU link, safe next actions.</div>
+        </div>
+        <div class="flow_node">
+            <div class="flow_title">Status</div>
+            <div class="flow_text">Diagnostics screen. First working navigation target.</div>
+        </div>
+        <div class="flow_node">
+            <div class="flow_title">Manual</div>
+            <div class="flow_text">Placeholder until service actions are safe.</div>
+        </div>
+        <div class="flow_node">
+            <div class="flow_title">Clean</div>
+            <div class="flow_text">Placeholder until clean workflows are modeled.</div>
+        </div>
+        <div class="flow_node">
+            <div class="flow_title">Settings</div>
+            <div class="flow_text">Placeholder. Display/touch facts first later.</div>
+        </div>
+        <div class="flow_node warning">
+            <div class="flow_title">Fault</div>
+            <div class="flow_text">Can interrupt any normal screen once fault UI exists.</div>
+        </div>
+    </div>
+
+    <h2>Screen Roles</h2>
+    <div class="spec_grid">
+        <div class="spec_card">
+            <h3>Home</h3>
+            <p>Normal landing screen. It should answer: ready, connected, and what can I do next?</p>
+        </div>
+        <div class="spec_card">
+            <h3>Status</h3>
+            <p>Developer/service diagnostics. Keep it available, but do not let it define the product UI.</p>
+        </div>
+        <div class="spec_card">
+            <h3>Manual</h3>
+            <p>Later direct service actions. No actuator control until logic and MCU boundaries are clear.</p>
+        </div>
+        <div class="spec_card">
+            <h3>Clean</h3>
+            <p>Later cleaning workflows. Inspired by old short/full/drain/unclog options.</p>
+        </div>
+        <div class="spec_card">
+            <h3>Settings</h3>
+            <p>Later display, touch, network, system, and service settings.</p>
+        </div>
+        <div class="spec_card">
+            <h3>Fault</h3>
+            <p>High-priority blocking state. Unsafe actions should not remain available.</p>
+        </div>
+    </div>
+
+    <h2>Implementation Checklist</h2>
+    <ol>
+        <li>Add <code>Screen_home.c</code> and <code>Screen_home.h</code>.</li>
+        <li>Add small app navigation state instead of direct hardware actions in button callbacks.</li>
+        <li>Start on Home after app/platform/comms/UI initialization.</li>
+        <li>Make Home's Status button open the existing diagnostics screen.</li>
+        <li>Add safe placeholder screens for Manual, Clean, and Settings.</li>
+        <li>Remove the temporary Touch OK proof button once normal navigation proves touch.</li>
+        <li>Add fault banner or fault screen after home/status navigation is stable.</li>
+    </ol>
+
+    <h2>Mockups</h2>
+    <div class="mockup_grid">
+        <section class="mockup">
+            <h3 class="mockup_title">Startup / splash later</h3>
+            <div class="screen">
+                <div class="splash">
+                    <div class="splash_name">FreeBrewie</div>
+                    <div class="splash_line"></div>
+                    <div class="splash_status">Starting appliance app</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mockup">
+            <h3 class="mockup_title">Home v0</h3>
+            <div class="screen">
+                <div class="screen_inner">
+                    <div class="topbar">
+                        <div>
+                            <div class="brand">FreeBrewie</div>
+                            <div class="subline">MCU connected</div>
+                        </div>
+                        <div class="state_pill">Ready</div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section_label">Machine</div>
+                        <div class="machine_pair">
+                            <div class="tank">
+                                <div class="tank_name">Mash</div>
+                                <div class="temp">21.4</div>
+                                <div class="small">target -- C<br>pump off</div>
+                            </div>
+                            <div class="tank">
+                                <div class="tank_name">Boil</div>
+                                <div class="temp">21.2</div>
+                                <div class="small">target -- C<br>pump off</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section_label">Next action</div>
+                        <div class="button_stack">
+                            <div class="button primary disabled">Brew later</div>
+                            <div class="button disabled">Clean</div>
+                            <div class="button disabled">Manual</div>
+                            <div class="button secondary">Status</div>
+                            <div class="button disabled">Settings</div>
+                        </div>
+                    </div>
+
+                    <div class="footer">
+                        <span>Idle</span>
+                        <span>no faults</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mockup">
+            <h3 class="mockup_title">Status / diagnostics</h3>
+            <div class="screen">
+                <div class="screen_inner">
+                    <div class="topbar">
+                        <div class="brand">STATUS</div>
+                        <div class="state_pill">Live</div>
+                    </div>
+                    <div class="status_button">Touch OK</div>
+                    <div class="row"><div class="label">button</div><div class="value">clicked #3</div></div>
+                    <div class="row"><div class="label">display</div><div class="value">rotated DRM</div></div>
+                    <div class="row"><div class="label">serial</div><div class="value">/dev/ttyS1 open</div></div>
+                    <div class="row"><div class="label">heartbeat</div><div class="value">ok</div></div>
+                    <div class="row"><div class="label">hb sent</div><div class="value">128</div></div>
+                    <div class="row"><div class="label">last rx</div><div class="value">STATUS_REPORT seq=44</div></div>
+                    <div class="row"><div class="label">link</div><div class="value">active</div></div>
+                    <div class="row"><div class="label">mcu</div><div class="value">ACTIVE</div></div>
+                    <div class="row"><div class="label">pressure</div><div class="value">0</div></div>
+                    <div class="row"><div class="label">pumps</div><div class="value">off / off</div></div>
+                    <div class="row"><div class="label">inlets</div><div class="value">closed</div></div>
+                    <div class="row"><div class="label">faults</div><div class="value">none</div></div>
+                    <div class="row"><div class="label">touch</div><div class="value">up 247,19 #9</div></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mockup">
+            <h3 class="mockup_title">Manual placeholder</h3>
+            <div class="screen">
+                <div class="screen_inner">
+                    <div class="topbar">
+                        <div>
+                            <div class="brand">Manual</div>
+                            <div class="subline">Service controls</div>
+                        </div>
+                        <div class="state_pill warning">Locked</div>
+                    </div>
+                    <div class="placeholder_body">
+                        <div class="placeholder_icon">M</div>
+                        <div class="message">
+                            Manual controls are not enabled yet. This screen will require safe
+                            app logic and MCU interlocks before it can move hardware.
+                        </div>
+                    </div>
+                    <div class="button secondary">Back</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mockup">
+            <h3 class="mockup_title">Clean placeholder</h3>
+            <div class="screen">
+                <div class="screen_inner">
+                    <div class="topbar">
+                        <div>
+                            <div class="brand">Clean</div>
+                            <div class="subline">Workflow later</div>
+                        </div>
+                        <div class="state_pill warning">Later</div>
+                    </div>
+                    <div class="panel">
+                        <div class="section_label">Planned modes</div>
+                        <div class="row"><div class="label">short</div><div class="value">clean cycle</div></div>
+                        <div class="row"><div class="label">full</div><div class="value">deep clean</div></div>
+                        <div class="row"><div class="label">drain</div><div class="value">after brew</div></div>
+                        <div class="row"><div class="label">unclog</div><div class="value">service flow</div></div>
+                    </div>
+                    <div class="placeholder_body">
+                        <div class="message">Shown as a placeholder until clean workflows are modeled safely.</div>
+                    </div>
+                    <div class="button secondary">Back</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mockup">
+            <h3 class="mockup_title">Settings placeholder</h3>
+            <div class="screen">
+                <div class="screen_inner">
+                    <div class="topbar">
+                        <div class="brand">Settings</div>
+                        <div class="state_pill warning">Later</div>
+                    </div>
+                    <div class="panel">
+                        <div class="section_label">System</div>
+                        <div class="row"><div class="label">display</div><div class="value">272x480 portrait</div></div>
+                        <div class="row"><div class="label">touch</div><div class="value">Goodix event0</div></div>
+                        <div class="row"><div class="label">network</div><div class="value">not designed</div></div>
+                        <div class="row"><div class="label">service</div><div class="value">not designed</div></div>
+                    </div>
+                    <div class="placeholder_body">
+                        <div class="message">Settings starts small: display and touch facts first.</div>
+                    </div>
+                    <div class="button secondary">Back</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mockup">
+            <h3 class="mockup_title">Fault</h3>
+            <div class="screen">
+                <div class="screen_inner">
+                    <div class="topbar">
+                        <div class="brand">FreeBrewie</div>
+                        <div class="state_pill fault">Fault</div>
+                    </div>
+                    <div class="fault_box">
+                        <div class="fault_title">Action stopped</div>
+                        <div class="fault_code">MCU fault report received</div>
+                        <div class="message">
+                            The machine needs attention before brewing, cleaning, or manual
+                            service can continue.
+                        </div>
+                    </div>
+                    <div class="panel">
+                        <div class="section_label">Current state</div>
+                        <div class="row"><div class="label">mcu</div><div class="value">FAULT</div></div>
+                        <div class="row"><div class="label">outputs</div><div class="value">safe state requested</div></div>
+                    </div>
+                    <div class="footer">
+                        <span>Status details</span>
+                        <span>clear later</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>

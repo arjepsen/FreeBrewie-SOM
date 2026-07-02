@@ -8,7 +8,7 @@ It is meant to keep file ownership, module boundaries, and subsystem responsibil
 
 It should be read together with:
 - `FreeBrewie_UI_Current_Status_2026-07-02.md`
-- `FreeBrewie_SOM_Development_Environment_Consolidated_2026-06-22.md`
+- `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
 - `Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
 
@@ -456,8 +456,8 @@ Given the current code and bring-up state, the most sensible next UI-side direct
 2. keep DRM target display path intact
 3. keep `Screen_status` as the current live status/debug screen
 4. keep a true animated boot/splash screen as a separate future startup phase
-5. improve the live status screen only enough to prove the data path cleanly
-6. bring touch/input back into `BrewieApp`
-7. only then grow toward fuller home/fault screens
+5. keep touch/input owned by the platform layer
+6. use the proven touch path to build the first home/navigation shell
+7. keep `Screen_status` available as a diagnostic destination
 
 This avoids mixing live status, future boot animation, and broader UI redesign.

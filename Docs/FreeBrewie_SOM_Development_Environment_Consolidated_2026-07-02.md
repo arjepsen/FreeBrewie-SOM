@@ -1,5 +1,5 @@
 # FreeBrewie SOM Development Environment Consolidated
-_Date: 2026-06-22_
+_Date: 2026-07-02_
 
 ## Purpose
 This document defines the practical development and bring-up workflow for the FreeBrewie SOM side.
@@ -214,8 +214,8 @@ The intended order is:
 3. keep the working DRM display path intact
 4. treat the current `Screen_status` role as a live status/debug screen
 5. keep a true animated boot/splash screen as a separate future phase
-6. bring touch/input back into `BrewieApp`
-7. only then grow into fuller UI behavior
+6. keep the proven touch/input path owned by the platform layer
+7. grow into the first home/navigation shell before real service controls
 
 ---
 
@@ -323,11 +323,11 @@ Current state:
 - target DRM display init works
 - first visible text render has been achieved
 - this is still a minimal bring-up path
-- touch/input integration is still pending
+- touch/input is integrated through LVGL evdev and a simple button click has been proven
 - full UI behavior is not yet considered stable
 
 So the current stage is:
-- **display bring-up has started**
+- **display and touch bring-up have started**
 - **full UI integration is not finished**
 
 ---

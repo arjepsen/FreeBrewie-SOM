@@ -1,4 +1,5 @@
 # Brewie SOM-MCU Integration Notes
+_Date: 2026-07-02_
 
 ## Purpose
 This document defines the **practical integration approach** between the Brewie SOM and the ATmega2560 MCU.
@@ -262,6 +263,7 @@ The immediate next step should therefore be:
 3. keep `main.c` thin
 4. let `App.c` own orchestration
 5. keep comms outside the UI layer
-6. bring touch/input back before building broader navigation
+6. keep touch/input in the platform layer
+7. build the first home/navigation shell on top of the proven touch/display path
 
 That is the cleanest path forward from the current known-good state.
