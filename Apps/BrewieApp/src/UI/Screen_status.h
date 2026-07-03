@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "Logic/App_types.h"
+#include "UI_types.h"
 #include "lvgl.h"
 
 typedef struct
@@ -23,11 +24,13 @@ typedef struct
     lv_obj_t *fault_value;
     lv_obj_t *touch_value;
     lv_obj_t *button_value;
+    ui_action_handler_t action_handler;
+    void *action_user_data;
     uint32_t touch_event_count;
     uint32_t button_click_count;
 } screen_status_t;
 
-void screen_status_init(screen_status_t *status);
+void screen_status_init(screen_status_t *status, ui_action_handler_t action_handler, void *user_data);
 void screen_status_update(screen_status_t *status, const status_screen_view_model_t *view_model);
 
 #endif

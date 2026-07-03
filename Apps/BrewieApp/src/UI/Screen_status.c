@@ -15,7 +15,9 @@
 #define SCREEN_STATUS_PANEL_PAD 8
 
 static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out);
+static lv_obj_t *screen_status_create_home_button(lv_obj_t *parent, screen_status_t *status);
 static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_status_t *status);
+static void screen_status_home_event_cb(lv_event_t *event);
 static void screen_status_touch_event_cb(lv_event_t *event);
 static void screen_status_button_event_cb(lv_event_t *event);
 
@@ -56,6 +58,28 @@ static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_te
     return row;
 }
 
+static lv_obj_t *screen_status_create_home_button(lv_obj_t *parent, screen_status_t *status)
+{
+    lv_obj_t *button;
+    lv_obj_t *label;
+
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(100));
+    lv_obj_set_height(button, 34);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x393939), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x4A4A4A), LV_STATE_PRESSED);
+    lv_obj_set_style_radius(button, 4, 0);
+    lv_obj_set_style_pad_all(button, 0, 0);
+    lv_obj_add_event_cb(button, screen_status_home_event_cb, LV_EVENT_CLICKED, status);
+
+    label = lv_label_create(button);
+    lv_label_set_text(label, "Home");
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(label);
+
+    return button;
+}
+
 static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_status_t *status)
 {
     lv_obj_t *button;
@@ -76,6 +100,19 @@ static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_stat
     lv_obj_center(label);
 
     return button;
+}
+
+static void screen_status_home_event_cb(lv_event_t *event)
+{
+    screen_status_t *status;
+
+    status = lv_event_get_user_data(event);
+    if (status == NULL || status->action_handler == NULL)
+    {
+        return;
+    }
+
+    status->action_handler(UI_ACTION_SHOW_HOME, status->action_user_data);
 }
 
 static void screen_status_touch_event_cb(lv_event_t *event)
@@ -152,7 +189,7 @@ static void screen_status_button_event_cb(lv_event_t *event)
     lv_label_set_text(status->button_value, text);
 }
 
-void screen_status_init(screen_status_t *status)
+void screen_status_init(screen_status_t *status, ui_action_handler_t action_handler, void *user_data)
 {
     lv_obj_t *container;
 
@@ -162,8 +199,10 @@ void screen_status_init(screen_status_t *status)
     }
 
     memset(status, 0, sizeof(*status));
+    status->action_handler = action_handler;
+    status->action_user_data = user_data;
 
-    status->screen = lv_screen_active();
+    status->screen = lv_obj_create(NULL);
 
     lv_obj_set_style_bg_color(status->screen, lv_color_hex(0x000000), 0);
     lv_obj_set_style_bg_opa(status->screen, LV_OPA_COVER, 0);
@@ -195,6 +234,7 @@ void screen_status_init(screen_status_t *status)
     lv_obj_set_style_text_font(status->title_label, &lv_font_montserrat_20, 0);
     lv_obj_set_style_text_color(status->title_label, lv_color_hex(0xFFFFFF), 0);
 
+    screen_status_create_home_button(container, status);
     screen_status_create_touch_button(container, status);
     screen_status_create_row(container, "button", &status->button_value);
     lv_label_set_text(status->button_value, "not clicked");

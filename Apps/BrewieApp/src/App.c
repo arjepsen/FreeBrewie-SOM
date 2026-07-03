@@ -65,7 +65,7 @@ void app_update(app_t *app)
          */
         if ((now_ms - app->last_ui_update_ms) >= APP_UI_REFRESH_PERIOD_MS)
         {
-            ui_update_status_screen(&app->ui, &app->logic.status_screen);
+            ui_update(&app->ui, &app->logic.status_screen);
             app->last_ui_update_ms = now_ms;
         }
 

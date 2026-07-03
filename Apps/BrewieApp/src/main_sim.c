@@ -2,6 +2,7 @@
 #include <unistd.h>
 
 #include "Platform/Display.h"
+#include "Platform/Time_base.h"
 #include "UI/UI.h"
 
 int main()
@@ -24,12 +25,18 @@ int main()
     vm.heartbeat_text = "simulator only";
     vm.last_rx_text = "none";
     vm.link_text = "n/a";
+    vm.mcu_status_text = "sim";
+    vm.pressure_text = "0";
+    vm.pump_text = "off / off";
+    vm.solenoid_text = "closed";
+    vm.fault_text = "none";
     vm.heartbeat_count = 0;
 
     for (;;)
     {
-        ui_update_status_screen(&ui, &vm);
-        display_update(&display, 0U);
+        vm.heartbeat_count++;
+        ui_update(&ui, &vm);
+        display_update(&display, time_base_now_ms());
         usleep(5000);
     }
 
