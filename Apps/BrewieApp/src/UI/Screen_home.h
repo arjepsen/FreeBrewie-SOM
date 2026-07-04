@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_SCREEN_HOME_H
 #define FREEBREWIE_SCREEN_HOME_H
 
+/****************************************************************************************
+ * @file Screen_home.h
+ * @brief Main user-facing Home screen.
+ *
+ * Responsibility: show the normal user landing screen.
+ * Owns: Home LVGL objects, machine summary presentation, and menu entry.
+ * Does not own: hardware control or protocol messages.
+ ****************************************************************************************/
+
 #include "UI_types.h"
 #include "lvgl.h"
 

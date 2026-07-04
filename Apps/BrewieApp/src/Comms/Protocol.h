@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_PROTOCOL_H
 #define FREEBREWIE_PROTOCOL_H
 
+/****************************************************************************************
+ * @file Protocol.h
+ * @brief SOM-MCU wire frame encoder and byte-stream decoder.
+ *
+ * Responsibility: Encode and decode SOM-MCU protocol frames.
+ * Owns: Sync bytes, message IDs, CRC, outgoing frame building, and receive state machine.
+ * Does not own: Serial devices or appliance/UI decisions.
+ ****************************************************************************************/
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -13,11 +22,13 @@
 /**
  * One wire frame is:
  *
- *   sync1 sync2 type seq len data... crc
+ *   [SYNC1][SYNC2][TYPE][SEQ][LEN][DATA]....[CRC]
  *
- * sync1/sync2 let the receiver find the start of a frame again after noise. type tells what
- * the frame means. seq is a rolling message number. len is the payload byte count. crc
- * protects type, seq, len, and data, but not the sync bytes.
+ * Sync1/sync2 let the receiver find the start of a frame again after noise. 
+ * Type tells what data the frame contains. 
+ * Seq is a rolling message number. 
+ * Len is the payload byte count. 
+ * Crc protects type, seq, len, and data, but not the sync bytes.
  */
 enum
 {

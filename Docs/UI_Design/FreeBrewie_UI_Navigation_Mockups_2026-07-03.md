@@ -13,9 +13,13 @@ The main UI design/spec document lives in the same UI design folder:
 
 - `FreeBrewie_UI_Design_Spec_2026-07-03.html`
 
-Open that file in a desktop browser to see the current navigation notes, palette, screen
-roles, implementation checklist, and 272x480 portrait mockups close to the UI style we
-should implement first.
+The UI/UX decision philosophy lives here:
+
+- `FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
+
+Open the HTML design spec in a desktop browser to see the current navigation notes, palette,
+screen roles, implementation checklist, and 272x480 portrait mockups close to the UI style
+we should implement first.
 
 The color direction intentionally borrows from the original Brewie UI:
 - charcoal/black screen background

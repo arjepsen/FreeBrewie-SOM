@@ -175,6 +175,7 @@ The current useful SOM doc set is:
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
 - `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-04.md`
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-04.md`
+- `Docs/UI_Design/FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
 - `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
 - `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-03.html`
 
@@ -194,6 +195,9 @@ Use them as follows:
   SOM-side software structure, top-level groups, and intended file responsibilities.
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-04.md`
   Current SOM/UI bring-up status and immediate next milestone.
+- `Docs/UI_Design/FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
+  UI/UX decision rules: imitate the original Brewie product feel first, but rebuild with
+  clean structure, readable code, safety boundaries, and fast LVGL behavior.
 - `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
   First product-shaped UI flow, screen roles, and implementation order.
 - `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-03.html`

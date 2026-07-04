@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_APP_LOGIC_H
 #define FREEBREWIE_APP_LOGIC_H
 
+/****************************************************************************************
+ * @file App_logic.h
+ * @brief Top-level application logic state.
+ *
+ * Responsibility: hold app-level logic between raw comms and UI screens.
+ * Owns: logic state and future workflow/interlock decision points.
+ * Does not own: widgets, serial transport, or protocol parsing.
+ ****************************************************************************************/
+
 #include <stdint.h>
 
 #include "Comms/Comms_types.h"

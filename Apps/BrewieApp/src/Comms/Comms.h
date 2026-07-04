@@ -1,6 +1,16 @@
 #ifndef FREEBREWIE_COMMS_H
 #define FREEBREWIE_COMMS_H
 
+/****************************************************************************************
+ * @file Comms.h
+ * @brief High-level SOM to MCU communication runtime.
+ *
+ * Responsibility: run the live SOM-MCU communication path.
+ * Owns: serial link state, heartbeat sending, protocol receive state, and latest decoded
+ * MCU facts.
+ * Does not own: raw UART configuration or wire-frame format details.
+ ****************************************************************************************/
+
 #include <stdbool.h>
 #include <stdint.h>
 

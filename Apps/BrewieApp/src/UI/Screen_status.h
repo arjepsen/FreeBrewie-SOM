@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_SCREEN_STATUS_H
 #define FREEBREWIE_SCREEN_STATUS_H
 
+/****************************************************************************************
+ * @file Screen_status.h
+ * @brief Scrollable diagnostics/status screen.
+ *
+ * Responsibility: show live diagnostics in a scrollable status screen.
+ * Owns: status LVGL rows, temporary touch proof rows, and dirty-checked label updates.
+ * Does not own: formatting comms data or normal Home-screen UX.
+ ****************************************************************************************/
+
 #include <stdint.h>
 
 #include "Logic/App_types.h"

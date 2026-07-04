@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_TRANSPORT_SERIAL_H
 #define FREEBREWIE_TRANSPORT_SERIAL_H
 
+/****************************************************************************************
+ * @file Transport_serial.h
+ * @brief Linux UART transport wrapper for the MCU serial device.
+ *
+ * Responsibility: move raw bytes through a Linux serial device.
+ * Owns: opening, configuring, reading, writing, and closing the UART.
+ * Does not own: protocol framing or appliance meaning.
+ ****************************************************************************************/
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>

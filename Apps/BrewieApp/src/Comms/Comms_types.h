@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_COMMS_TYPES_H
 #define FREEBREWIE_COMMS_TYPES_H
 
+/****************************************************************************************
+ * @file Comms_types.h
+ * @brief Shared data types produced by the communications layer.
+ *
+ * Responsibility: define plain communication snapshots shared upward.
+ * Owns: MCU report structs, link-state enum, and comms status struct.
+ * Does not own: LVGL objects, Linux file descriptors, or workflow decisions.
+ ****************************************************************************************/
+
 #include <stdbool.h>
 #include <stdint.h>
 

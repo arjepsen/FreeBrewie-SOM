@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_APP_TYPES_H
 #define FREEBREWIE_APP_TYPES_H
 
+/****************************************************************************************
+ * @file App_types.h
+ * @brief Small app-facing presentation types shared between logic and UI.
+ *
+ * Responsibility: define lightweight data crossing the Logic/UI boundary.
+ * Owns: small presentation structs used by current screens.
+ * Does not own: full machine state or workflow models.
+ ****************************************************************************************/
+
 #include <stdint.h>
 
 typedef struct

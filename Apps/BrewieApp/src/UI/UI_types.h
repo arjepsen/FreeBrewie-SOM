@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_UI_TYPES_H
 #define FREEBREWIE_UI_TYPES_H
 
+/****************************************************************************************
+ * @file UI_types.h
+ * @brief Shared UI navigation and action types.
+ *
+ * Responsibility: define UI-level navigation types.
+ * Owns: screen IDs, UI action IDs, and screen action callback type.
+ * Does not own: machine-control commands.
+ ****************************************************************************************/
+
 #include "Logic/App_types.h"
 
 /**

@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_STATUS_VIEW_MODEL_H
 #define FREEBREWIE_STATUS_VIEW_MODEL_H
 
+/****************************************************************************************
+ * @file Status_view_model.h
+ * @brief Diagnostic status-screen presentation model.
+ *
+ * Responsibility: prepare diagnostics text for the status screen.
+ * Owns: formatted status strings, backing storage, and comms-change caches.
+ * Does not own: LVGL widgets or machine-control decisions.
+ ****************************************************************************************/
+
 #include <stdbool.h>
 #include <stdint.h>
 

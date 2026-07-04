@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_UI_H
 #define FREEBREWIE_UI_H
 
+/****************************************************************************************
+ * @file UI.h
+ * @brief Top-level LVGL UI shell and navigation owner.
+ *
+ * Responsibility: initialize screens and apply UI navigation.
+ * Owns: screen instances, menu/placeholder targets, and deferred screen changes.
+ * Does not own: comms, protocol parsing, or machine safety decisions.
+ ****************************************************************************************/
+
 #include <stdbool.h>
 
 #include "Screen_home.h"

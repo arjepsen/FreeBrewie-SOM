@@ -1,6 +1,15 @@
 #ifndef FREEBREWIE_APP_H
 #define FREEBREWIE_APP_H
 
+/****************************************************************************************
+ * @file App.h
+ * @brief Top-level BrewieApp coordinator.
+ *
+ * Responsibility: coordinate the main app lifecycle and update order.
+ * Owns: app context, subsystem initialization order, and periodic app updates.
+ * Does not own: protocol parsing, widget construction, or display driver details.
+ ****************************************************************************************/
+
 #include <stdbool.h>
 #include <stdint.h>
 
