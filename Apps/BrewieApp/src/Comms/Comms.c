@@ -12,6 +12,11 @@
 #define COMMS_STATUS_REPORT_PAYLOAD_LEN 27U
 #define COMMS_FAULT_REPORT_PAYLOAD_LEN 5U
 
+/*
+ * The comms layer owns the SOM side of the serial protocol. It deliberately exposes only
+ * a decoded status snapshot to the rest of the app, so UI code never has to know about
+ * frame bytes, CRCs, or UART read/write details.
+ */
 static void comms_process_serial_rx(comms_t *comms, uint64_t now_ms);
 static void comms_send_heartbeat(comms_t *comms, uint64_t now_ms);
 static void comms_decode_frame(comms_t *comms, const protocol_frame_t *frame);
@@ -31,6 +36,10 @@ bool comms_init(comms_t *comms, const char *device_path, int baud_rate)
     protocol_rx_init(&comms->protocol_rx);
     protocol_sender_init(&comms->protocol_sender, 1U);
 
+    /*
+     * /dev/ttyS1 is the SOM's serial device connected to the MCU. Opening it does not mean
+     * the MCU is alive yet; link state becomes OK only after valid frames arrive.
+     */
     comms->status.serial_ready = transport_serial_open(&comms->serial, device_path, baud_rate);
     comms->last_heartbeat_ms = time_base_now_ms();
     comms_link_update(&comms->status, comms->last_heartbeat_ms);
@@ -40,7 +49,7 @@ bool comms_init(comms_t *comms, const char *device_path, int baud_rate)
 
 void comms_update(comms_t *comms, uint64_t now_ms)
 {
-    struct pollfd poll_fd;
+    struct pollfd serial_poll_request;
     int poll_result;
 
     if (comms == NULL)
@@ -50,21 +59,33 @@ void comms_update(comms_t *comms, uint64_t now_ms)
 
     if (comms->status.serial_ready)
     {
-        poll_fd.fd = comms->serial.fd;
-        poll_fd.events = POLLIN;
-        poll_fd.revents = 0;
+        /*
+         * Linux exposes serial ports as file descriptors. poll() lets us wait briefly for
+         * incoming bytes instead of spinning the CPU while the MCU is quiet.
+         */
+        serial_poll_request.fd = comms->serial.fd;
+        serial_poll_request.events = POLLIN;
+        serial_poll_request.revents = 0;
 
-        poll_result = poll(&poll_fd, 1, COMMS_POLL_WAIT_MS);
-        if (poll_result > 0 && (poll_fd.revents & POLLIN) != 0)
+        poll_result = poll(&serial_poll_request, 1, COMMS_POLL_WAIT_MS);
+        if (poll_result > 0 && (serial_poll_request.revents & POLLIN) != 0)
         {
             comms_process_serial_rx(comms, now_ms);
         }
     }
     else
     {
+        /*
+         * If the serial port is missing, still sleep briefly so a failed comms setup does
+         * not make the app spin at 100% CPU.
+         */
         usleep(COMMS_POLL_WAIT_MS * 1000U);
     }
 
+    /*
+     * Heartbeats are sent by the SOM so the MCU can tell whether the higher-level app is
+     * alive. Link state is then derived from what the MCU has sent back recently.
+     */
     comms_send_heartbeat(comms, now_ms);
     comms_link_update(&comms->status, now_ms);
 }
@@ -109,6 +130,10 @@ static void comms_process_serial_rx(comms_t *comms, uint64_t now_ms)
 
     for (index = 0; index < bytes_read; ++index)
     {
+        /*
+         * The protocol parser consumes one byte at a time and only returns true when a full
+         * frame has been found and its CRC has passed.
+         */
         if (protocol_rx_consume(&comms->protocol_rx, buffer[index], &frame))
         {
             comms->status.last_rx_ms = now_ms;
@@ -135,6 +160,7 @@ static void comms_send_heartbeat(comms_t *comms, uint64_t now_ms)
         return;
     }
 
+    /* Build a tiny no-payload frame: sync bytes, type, sequence, length zero, and CRC. */
     frame_length = protocol_build_heartbeat(&comms->protocol_sender, frame_buffer, sizeof(frame_buffer));
     if (frame_length == 0U)
     {
@@ -172,6 +198,10 @@ static void comms_decode_frame(comms_t *comms, const protocol_frame_t *frame)
             log_errorf("rx: bad FAULT_REPORT len=%u", (unsigned int)frame->len);
         }
     }
+    /*
+     * Unknown frame types are ignored for now. As the protocol grows, each accepted message
+     * should get an explicit branch here so unsupported traffic stays harmless.
+     */
 }
 
 static bool comms_decode_status_report(comms_mcu_status_report_t *report, const protocol_frame_t *frame)
@@ -184,6 +214,10 @@ static bool comms_decode_status_report(comms_mcu_status_report_t *report, const 
         return false;
     }
 
+    /*
+     * Decode fields in the exact order the MCU writes them. The index variable is a cursor
+     * through the payload, which keeps the protocol layout visible in one compact block.
+     */
     index = 0U;
     report->mash_target_c = frame->data[index++];
     report->boil_target_c = frame->data[index++];
@@ -227,6 +261,7 @@ static bool comms_decode_fault_report(comms_mcu_fault_report_t *report, const pr
 
 static uint16_t comms_decode_u16_le(const uint8_t *data)
 {
+    /* The wire protocol stores 16-bit values least-significant byte first. */
     return (uint16_t)data[0] | ((uint16_t)data[1] << 8U);
 }
 

@@ -48,17 +48,35 @@
 
 #if defined(__arm__) || defined(__aarch64__)
 #if !defined(BREWIE_TARGET_DISPLAY_BACKEND_fbdev)
+/*
+ * One DRM "dumb buffer". Dumb buffers are simple CPU-writable framebuffers allocated by
+ * the kernel. They are not GPU accelerated, but they are predictable and work well for this
+ * small appliance display.
+ */
 typedef struct
 {
+    /** Kernel handle used when destroying the buffer. */
     uint32_t handle;
+    /** Bytes per physical framebuffer row; may be wider than width * bytes_per_pixel. */
     uint32_t pitch;
+    /** Total mapped byte size. */
     uint64_t size;
+    /** DRM framebuffer object id used by page flip. */
     uint32_t framebuffer_id;
+    /** CPU pointer returned by mmap(), where rotated pixels are written. */
     uint8_t *map;
 } display_drm_buffer_t;
 
+/*
+ * Runtime state for the custom rotated DRM backend.
+ *
+ * DRM scans the panel in physical landscape order. LVGL draws logical portrait rectangles.
+ * Two DRM buffers let us draw the next frame off-screen, then swap it onto the panel during
+ * vblank. front_buffer_index is visible; back_buffer_index is where the next frame is built.
+ */
 typedef struct
 {
+    /** File descriptor for /dev/dri/card0. */
     int fd;
     uint32_t connector_id;
     uint32_t crtc_id;
@@ -273,6 +291,10 @@ void display_update(display_t *display, uint64_t now_ms)
 #if !defined(BREWIE_TARGET_DISPLAY_BACKEND_fbdev)
 static bool display_drm_init(display_drm_context_t *context)
 {
+    /*
+     * Bring-up order matters: open card, find the connected display pipe, allocate buffers,
+     * then tell DRM which buffer should be scanned out.
+     */
     if (!display_drm_open_card(context, "/dev/dri/card0"))
     {
         return false;
@@ -343,6 +365,11 @@ static bool display_drm_find_connector_and_crtc(display_drm_context_t *context)
 
         if (connector->connection == DRM_MODE_CONNECTED && connector->count_modes > 0)
         {
+            /*
+             * Connector is the physical/logical output. CRTC is the scanout engine that
+             * drives it. On this machine there is only one real panel, but the code still
+             * asks DRM instead of hard-coding object ids.
+             */
             context->connector_id = connector->connector_id;
             context->mode = connector->modes[0];
 
@@ -433,6 +460,10 @@ static bool display_drm_create_buffer(display_drm_context_t *context, display_dr
     uint32_t offsets[4];
 
     memset(&create_request, 0, sizeof(create_request));
+    /*
+     * RGB565 matches LVGL's target color depth and halves memory bandwidth compared with
+     * 32-bit pixels, which matters on the A13 SOM.
+     */
     create_request.width = DISPLAY_PHYSICAL_WIDTH;
     create_request.height = DISPLAY_PHYSICAL_HEIGHT;
     create_request.bpp = 16U;
@@ -512,6 +543,10 @@ static bool display_drm_page_flip(display_drm_context_t *context)
     bool page_flip_complete;
 
     page_flip_complete = false;
+    /*
+     * Page flip asks the kernel to make the back buffer visible on the next vblank. Waiting
+     * for the event keeps our front/back buffer bookkeeping correct and avoids tearing.
+     */
     if (drmModePageFlip(context->fd,
                         context->crtc_id,
                         context->buffers[context->back_buffer_index].framebuffer_id,

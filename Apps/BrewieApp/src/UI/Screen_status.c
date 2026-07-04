@@ -17,6 +17,7 @@
 static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out);
 static lv_obj_t *screen_status_create_home_button(lv_obj_t *parent, screen_status_t *status);
 static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_status_t *status);
+static void screen_status_set_label_text(lv_obj_t *label, const char *text);
 static void screen_status_home_event_cb(lv_event_t *event);
 static void screen_status_touch_event_cb(lv_event_t *event);
 static void screen_status_button_event_cb(lv_event_t *event);
@@ -56,6 +57,29 @@ static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_te
 
     *value_out = value;
     return row;
+}
+
+/****************************************************************************************
+ * @brief Update an LVGL label only when the visible text actually changed.
+ *
+ * LVGL marks objects dirty when their text is set. Calling lv_label_set_text() repeatedly
+ * with the same text can therefore cause avoidable layout/render work. This helper keeps
+ * the status screen cheap while it remains a diagnostic view made mostly of labels.
+ ****************************************************************************************/
+static void screen_status_set_label_text(lv_obj_t *label, const char *text)
+{
+    const char *current_text;
+
+    if (label == NULL || text == NULL)
+    {
+        return;
+    }
+
+    current_text = lv_label_get_text(label);
+    if (current_text == NULL || strcmp(current_text, text) != 0)
+    {
+        lv_label_set_text(label, text);
+    }
 }
 
 static lv_obj_t *screen_status_create_home_button(lv_obj_t *parent, screen_status_t *status)
@@ -264,17 +288,17 @@ void screen_status_update(screen_status_t *status, const status_screen_view_mode
         return;
     }
 
-    lv_label_set_text(status->display_value, view_model->display_text);
-    lv_label_set_text(status->serial_value, view_model->serial_text);
-    lv_label_set_text(status->heartbeat_value, view_model->heartbeat_text);
-    lv_label_set_text(status->last_rx_value, view_model->last_rx_text);
-    lv_label_set_text(status->link_value, view_model->link_text);
-    lv_label_set_text(status->mcu_status_value, view_model->mcu_status_text);
-    lv_label_set_text(status->pressure_value, view_model->pressure_text);
-    lv_label_set_text(status->pump_value, view_model->pump_text);
-    lv_label_set_text(status->solenoid_value, view_model->solenoid_text);
-    lv_label_set_text(status->fault_value, view_model->fault_text);
+    screen_status_set_label_text(status->display_value, view_model->display_text);
+    screen_status_set_label_text(status->serial_value, view_model->serial_text);
+    screen_status_set_label_text(status->heartbeat_value, view_model->heartbeat_text);
+    screen_status_set_label_text(status->last_rx_value, view_model->last_rx_text);
+    screen_status_set_label_text(status->link_value, view_model->link_text);
+    screen_status_set_label_text(status->mcu_status_value, view_model->mcu_status_text);
+    screen_status_set_label_text(status->pressure_value, view_model->pressure_text);
+    screen_status_set_label_text(status->pump_value, view_model->pump_text);
+    screen_status_set_label_text(status->solenoid_value, view_model->solenoid_text);
+    screen_status_set_label_text(status->fault_value, view_model->fault_text);
 
     snprintf(text, sizeof(text), "%lu", (unsigned long)view_model->heartbeat_count);
-    lv_label_set_text(status->hb_counter_value, text);
+    screen_status_set_label_text(status->hb_counter_value, text);
 }

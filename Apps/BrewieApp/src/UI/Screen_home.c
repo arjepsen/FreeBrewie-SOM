@@ -4,155 +4,234 @@
 #include <string.h>
 
 #define SCREEN_HOME_PAD 8
-#define SCREEN_HOME_GAP 8
-#define SCREEN_HOME_TANK_WIDTH 116
-#define SCREEN_HOME_BUTTON_WIDTH 112
-#define SCREEN_HOME_ACTION_HEIGHT 48
 
-static lv_obj_t *screen_home_create_panel(lv_obj_t *parent);
-static lv_obj_t *screen_home_create_action_button(lv_obj_t *parent,
-                                                  const char *text,
-                                                  bool primary,
-                                                  bool enabled,
-                                                  screen_home_button_context_t *context);
-static lv_obj_t *screen_home_create_tank_panel(lv_obj_t *parent, const char *name, lv_obj_t **temp_value);
-static void screen_home_button_event_cb(lv_event_t *event);
+static void screen_home_set_static(lv_obj_t *object);
+static lv_obj_t *screen_home_create_header(lv_obj_t *parent, screen_home_t *home);
+static lv_obj_t *screen_home_create_menu_button(lv_obj_t *parent, screen_home_t *home);
+static lv_obj_t *screen_home_create_profile_row(lv_obj_t *parent);
+static lv_obj_t *screen_home_create_machine_row(lv_obj_t *parent);
+static lv_obj_t *screen_home_create_brew_button(lv_obj_t *parent);
+static void screen_home_menu_event_cb(lv_event_t *event);
 
-/**
- * Build a plain rectangular panel.
- *
- * LVGL widgets are cheap when the layout is stable. These panels mirror the HTML design
- * spec and give us large, predictable regions that should redraw only when their labels
- * actually change.
- */
-static lv_obj_t *screen_home_create_panel(lv_obj_t *parent)
+static void screen_home_set_static(lv_obj_t *object)
 {
-    lv_obj_t *panel;
+    if (object == NULL)
+    {
+        return;
+    }
 
-    panel = lv_obj_create(parent);
-    lv_obj_set_width(panel, lv_pct(100));
-    lv_obj_set_height(panel, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_color(panel, lv_color_hex(0x141414), 0);
-    lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(panel, lv_color_hex(0x3F3F3F), 0);
-    lv_obj_set_style_border_width(panel, 1, 0);
-    lv_obj_set_style_radius(panel, 4, 0);
-    lv_obj_set_style_pad_all(panel, 8, 0);
-
-    return panel;
+    lv_obj_clear_flag(object, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scrollbar_mode(object, LV_SCROLLBAR_MODE_OFF);
 }
 
 /**
- * Build one home-screen action button.
+ * Build the shared Home-style header.
  *
- * Disabled buttons are still visible because they explain the intended product shape, but
- * they do not emit actions yet. That lets us test navigation and touch without exposing
- * unfinished brewing, cleaning, or manual-service behavior.
+ * This intentionally leans toward the old Brewie header: dark charcoal bar, centered title,
+ * and a small top-right menu button. The title is not mixed with machine state, which keeps
+ * the screen calmer and avoids the earlier overlap around the Ready badge.
  */
-static lv_obj_t *screen_home_create_action_button(lv_obj_t *parent,
-                                                  const char *text,
-                                                  bool primary,
-                                                  bool enabled,
-                                                  screen_home_button_context_t *context)
+static lv_obj_t *screen_home_create_header(lv_obj_t *parent, screen_home_t *home)
+{
+    lv_obj_t *header;
+    lv_obj_t *title;
+
+    header = lv_obj_create(parent);
+    screen_home_set_static(header);
+    lv_obj_set_width(header, lv_pct(100));
+    lv_obj_set_height(header, 64);
+    lv_obj_set_style_bg_color(header, lv_color_hex(0x1F1D1B), 0);
+    lv_obj_set_style_bg_opa(header, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(header, 0, 0);
+    lv_obj_set_style_pad_all(header, 0, 0);
+
+    title = lv_label_create(header);
+    lv_label_set_text(title, "Home");
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_20, 0);
+    lv_obj_set_style_text_color(title, lv_color_hex(0xC8C8C8), 0);
+    lv_obj_center(title);
+
+    screen_home_create_menu_button(header, home);
+    return header;
+}
+
+/**
+ * Draw a small hamburger menu button without relying on icon fonts.
+ *
+ * The original UI used a FontAwesome hamburger glyph. Drawing three bars ourselves is more
+ * predictable on the minimal SOM image and in the simulator.
+ */
+static lv_obj_t *screen_home_create_menu_button(lv_obj_t *parent, screen_home_t *home)
 {
     lv_obj_t *button;
-    lv_obj_t *label;
+    lv_obj_t *line;
+    int8_t offset_y;
 
     button = lv_button_create(parent);
-    lv_obj_set_width(button, primary ? lv_pct(100) : SCREEN_HOME_BUTTON_WIDTH);
-    lv_obj_set_height(button, primary ? 56 : SCREEN_HOME_ACTION_HEIGHT);
+    lv_obj_set_size(button, 42, 42);
+    lv_obj_align(button, LV_ALIGN_RIGHT_MID, -2, 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x1F1D1B), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x343434), LV_STATE_PRESSED);
+    lv_obj_set_style_border_width(button, 0, 0);
     lv_obj_set_style_radius(button, 4, 0);
-    lv_obj_set_style_bg_color(button, enabled ? lv_color_hex(0xF47B32) : lv_color_hex(0x30373A), 0);
-    lv_obj_set_style_bg_color(button, enabled ? lv_color_hex(0xC85F22) : lv_color_hex(0x30373A), LV_STATE_PRESSED);
-    lv_obj_set_style_border_width(button, 1, 0);
-    lv_obj_set_style_border_color(button, enabled ? lv_color_hex(0xC85F22) : lv_color_hex(0x464F53), 0);
+    lv_obj_set_style_pad_all(button, 0, 0);
+    lv_obj_add_event_cb(button, screen_home_menu_event_cb, LV_EVENT_CLICKED, home);
 
-    if (enabled && context != NULL)
+    for (offset_y = -7; offset_y <= 7; offset_y = (int8_t)(offset_y + 7))
     {
-        lv_obj_add_event_cb(button, screen_home_button_event_cb, LV_EVENT_CLICKED, context);
+        line = lv_obj_create(button);
+        screen_home_set_static(line);
+        lv_obj_set_size(line, 20, 2);
+        lv_obj_set_style_bg_color(line, lv_color_hex(0xFFFFFF), 0);
+        lv_obj_set_style_bg_opa(line, LV_OPA_COVER, 0);
+        lv_obj_set_style_border_width(line, 0, 0);
+        lv_obj_align(line, LV_ALIGN_CENTER, 0, offset_y);
     }
-    else
-    {
-        lv_obj_add_state(button, LV_STATE_DISABLED);
-    }
-
-    label = lv_label_create(button);
-    lv_label_set_text(label, text);
-    lv_obj_set_style_text_color(label, enabled ? lv_color_hex(0xFFFFFF) : lv_color_hex(0x9EA8AC), 0);
-    lv_obj_center(label);
 
     return button;
 }
 
 /**
- * Build one tank summary box for the home screen.
+ * Build the profile/status row inspired by the old Home `ProfileBox`.
  *
- * These boxes intentionally show only the headline values for now. The detailed raw
- * information belongs on the diagnostic status screen until we know which values the
- * normal brewing user actually needs every day.
+ * We do not have real user/profile data yet, so this row acts as a friendly appliance
+ * status card. It keeps the old visual rhythm: dark avatar block, white headline, orange
+ * secondary line.
  */
-static lv_obj_t *screen_home_create_tank_panel(lv_obj_t *parent, const char *name, lv_obj_t **temp_value)
+static lv_obj_t *screen_home_create_profile_row(lv_obj_t *parent)
 {
-    lv_obj_t *tank;
-    lv_obj_t *label;
-    lv_obj_t *small_text;
+    lv_obj_t *row;
+    lv_obj_t *avatar;
+    lv_obj_t *avatar_label;
+    lv_obj_t *text_block;
+    lv_obj_t *headline;
+    lv_obj_t *subline;
 
-    tank = lv_obj_create(parent);
-    lv_obj_set_size(tank, SCREEN_HOME_TANK_WIDTH, 82);
-    lv_obj_set_style_bg_color(tank, lv_color_hex(0x292929), 0);
-    lv_obj_set_style_bg_opa(tank, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(tank, lv_color_hex(0x3F3F3F), 0);
-    lv_obj_set_style_border_width(tank, 1, 0);
-    lv_obj_set_style_radius(tank, 4, 0);
-    lv_obj_set_style_pad_all(tank, 7, 0);
-    lv_obj_set_layout(tank, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(tank, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_row(tank, 4, 0);
+    row = lv_obj_create(parent);
+    screen_home_set_static(row);
+    lv_obj_set_width(row, lv_pct(100));
+    lv_obj_set_height(row, 58);
+    lv_obj_set_style_bg_color(row, lv_color_hex(0x141414), 0);
+    lv_obj_set_style_bg_opa(row, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(row, lv_color_hex(0x2C2B2B), 0);
+    lv_obj_set_style_border_width(row, 1, 0);
+    lv_obj_set_style_radius(row, 0, 0);
+    lv_obj_set_style_pad_all(row, 1, 0);
+    lv_obj_set_style_pad_column(row, 8, 0);
+    lv_obj_set_layout(row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
-    label = lv_label_create(tank);
-    lv_label_set_text(label, name);
-    lv_obj_set_style_text_color(label, lv_color_hex(0xF47B32), 0);
+    avatar = lv_obj_create(row);
+    screen_home_set_static(avatar);
+    lv_obj_set_size(avatar, 54, 54);
+    lv_obj_set_style_bg_color(avatar, lv_color_hex(0x393939), 0);
+    lv_obj_set_style_bg_opa(avatar, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(avatar, 0, 0);
+    lv_obj_set_style_radius(avatar, 0, 0);
 
-    *temp_value = lv_label_create(tank);
-    lv_label_set_text(*temp_value, "--.-");
-    lv_obj_set_style_text_font(*temp_value, &lv_font_montserrat_20, 0);
-    lv_obj_set_style_text_color(*temp_value, lv_color_hex(0xFFFFFF), 0);
+    avatar_label = lv_label_create(avatar);
+    lv_label_set_text(avatar_label, "FB");
+    lv_obj_set_style_text_color(avatar_label, lv_color_hex(0xF47B32), 0);
+    lv_obj_set_style_text_font(avatar_label, &lv_font_montserrat_20, 0);
+    lv_obj_center(avatar_label);
 
-    small_text = lv_label_create(tank);
-    lv_label_set_text(small_text, "target -- C\npump off");
-    lv_obj_set_style_text_color(small_text, lv_color_hex(0x9B9B9B), 0);
+    text_block = lv_obj_create(row);
+    lv_obj_remove_style_all(text_block);
+    screen_home_set_static(text_block);
+    lv_obj_set_width(text_block, 170);
+    lv_obj_set_height(text_block, LV_SIZE_CONTENT);
+    lv_obj_set_layout(text_block, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(text_block, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_pad_row(text_block, 4, 0);
 
-    return tank;
+    headline = lv_label_create(text_block);
+    lv_label_set_text(headline, "FREEBREWIE");
+    lv_obj_set_style_text_color(headline, lv_color_hex(0xFFFFFF), 0);
+
+    subline = lv_label_create(text_block);
+    lv_label_set_text(subline, "Ready for next step");
+    lv_obj_set_style_text_color(subline, lv_color_hex(0xE67526), 0);
+
+    return row;
 }
 
-static void screen_home_button_event_cb(lv_event_t *event)
+/**
+ * Build a compact machine summary row.
+ *
+ * This is the one deliberate addition beyond the old Home screen. It gives the rewrite a
+ * useful appliance dashboard feel, but stays static and small so it is cheap for LVGL to
+ * redraw and not fiddly to use.
+ */
+static lv_obj_t *screen_home_create_machine_row(lv_obj_t *parent)
 {
-    screen_home_button_context_t *context;
+    lv_obj_t *row;
+    lv_obj_t *label;
+    lv_obj_t *value;
 
-    context = lv_event_get_user_data(event);
-    if (context == NULL || context->handler == NULL)
+    row = lv_obj_create(parent);
+    screen_home_set_static(row);
+    lv_obj_set_width(row, lv_pct(100));
+    lv_obj_set_height(row, 74);
+    lv_obj_set_style_bg_color(row, lv_color_hex(0x141414), 0);
+    lv_obj_set_style_bg_opa(row, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(row, lv_color_hex(0x2C2B2B), 0);
+    lv_obj_set_style_border_width(row, 1, 0);
+    lv_obj_set_style_radius(row, 0, 0);
+    lv_obj_set_style_pad_all(row, 8, 0);
+    lv_obj_set_layout(row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_pad_row(row, 8, 0);
+
+    label = lv_label_create(row);
+    lv_label_set_text(label, "MACHINE");
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+
+    value = lv_label_create(row);
+    lv_label_set_text(value, "Mash --.- C        Boil --.- C");
+    lv_obj_set_style_text_color(value, lv_color_hex(0xE67526), 0);
+
+    return row;
+}
+
+static lv_obj_t *screen_home_create_brew_button(lv_obj_t *parent)
+{
+    lv_obj_t *button;
+    lv_obj_t *label;
+
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(100));
+    lv_obj_set_height(button, 48);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
+    lv_obj_set_style_radius(button, 5, 0);
+    lv_obj_add_state(button, LV_STATE_DISABLED);
+
+    label = lv_label_create(button);
+    lv_label_set_text(label, "LET'S BREW LATER");
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(label);
+
+    return button;
+}
+
+static void screen_home_menu_event_cb(lv_event_t *event)
+{
+    screen_home_t *home;
+
+    home = lv_event_get_user_data(event);
+    if (home == NULL || home->menu_button_context.handler == NULL)
     {
         return;
     }
 
-    context->handler(context->action, context->user_data);
+    home->menu_button_context.handler(home->menu_button_context.action, home->menu_button_context.user_data);
 }
 
 void screen_home_init(screen_home_t *home, ui_action_handler_t action_handler, void *user_data)
 {
     lv_obj_t *container;
-    lv_obj_t *topbar;
-    lv_obj_t *brand_block;
-    lv_obj_t *brand;
-    lv_obj_t *mcu;
-    lv_obj_t *state;
-    lv_obj_t *machine_panel;
-    lv_obj_t *machine_label;
-    lv_obj_t *tank_row;
-    lv_obj_t *action_panel;
-    lv_obj_t *action_label;
-    lv_obj_t *button_row;
-    lv_obj_t *footer;
+    lv_obj_t *spacer;
 
     if (home == NULL)
     {
@@ -160,144 +239,55 @@ void screen_home_init(screen_home_t *home, ui_action_handler_t action_handler, v
     }
 
     memset(home, 0, sizeof(*home));
-
-    home->status_button_context.action = UI_ACTION_SHOW_STATUS;
-    home->status_button_context.handler = action_handler;
-    home->status_button_context.user_data = user_data;
-    home->manual_button_context.action = UI_ACTION_SHOW_MANUAL;
-    home->manual_button_context.handler = action_handler;
-    home->manual_button_context.user_data = user_data;
-    home->clean_button_context.action = UI_ACTION_SHOW_CLEAN;
-    home->clean_button_context.handler = action_handler;
-    home->clean_button_context.user_data = user_data;
-    home->settings_button_context.action = UI_ACTION_SHOW_SETTINGS;
-    home->settings_button_context.handler = action_handler;
-    home->settings_button_context.user_data = user_data;
+    home->menu_button_context.action = UI_ACTION_SHOW_MENU;
+    home->menu_button_context.handler = action_handler;
+    home->menu_button_context.user_data = user_data;
 
     home->screen = lv_obj_create(NULL);
+    screen_home_set_static(home->screen);
     lv_obj_set_style_bg_color(home->screen, lv_color_hex(0x000000), 0);
     lv_obj_set_style_bg_opa(home->screen, LV_OPA_COVER, 0);
 
     container = lv_obj_create(home->screen);
+    screen_home_set_static(container);
     lv_obj_set_size(container, lv_pct(100), lv_pct(100));
-    lv_obj_remove_style(container, NULL, LV_PART_SCROLLBAR);
     lv_obj_set_style_bg_color(container, lv_color_hex(0x000000), 0);
     lv_obj_set_style_bg_opa(container, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(container, 0, 0);
     lv_obj_set_style_pad_all(container, SCREEN_HOME_PAD, 0);
-    lv_obj_set_style_pad_row(container, SCREEN_HOME_GAP, 0);
+    lv_obj_set_style_pad_row(container, 8, 0);
     lv_obj_set_layout(container, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
 
-    topbar = lv_obj_create(container);
-    lv_obj_set_width(topbar, lv_pct(100));
-    lv_obj_set_height(topbar, 46);
-    lv_obj_set_style_bg_color(topbar, lv_color_hex(0x1F1D1B), 0);
-    lv_obj_set_style_bg_opa(topbar, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_width(topbar, 0, 0);
-    lv_obj_set_style_pad_all(topbar, 6, 0);
-    lv_obj_set_layout(topbar, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(topbar, LV_FLEX_FLOW_ROW);
-    lv_obj_set_flex_align(topbar, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    screen_home_create_header(container, home);
+    screen_home_create_profile_row(container);
 
-    brand_block = lv_obj_create(topbar);
-    lv_obj_remove_style_all(brand_block);
-    lv_obj_set_width(brand_block, 160);
-    lv_obj_set_height(brand_block, LV_SIZE_CONTENT);
-    lv_obj_set_layout(brand_block, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(brand_block, LV_FLEX_FLOW_COLUMN);
+    home->mcu_value = lv_label_create(container);
+    lv_label_set_text(home->mcu_value, "MCU unknown");
+    lv_obj_set_style_text_color(home->mcu_value, lv_color_hex(0x9B9B9B), 0);
 
-    brand = lv_label_create(brand_block);
-    lv_label_set_text(brand, "FreeBrewie");
-    lv_obj_set_style_text_font(brand, &lv_font_montserrat_20, 0);
-    lv_obj_set_style_text_color(brand, lv_color_hex(0xFFFFFF), 0);
+    screen_home_create_machine_row(container);
 
-    mcu = lv_label_create(brand_block);
-    lv_label_set_text(mcu, "MCU unknown");
-    lv_obj_set_style_text_color(mcu, lv_color_hex(0x9B9B9B), 0);
-    home->mcu_value = mcu;
+    spacer = lv_obj_create(container);
+    lv_obj_remove_style_all(spacer);
+    screen_home_set_static(spacer);
+    lv_obj_set_width(spacer, lv_pct(100));
+    lv_obj_set_flex_grow(spacer, 1);
 
-    state = lv_label_create(topbar);
-    lv_label_set_text(state, "Ready");
-    lv_obj_set_style_bg_color(state, lv_color_hex(0x557D45), 0);
-    lv_obj_set_style_bg_opa(state, LV_OPA_COVER, 0);
-    lv_obj_set_style_radius(state, 4, 0);
-    lv_obj_set_style_pad_left(state, 8, 0);
-    lv_obj_set_style_pad_right(state, 8, 0);
-    lv_obj_set_style_pad_top(state, 5, 0);
-    lv_obj_set_style_pad_bottom(state, 5, 0);
-    lv_obj_set_style_text_color(state, lv_color_hex(0xFFFFFF), 0);
-
-    machine_panel = screen_home_create_panel(container);
-    lv_obj_set_layout(machine_panel, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(machine_panel, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_row(machine_panel, 7, 0);
-
-    machine_label = lv_label_create(machine_panel);
-    lv_label_set_text(machine_label, "MACHINE");
-    lv_obj_set_style_text_color(machine_label, lv_color_hex(0xF47B32), 0);
-
-    tank_row = lv_obj_create(machine_panel);
-    lv_obj_remove_style_all(tank_row);
-    lv_obj_set_width(tank_row, lv_pct(100));
-    lv_obj_set_height(tank_row, LV_SIZE_CONTENT);
-    lv_obj_set_layout(tank_row, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(tank_row, LV_FLEX_FLOW_ROW);
-    lv_obj_set_style_pad_column(tank_row, 8, 0);
-
-    screen_home_create_tank_panel(tank_row, "Mash", &home->mash_temp_value);
-    screen_home_create_tank_panel(tank_row, "Boil", &home->boil_temp_value);
-
-    action_panel = screen_home_create_panel(container);
-    lv_obj_set_layout(action_panel, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(action_panel, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_style_pad_row(action_panel, 8, 0);
-
-    action_label = lv_label_create(action_panel);
-    lv_label_set_text(action_label, "NEXT ACTION");
-    lv_obj_set_style_text_color(action_label, lv_color_hex(0xF47B32), 0);
-
-    screen_home_create_action_button(action_panel, "Brew later", true, false, NULL);
-
-    button_row = lv_obj_create(action_panel);
-    lv_obj_remove_style_all(button_row);
-    lv_obj_set_width(button_row, lv_pct(100));
-    lv_obj_set_height(button_row, LV_SIZE_CONTENT);
-    lv_obj_set_layout(button_row, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(button_row, LV_FLEX_FLOW_ROW_WRAP);
-    lv_obj_set_style_pad_row(button_row, 8, 0);
-    lv_obj_set_style_pad_column(button_row, 8, 0);
-
-    screen_home_create_action_button(button_row, "Clean", false, true, &home->clean_button_context);
-    screen_home_create_action_button(button_row, "Manual", false, true, &home->manual_button_context);
-    screen_home_create_action_button(button_row, "Status", false, true, &home->status_button_context);
-    screen_home_create_action_button(button_row, "Settings", false, true, &home->settings_button_context);
-
-    footer = lv_label_create(container);
-    lv_label_set_text(footer, "Idle                                      no faults");
-    lv_obj_set_style_text_color(footer, lv_color_hex(0x9B9B9B), 0);
+    screen_home_create_brew_button(container);
 }
 
 void screen_home_update(screen_home_t *home, const status_screen_view_model_t *view_model)
 {
-    char text[24];
-
-    if (home == NULL || view_model == NULL)
+    if (home == NULL || view_model == NULL || home->mcu_value == NULL)
     {
         return;
     }
 
-    if (home->mcu_value != NULL)
+    if (home->shown_link_text != view_model->link_text)
     {
-        lv_label_set_text_fmt(home->mcu_value, "MCU %s", view_model->link_text);
+        snprintf(home->mcu_text, sizeof(home->mcu_text), "MCU %s", view_model->link_text);
+        lv_label_set_text(home->mcu_value, home->mcu_text);
+        home->shown_link_text = view_model->link_text;
     }
-
-    /*
-     * The current status view model exposes compact text rather than separate numeric tank
-     * values. Until the logic layer grows a dedicated home view model, show stable placeholder
-     * temperatures while the home screen proves layout and navigation.
-     */
-    snprintf(text, sizeof(text), "--.-");
-    lv_label_set_text(home->mash_temp_value, text);
-    lv_label_set_text(home->boil_temp_value, text);
 }

@@ -11,6 +11,12 @@ typedef struct
 } ui_placeholder_button_context_t;
 
 static void ui_handle_action(ui_action_t action, void *user_data);
+static lv_obj_t *ui_create_menu_screen(ui_t *ui);
+static lv_obj_t *ui_create_menu_row(lv_obj_t *parent,
+                                    const char *text,
+                                    ui_action_t action,
+                                    ui_placeholder_button_context_t *context,
+                                    ui_t *ui);
 static lv_obj_t *ui_create_placeholder_screen(ui_t *ui, const char *title, const char *state, const char *message);
 static lv_obj_t *ui_create_placeholder_button(lv_obj_t *parent,
                                               const char *text,
@@ -23,10 +29,16 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id);
 static ui_placeholder_button_context_t manual_back_context;
 static ui_placeholder_button_context_t clean_back_context;
 static ui_placeholder_button_context_t settings_back_context;
+static ui_placeholder_button_context_t menu_home_context;
+static ui_placeholder_button_context_t menu_status_context;
+static ui_placeholder_button_context_t menu_clean_context;
+static ui_placeholder_button_context_t menu_manual_context;
+static ui_placeholder_button_context_t menu_settings_context;
 
 static void ui_handle_action(ui_action_t action, void *user_data)
 {
     ui_t *ui;
+    ui_screen_id_t screen_id;
 
     ui = user_data;
     if (ui == NULL)
@@ -34,26 +46,118 @@ static void ui_handle_action(ui_action_t action, void *user_data)
         return;
     }
 
+    screen_id = UI_SCREEN_HOME;
     if (action == UI_ACTION_SHOW_HOME)
     {
-        ui_show_screen(ui, UI_SCREEN_HOME);
+        screen_id = UI_SCREEN_HOME;
+    }
+    else if (action == UI_ACTION_SHOW_MENU)
+    {
+        screen_id = UI_SCREEN_MENU;
     }
     else if (action == UI_ACTION_SHOW_STATUS)
     {
-        ui_show_screen(ui, UI_SCREEN_STATUS);
+        screen_id = UI_SCREEN_STATUS;
     }
     else if (action == UI_ACTION_SHOW_MANUAL)
     {
-        ui_show_screen(ui, UI_SCREEN_MANUAL);
+        screen_id = UI_SCREEN_MANUAL;
     }
     else if (action == UI_ACTION_SHOW_CLEAN)
     {
-        ui_show_screen(ui, UI_SCREEN_CLEAN);
+        screen_id = UI_SCREEN_CLEAN;
     }
     else if (action == UI_ACTION_SHOW_SETTINGS)
     {
-        ui_show_screen(ui, UI_SCREEN_SETTINGS);
+        screen_id = UI_SCREEN_SETTINGS;
     }
+
+    /*
+     * LVGL allows many operations from event callbacks, but changing screens while the
+     * current click/release event is still bubbling can be fragile. Queue navigation and
+     * apply it during the normal UI update instead; that keeps button callbacks tiny and
+     * avoids re-entering the refresh/event path.
+     */
+    ui->pending_screen = screen_id;
+    ui->has_pending_screen = true;
+}
+
+/**
+ * Create the full-screen menu inspired by the original Brewie MainMenu.
+ *
+ * The old UI used a slide-down menu with large dark rows. We keep the large row structure
+ * because it is touch-friendly and cheap for LVGL to render, but use normal screen
+ * navigation for now rather than animation.
+ */
+static lv_obj_t *ui_create_menu_screen(ui_t *ui)
+{
+    lv_obj_t *screen;
+    lv_obj_t *container;
+    lv_obj_t *spacer;
+
+    screen = lv_obj_create(NULL);
+    lv_obj_set_style_bg_color(screen, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
+
+    container = lv_obj_create(screen);
+    lv_obj_set_size(container, lv_pct(100), lv_pct(100));
+    lv_obj_set_style_bg_color(container, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(container, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(container, 0, 0);
+    lv_obj_set_style_pad_all(container, 8, 0);
+    lv_obj_set_style_pad_row(container, 10, 0);
+    lv_obj_set_layout(container, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
+
+    spacer = lv_obj_create(container);
+    lv_obj_remove_style_all(spacer);
+    lv_obj_set_width(spacer, lv_pct(100));
+    lv_obj_set_height(spacer, 24);
+
+    ui_create_menu_row(container, "HOME", UI_ACTION_SHOW_HOME, &menu_home_context, ui);
+    ui_create_menu_row(container, "STATUS", UI_ACTION_SHOW_STATUS, &menu_status_context, ui);
+    ui_create_menu_row(container, "CLEAN", UI_ACTION_SHOW_CLEAN, &menu_clean_context, ui);
+    ui_create_menu_row(container, "MANUAL", UI_ACTION_SHOW_MANUAL, &menu_manual_context, ui);
+    ui_create_menu_row(container, "SETTINGS", UI_ACTION_SHOW_SETTINGS, &menu_settings_context, ui);
+
+    spacer = lv_obj_create(container);
+    lv_obj_remove_style_all(spacer);
+    lv_obj_set_width(spacer, lv_pct(100));
+    lv_obj_set_flex_grow(spacer, 1);
+
+    ui_create_menu_row(container, "< BACK", UI_ACTION_SHOW_HOME, &menu_home_context, ui);
+
+    return screen;
+}
+
+static lv_obj_t *ui_create_menu_row(lv_obj_t *parent,
+                                    const char *text,
+                                    ui_action_t action,
+                                    ui_placeholder_button_context_t *context,
+                                    ui_t *ui)
+{
+    lv_obj_t *button;
+    lv_obj_t *label;
+
+    context->action = action;
+    context->ui = ui;
+
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(100));
+    lv_obj_set_height(button, 60);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x343434), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x454545), LV_STATE_PRESSED);
+    lv_obj_set_style_border_width(button, 0, 0);
+    lv_obj_set_style_radius(button, 0, 0);
+    lv_obj_add_event_cb(button, ui_placeholder_button_event_cb, LV_EVENT_CLICKED, context);
+
+    label = lv_label_create(button);
+    lv_label_set_text(label, text);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_font(label, &lv_font_montserrat_20, 0);
+    lv_obj_center(label);
+
+    return button;
 }
 
 /**
@@ -192,7 +296,11 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
     }
 
     screen = ui->home.screen;
-    if (screen_id == UI_SCREEN_STATUS)
+    if (screen_id == UI_SCREEN_MENU)
+    {
+        screen = ui->menu_screen;
+    }
+    else if (screen_id == UI_SCREEN_STATUS)
     {
         screen = ui->status.screen;
     }
@@ -216,6 +324,7 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
 
     ui->current_screen = screen_id;
     lv_screen_load(screen);
+    lv_refr_now(NULL);
 }
 
 void ui_init(ui_t *ui)
@@ -229,6 +338,7 @@ void ui_init(ui_t *ui)
     ui_theme_init();
     screen_home_init(&ui->home, ui_handle_action, ui);
     screen_status_init(&ui->status, ui_handle_action, ui);
+    ui->menu_screen = ui_create_menu_screen(ui);
     ui->manual_screen = ui_create_placeholder_screen(ui,
                                                      "Manual",
                                                      "Locked",
@@ -256,6 +366,12 @@ void ui_update(ui_t *ui, const status_screen_view_model_t *view_model)
     if (ui == NULL)
     {
         return;
+    }
+
+    if (ui->has_pending_screen)
+    {
+        ui->has_pending_screen = false;
+        ui_show_screen(ui, ui->pending_screen);
     }
 
     screen_home_update(&ui->home, view_model);

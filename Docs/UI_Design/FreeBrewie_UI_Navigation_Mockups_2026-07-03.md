@@ -1,5 +1,5 @@
 # FreeBrewie UI Navigation Mockups
-_Date: 2026-07-02_
+_Date: 2026-07-03_
 
 ## Purpose
 This document describes the first intended FreeBrewie screen flow.
@@ -11,7 +11,7 @@ It is not final artwork. It is a practical bridge between:
 
 The main UI design/spec document lives in the same UI design folder:
 
-- `FreeBrewie_UI_Design_Spec_2026-07-02.html`
+- `FreeBrewie_UI_Design_Spec_2026-07-03.html`
 
 Open that file in a desktop browser to see the current navigation notes, palette, screen
 roles, implementation checklist, and 272x480 portrait mockups close to the UI style we
@@ -69,10 +69,12 @@ The first real UI should be deliberately small.
 ```mermaid
 flowchart TD
     startup[Startup / splash later] --> home[Home]
-    home --> status[Status / diagnostics]
-    home --> manual[Manual service placeholder]
-    home --> clean[Clean placeholder]
-    home --> settings[Settings placeholder]
+    home --> menu[Top-right menu]
+    home --> tank_popup[Tank detail popup]
+    menu --> status[Status / diagnostics]
+    menu --> manual[Manual service placeholder]
+    menu --> clean[Clean placeholder]
+    menu --> settings[Settings placeholder]
     status --> home
     manual --> home
     clean --> home
@@ -88,10 +90,11 @@ flowchart TD
 First implementation target:
 
 1. Add `Screen_home`.
-2. Let `Home` navigate to the existing `Screen_status`.
-3. Add disabled or placeholder buttons for `Manual`, `Clean`, and `Settings`.
-4. Keep the current touch proof only until the navigation buttons are proven.
-5. Keep all hardware-affecting actions disabled until the app logic and MCU safety boundaries are ready.
+2. Keep Home minimal, with a top-right menu for secondary destinations.
+3. Let the menu navigate to the existing `Screen_status`.
+4. Add placeholder screens for `Manual`, `Clean`, and `Settings`.
+5. Keep the current touch proof only until the navigation buttons are proven.
+6. Keep all hardware-affecting actions disabled until the app logic and MCU safety boundaries are ready.
 
 ---
 
@@ -140,15 +143,17 @@ Near-term home content:
 | 21.4 C          21.2 C         |
 | target --       target --      |
 +--------------------------------+
-| [ Brew ]                      |
-| [ Clean ]       [ Manual ]     |
-| [ Status ]      [ Settings ]   |
+| [ Brew later ]                 |
+| menu: Status / Clean / Manual  |
+| tank tap: detail popup         |
 +--------------------------------+
 ```
 
 Near-term behavior:
-- `Status` works first.
-- `Brew`, `Clean`, `Manual`, and `Settings` can open placeholder screens or be disabled.
+- `Status` works from the top-right menu.
+- `Clean`, `Manual`, and `Settings` open placeholder screens from the top-right menu.
+- Mash and Boil summaries are tappable and open simple detail popups.
+- `Brew later` remains disabled until workflow logic exists.
 - Any fault should be more visually important than normal action buttons.
 
 ---

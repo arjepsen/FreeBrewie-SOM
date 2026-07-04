@@ -2,6 +2,11 @@
 
 #include <string.h>
 
+/*
+ * Protocol.c is intentionally byte-oriented. UART read() may return half a frame, one frame,
+ * or several frames at once, so the receiver keeps its own small state machine instead of
+ * assuming reads line up with packet boundaries.
+ */
 static uint8_t protocol_next_seq(protocol_sender_t *sender)
 {
     uint8_t seq;
@@ -9,6 +14,7 @@ static uint8_t protocol_next_seq(protocol_sender_t *sender)
     seq = sender->next_seq;
     if (seq == 0U)
     {
+        /* Sequence zero is reserved so "no sequence yet" stays easy to spot in logs. */
         seq = 1U;
     }
 
@@ -47,6 +53,10 @@ size_t protocol_build_heartbeat(protocol_sender_t *sender, uint8_t *buffer, size
 
     seq = protocol_next_seq(sender);
 
+    /*
+     * Heartbeat has no payload. The length byte is therefore zero, and the CRC is calculated
+     * over type, sequence, and length only.
+     */
     buffer[0] = PROTOCOL_SYNC1;
     buffer[1] = PROTOCOL_SYNC2;
     buffer[2] = PROTOCOL_MSG_HEARTBEAT;
@@ -82,6 +92,7 @@ bool protocol_rx_consume(protocol_rx_state_t *rx, uint8_t byte, protocol_frame_t
     switch (rx->stage)
     {
     case PROTOCOL_RX_WAIT_SYNC1:
+        /* Ignore all noise until the first sync byte appears. */
         if (byte == PROTOCOL_SYNC1)
         {
             rx->stage = PROTOCOL_RX_WAIT_SYNC2;
@@ -95,6 +106,7 @@ bool protocol_rx_consume(protocol_rx_state_t *rx, uint8_t byte, protocol_frame_t
         }
         else
         {
+            /* Bad second sync byte: abandon this candidate frame and search again. */
             rx->stage = PROTOCOL_RX_WAIT_SYNC1;
         }
         break;
@@ -113,6 +125,7 @@ bool protocol_rx_consume(protocol_rx_state_t *rx, uint8_t byte, protocol_frame_t
         rx->frame.len = byte;
         if (rx->frame.len > PROTOCOL_MAX_DATA_SIZE)
         {
+            /* Oversized payload would overflow the frame buffer, so drop this frame. */
             rx->stage = PROTOCOL_RX_WAIT_SYNC1;
         }
         else if (rx->frame.len == 0U)
@@ -149,6 +162,7 @@ bool protocol_rx_consume(protocol_rx_state_t *rx, uint8_t byte, protocol_frame_t
 
         if (rx->crc == byte)
         {
+            /* The caller gets a copy so the receiver can immediately start finding more frames. */
             *out_frame = rx->frame;
             return true;
         }
@@ -184,6 +198,7 @@ uint8_t protocol_crc8_dallas_maxim(const uint8_t *data, size_t length)
             crc >>= 1U;
             if (mix != 0U)
             {
+                /* 0x8C is the reflected Dallas/Maxim CRC-8 polynomial. */
                 crc ^= 0x8CU;
             }
             in_byte >>= 1U;

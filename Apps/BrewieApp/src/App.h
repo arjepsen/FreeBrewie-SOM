@@ -11,11 +11,17 @@
 
 typedef struct
 {
+    /** Linux/display/input resources owned by the process. */
     platform_t platform;
+    /** Serial protocol state for the MCU link. */
     comms_t comms;
+    /** App-level state derived from comms and future workflows. */
     app_logic_t logic;
+    /** LVGL screen objects and navigation state. */
     ui_t ui;
+    /** Last time the human-readable UI labels were refreshed. */
     uint64_t last_ui_update_ms;
+    /** False when display setup failed, allowing comms-only bring-up. */
     bool display_enabled;
 } app_t;
 

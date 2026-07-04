@@ -14,6 +14,7 @@
 typedef enum
 {
     UI_SCREEN_HOME = 0,
+    UI_SCREEN_MENU,
     UI_SCREEN_STATUS,
     UI_SCREEN_MANUAL,
     UI_SCREEN_CLEAN,
@@ -31,6 +32,7 @@ typedef enum
 typedef enum
 {
     UI_ACTION_SHOW_HOME = 0,
+    UI_ACTION_SHOW_MENU,
     UI_ACTION_SHOW_STATUS,
     UI_ACTION_SHOW_MANUAL,
     UI_ACTION_SHOW_CLEAN,
@@ -38,10 +40,5 @@ typedef enum
 } ui_action_t;
 
 typedef void (*ui_action_handler_t)(ui_action_t action, void *user_data);
-
-typedef struct
-{
-    int unused;
-} ui_types_placeholder_t;
 
 #endif

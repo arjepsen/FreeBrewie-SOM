@@ -163,19 +163,19 @@ At this stage, keep documentation compact and practical.
 The current useful SOM doc set is:
 
 - `README.md`
-- `Docs/README_2026-07-02.md`
+- `Docs/README_2026-07-03.md`
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
 - `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
 - `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-02.md`
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-02.md`
-- `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-02.md`
-- `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-02.html`
+- `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
+- `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-03.html`
 
 Use them as follows:
 
-- `Docs/README_2026-07-02.md`
+- `Docs/README_2026-07-03.md`
   Short index of the SOM-side document set.
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
   Hardware/platform facts for the SOM target.
@@ -189,9 +189,9 @@ Use them as follows:
   SOM-side software structure, top-level groups, and intended file responsibilities.
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-02.md`
   Current SOM/UI bring-up status and immediate next milestone.
-- `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-02.md`
+- `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
   First product-shaped UI flow, screen roles, and implementation order.
-- `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-02.html`
+- `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-03.html`
   Browser-viewable UI design spec with palette, navigation, screen roles, implementation
   checklist, and 272x480 visual mockups close to the UI we intend to build in LVGL.
 

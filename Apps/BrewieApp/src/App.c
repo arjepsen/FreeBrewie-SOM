@@ -9,6 +9,14 @@
 #define APP_LOOP_SLEEP_US 10000
 #define APP_UI_REFRESH_PERIOD_MS 250U
 
+/****************************************************************************************
+ * @brief Bring the SOM application online.
+ *
+ * Initialization is ordered from lowest level to highest level:
+ * platform/display first, then UI objects, app logic, and finally the MCU serial link.
+ * The app currently treats a missing MCU link as fatal because most useful behavior depends
+ * on exchanging heartbeats and status reports with the controller.
+ ****************************************************************************************/
 bool app_init(app_t *app)
 {
     if (app == NULL)
@@ -41,6 +49,14 @@ bool app_init(app_t *app)
     return true;
 }
 
+/****************************************************************************************
+ * @brief Run one pass through the main application loop.
+ *
+ * This function is called forever from main(). Comms and fast app logic are serviced every
+ * pass, while printf-style UI text formatting is refreshed at a slower human-readable rate.
+ * LVGL still runs every pass through display_update(), which lets touch input and animations
+ * remain responsive.
+ ****************************************************************************************/
 void app_update(app_t *app)
 {
     uint64_t now_ms;
@@ -53,18 +69,19 @@ void app_update(app_t *app)
     now_ms = time_base_now_ms();
 
     comms_update(&app->comms, now_ms);
-    app_logic_update(&app->logic, comms_get_status(&app->comms), now_ms);
+    app_logic_update_fast(&app->logic, comms_get_status(&app->comms), now_ms);
 
     if (app->display_enabled)
     {
         /*
-         * The status screen is useful during bring-up, but rewriting every label on every
-         * loop makes LVGL redraw far more often than a human can read. Keep comms running
-         * every loop, but refresh this diagnostic UI at a modest rate so the SOM stays
-         * responsive and has CPU left for the real control work.
+         * The status screen is useful during bring-up, but formatting strings and rewriting
+         * labels every loop makes the SOM do work faster than a human can read. Keep comms
+         * and fast app logic running every loop; refresh the diagnostic view model and UI at
+         * a modest rate.
          */
         if ((now_ms - app->last_ui_update_ms) >= APP_UI_REFRESH_PERIOD_MS)
         {
+            app_logic_update_status_view_model(&app->logic, comms_get_status(&app->comms));
             ui_update(&app->ui, &app->logic.status_screen);
             app->last_ui_update_ms = now_ms;
         }
@@ -77,6 +94,9 @@ void app_update(app_t *app)
     }
 }
 
+/****************************************************************************************
+ * @brief Release app-owned resources before the process exits.
+ ****************************************************************************************/
 void app_shutdown(app_t *app)
 {
     if (app == NULL)

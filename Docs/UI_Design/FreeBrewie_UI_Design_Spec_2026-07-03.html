@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FreeBrewie UI Design Spec 2026-07-02</title>
+    <title>FreeBrewie UI Design Spec 2026-07-03</title>
     <style>
         :root {
             --screen-w: 272px;
@@ -474,7 +474,7 @@
 <body>
     <h1>FreeBrewie UI Design Spec</h1>
     <p>
-        Date: 2026-07-02. This is the working design document for the first product-shaped
+        Date: 2026-07-03. This is the working design document for the first product-shaped
         FreeBrewie SOM UI. It combines navigation, visual direction, screen roles, and
         272x480 mockups in one place so the implementation can follow a concrete target.
     </p>
@@ -562,9 +562,9 @@
 
     <h2>Near-Term Navigation</h2>
     <p>
-        The first implementation should be small: Home starts the product-shaped app, Status
-        keeps the proven diagnostics, and the other sections are safe placeholders until their
-        logic exists.
+        The first implementation should be small: Home starts the product-shaped app, the
+        top-right menu holds secondary navigation, Status keeps the proven diagnostics, and
+        the other sections are safe placeholders until their logic exists.
     </p>
     <div class="flow">
         <div class="flow_node">
@@ -573,7 +573,15 @@
         </div>
         <div class="flow_node primary">
             <div class="flow_title">Home</div>
-            <div class="flow_text">Machine summary, MCU link, safe next actions.</div>
+            <div class="flow_text">Minimal dashboard, MCU link, tank summaries, Brew later.</div>
+        </div>
+        <div class="flow_node">
+            <div class="flow_title">Menu</div>
+            <div class="flow_text">Top-right hamburger opens secondary navigation.</div>
+        </div>
+        <div class="flow_node">
+            <div class="flow_title">Tank popup</div>
+            <div class="flow_text">Tap Mash or Boil for detail instead of tiny scrolling panels.</div>
         </div>
         <div class="flow_node">
             <div class="flow_title">Status</div>
@@ -630,8 +638,10 @@
         <li>Add <code>Screen_home.c</code> and <code>Screen_home.h</code>.</li>
         <li>Add small app navigation state instead of direct hardware actions in button callbacks.</li>
         <li>Start on Home after app/platform/comms/UI initialization.</li>
-        <li>Make Home's Status button open the existing diagnostics screen.</li>
+        <li>Use a top-right hamburger menu for Status, Manual, Clean, and Settings.</li>
+        <li>Make the menu's Status button open the existing diagnostics screen.</li>
         <li>Add safe placeholder screens for Manual, Clean, and Settings.</li>
+        <li>Make Mash and Boil tappable and show detail popups instead of tiny scroll regions.</li>
         <li>Remove the temporary Touch OK proof button once normal navigation proves touch.</li>
         <li>Add fault banner or fault screen after home/status navigation is stable.</li>
     </ol>
@@ -681,10 +691,7 @@
                         <div class="section_label">Next action</div>
                         <div class="button_stack">
                             <div class="button primary disabled">Brew later</div>
-                            <div class="button disabled">Clean</div>
-                            <div class="button disabled">Manual</div>
-                            <div class="button secondary">Status</div>
-                            <div class="button disabled">Settings</div>
+                            <div class="button secondary">Menu: Status / Clean / Manual / Settings</div>
                         </div>
                     </div>
 

@@ -8,6 +8,11 @@
 
 typedef struct
 {
+    /*
+     * Linux represents an open device as a small integer called a file descriptor. We keep
+     * the conventional field name "fd" because it is the name used by open/read/write/poll,
+     * but code that uses this struct should describe what the descriptor is for.
+     */
     int fd;
 } transport_serial_t;
 

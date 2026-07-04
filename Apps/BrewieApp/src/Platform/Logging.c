@@ -3,6 +3,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+/*
+ * systemd captures stdout/stderr from brewie.service into the journal. Keeping logging as a
+ * tiny wrapper makes the rest of the app independent from that detail, and leaves room to
+ * redirect logs later without changing every call site.
+ */
 static void log_vprint(const char *prefix, const char *format, va_list args)
 {
     fprintf(stderr, "%s", prefix);

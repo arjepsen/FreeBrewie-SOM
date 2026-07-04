@@ -7,6 +7,7 @@
 
 typedef struct
 {
+    /** LVGL display/input state and selected backend details. */
     display_t display;
 } platform_t;
 

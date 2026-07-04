@@ -10,6 +10,15 @@
 #define PROTOCOL_MAX_DATA_SIZE    64U
 #define PROTOCOL_MAX_FRAME_SIZE   (2U + 1U + 1U + 1U + PROTOCOL_MAX_DATA_SIZE + 1U)
 
+/**
+ * One wire frame is:
+ *
+ *   sync1 sync2 type seq len data... crc
+ *
+ * sync1/sync2 let the receiver find the start of a frame again after noise. type tells what
+ * the frame means. seq is a rolling message number. len is the payload byte count. crc
+ * protects type, seq, len, and data, but not the sync bytes.
+ */
 enum
 {
     PROTOCOL_MSG_CONTROL_SNAPSHOT = 0x01,
@@ -22,6 +31,7 @@ enum
     PROTOCOL_MSG_FAULT_CLEAR_REQUEST = 0x08
 };
 
+/** Fully decoded frame after the byte-by-byte receiver has validated the CRC. */
 typedef struct
 {
     uint8_t type;
@@ -30,11 +40,18 @@ typedef struct
     uint8_t data[PROTOCOL_MAX_DATA_SIZE];
 } protocol_frame_t;
 
+/** Outgoing sequence number state for frames created by the SOM. */
 typedef struct
 {
     uint8_t next_seq;
 } protocol_sender_t;
 
+/**
+ * Byte receiver state machine stages.
+ *
+ * UART data arrives as an endless stream of bytes, not as neat packets. The receiver walks
+ * through these stages until it has a complete, CRC-checked frame.
+ */
 typedef enum
 {
     PROTOCOL_RX_WAIT_SYNC1 = 0,
@@ -46,6 +63,7 @@ typedef enum
     PROTOCOL_RX_WAIT_CRC
 } protocol_rx_stage_t;
 
+/** Runtime memory for the byte-by-byte protocol receiver. */
 typedef struct
 {
     protocol_rx_stage_t stage;

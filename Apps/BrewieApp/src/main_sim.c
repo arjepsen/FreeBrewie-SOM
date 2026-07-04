@@ -20,6 +20,10 @@ int main()
     ui_init(&ui);
 
     status_screen_view_model_init(&vm);
+    /*
+     * The simulator does not talk to the MCU yet. Fill the view model with fixed values so
+     * UI layout and navigation can be tested locally without serial hardware.
+     */
     vm.display_text = "simulator";
     vm.serial_text = "not used";
     vm.heartbeat_text = "simulator only";
@@ -34,6 +38,10 @@ int main()
 
     for (;;)
     {
+        /*
+         * Keep one changing value visible so it is obvious the simulator event/render loop is
+         * alive. This loop should later be aligned with the target app_update() cadence.
+         */
         vm.heartbeat_count++;
         ui_update(&ui, &vm);
         display_update(&display, time_base_now_ms());

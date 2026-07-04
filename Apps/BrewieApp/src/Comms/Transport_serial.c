@@ -8,6 +8,10 @@
 
 #include "Platform/Logging.h"
 
+/*
+ * termios uses symbolic constants such as B115200 instead of raw baud-rate numbers. This
+ * helper keeps the public API readable while still feeding termios what it expects.
+ */
 static speed_t transport_serial_baud_to_speed(int baud_rate)
 {
     switch (baud_rate)
@@ -53,6 +57,10 @@ bool transport_serial_open(transport_serial_t *port, const char *device_path, in
         return false;
     }
 
+    /*
+     * Raw mode means "do not treat bytes as terminal text". That is required for our binary
+     * frame protocol because values like 0x0A or 0x13 must pass through unchanged.
+     */
     cfmakeraw(&tty);
     tty.c_cflag |= (CLOCAL | CREAD);
     tty.c_cflag &= ~CSTOPB;
@@ -122,10 +130,12 @@ bool transport_serial_write_all(transport_serial_t *port, const uint8_t *buffer,
         {
             if (errno == EINTR)
             {
+                /* A signal interrupted write(); retry without treating it as data loss. */
                 continue;
             }
             if (errno == EAGAIN || errno == EWOULDBLOCK)
             {
+                /* Non-blocking port is temporarily full. Pause very briefly and retry. */
                 usleep(1000);
                 continue;
             }

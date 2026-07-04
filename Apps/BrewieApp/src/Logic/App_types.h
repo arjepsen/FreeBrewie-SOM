@@ -5,6 +5,14 @@
 
 typedef struct
 {
+    /*
+     * This is the current diagnostic status-screen view model. It intentionally stores
+     * readable strings because the screen is a bring-up/debug view.
+     *
+     * Production brewing screens should move toward raw values and screen-specific dirty
+     * updates, so fixed labels and unchanged widgets are not redrawn just because one number
+     * changes.
+     */
     const char *display_text;
     const char *serial_text;
     const char *heartbeat_text;
