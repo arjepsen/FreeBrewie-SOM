@@ -17,6 +17,8 @@ Working now:
 - The app decodes `STATUS_REPORT` and `FAULT_REPORT` into compact app-facing status.
 - The target display initializes through LVGL on Linux DRM.
 - The current screen shows live status/debug information on the real target display.
+- The app now has a product-shaped Home screen, a top-right menu, placeholder Manual/Clean/
+  Settings screens, and the status screen as a diagnostics destination.
 - The physical LCD mode is 480x272, but the appliance uses the panel in portrait. The
   simulator opens a portrait 272x480 window, and the target DRM path now gives LVGL the
   same logical portrait size by rotating dirty rectangles into the physical scanout buffer.
@@ -26,9 +28,11 @@ Working now:
   temporary status-screen button has proven LVGL click events.
 - Heartbeat/status receive logging has been reduced so normal operation does not spam the
   journal every second.
+- Status-screen text formatting is separated into `Logic/Status_view_model.*`, and UI labels
+  are only updated when visible text changes.
 
 Still pending:
-- final portrait-oriented status/home/fault UI
+- final portrait-oriented home/status/fault UI polish
 - simulator/local UI build cleanup
 - real manual-service, cleaning, and brewing workflows
 
@@ -57,6 +61,7 @@ Current responsibility during bring-up:
 - send heartbeat periodically
 - receive and decode MCU frames
 - drive the first live status/debug screen
+- provide the first Home/menu/navigation shell
 - provide the base application loop for later UI and control work
 
 Other SOM applications can be added later, but for now the focus should stay on `BrewieApp` until the main runtime path is solid.
@@ -151,8 +156,8 @@ The `brewie` user is the correct runtime identity for the application because it
 1. Keep the current service/comms/display path as the known-good baseline.
 2. Keep `Screen_status` focused as the live status/debug screen.
 3. Keep any future animated boot/splash screen separate from the long-lived status screen.
-4. Grow toward the first product-shaped home/navigation shell.
-5. Keep `Screen_status` available as a live diagnostic screen.
+4. Keep the product-shaped home/navigation shell as the normal user-facing starting point.
+5. Keep `Screen_status` available as a scrollable live diagnostic screen.
 6. Grow toward the first manual-service UI only after the navigation shell and safety
    boundaries are clear.
 
@@ -163,19 +168,19 @@ At this stage, keep documentation compact and practical.
 The current useful SOM doc set is:
 
 - `README.md`
-- `Docs/README_2026-07-03.md`
+- `Docs/README_2026-07-04.md`
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
 - `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-02.md`
-- `Docs/FreeBrewie_UI_Current_Status_2026-07-02.md`
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-04.md`
+- `Docs/FreeBrewie_UI_Current_Status_2026-07-04.md`
 - `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
 - `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-03.html`
 
 Use them as follows:
 
-- `Docs/README_2026-07-03.md`
+- `Docs/README_2026-07-04.md`
   Short index of the SOM-side document set.
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
   Hardware/platform facts for the SOM target.
@@ -185,9 +190,9 @@ Use them as follows:
   Development host, toolchain, build environment, and workflow notes.
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
   Practical SOM↔MCU integration notes and serial/protocol direction.
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-02.md`
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-04.md`
   SOM-side software structure, top-level groups, and intended file responsibilities.
-- `Docs/FreeBrewie_UI_Current_Status_2026-07-02.md`
+- `Docs/FreeBrewie_UI_Current_Status_2026-07-04.md`
   Current SOM/UI bring-up status and immediate next milestone.
 - `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
   First product-shaped UI flow, screen roles, and implementation order.

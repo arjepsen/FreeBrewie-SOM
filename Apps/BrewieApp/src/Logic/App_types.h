@@ -26,6 +26,4 @@ typedef struct
     uint32_t heartbeat_count;
 } status_screen_view_model_t;
 
-void status_screen_view_model_init(status_screen_view_model_t *view_model);
-
 #endif

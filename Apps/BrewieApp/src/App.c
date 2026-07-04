@@ -45,7 +45,7 @@ bool app_init(app_t *app)
         return false;
     }
 
-    app_logic_set_serial_ready(&app->logic, comms_is_serial_ready(&app->comms));
+    status_view_model_set_serial_ready(&app->logic.status, comms_is_serial_ready(&app->comms));
     return true;
 }
 
@@ -81,8 +81,8 @@ void app_update(app_t *app)
          */
         if ((now_ms - app->last_ui_update_ms) >= APP_UI_REFRESH_PERIOD_MS)
         {
-            app_logic_update_status_view_model(&app->logic, comms_get_status(&app->comms));
-            ui_update(&app->ui, &app->logic.status_screen);
+            status_view_model_update(&app->logic.status, comms_get_status(&app->comms));
+            ui_update(&app->ui, &app->logic.status.values);
             app->last_ui_update_ms = now_ms;
         }
 

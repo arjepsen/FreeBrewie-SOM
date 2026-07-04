@@ -1,6 +1,6 @@
 # FreeBrewie UI Current Status
-_Date: 2026-07-02_
-_Updated: 2026-07-02_
+_Date: 2026-07-04_
+_Updated: 2026-07-04_
 
 ## Purpose
 This document captures the current real status of the SOM-side UI bring-up.
@@ -39,6 +39,11 @@ The following is currently proven on the real SOM target:
 - touch is now wired into LVGL and mapped into the portrait coordinate system
 - a temporary status-screen button proves LVGL receives click events
 - normal heartbeat/status report logging has been reduced so the journal stays useful
+- Home/menu/status navigation works in the simulator
+- `Screen_status` is structured as a scrollable diagnostics list
+- status text formatting is separated into `Logic/Status_view_model.*`
+- visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
+  LVGL
 
 So the project is no longer only at “headless serial baseline”.
 We now have:
@@ -46,22 +51,25 @@ We now have:
 - working target display initialization
 - first visible portrait LVGL output on the real screen
 - first target touch integration proof
+- first product-shaped navigation shell
 
 ---
 
 ## What is currently visible
-The currently visible target screen is still only a bring-up/debug screen.
+The normal UI direction now starts at Home, with Status available through the menu.
+The target still needs another hardware pass after the latest UI cleanup, but the simulator
+proves the Home/menu/status shell.
 
-It is not yet the final boot UX.
-It is being used to prove that:
+Status is still not the final boot UX. It remains available to prove and inspect that:
 - LVGL is alive
 - DRM output is alive
 - the app can render visible objects while comms are also running
+- MCU/link values are still reaching the UI
 
-The current visible proof is a high-contrast live status/debug text render.
+The status screen remains a high-contrast live diagnostics screen.
 
-This is intentional.
-At this stage, obvious visible output is more important than polished screen design.
+This is intentional. It should stay useful for development and service visibility, while
+Home becomes the normal user-facing screen.
 
 ---
 
@@ -100,14 +108,15 @@ Owns:
 ### `src/Logic/`
 Owns:
 - application-side logic/state interpretation
-- status-screen view-model data
+- status-screen view-model data in `Status_view_model.c`
 - non-UI machine/application reasoning
 
 ### `src/UI/`
 Owns:
 - screen creation/update
 - UI widgets and screen-level layout
-- current live status/debug screen
+- Home/menu/status screens and placeholder navigation targets
+- dirty-checked updates for visible label text
 
 ### `src/Platform/`
 Owns:
@@ -137,8 +146,8 @@ The SOM-side UI is still early bring-up work.
 
 The following are **not** yet finished:
 
-- stable final status/home/fault screen design
-- real screen flow between startup / status / home / fault screens
+- stable final home/status/fault screen design
+- final real screen flow between startup / home / status / fault screens
 - binding real machine state to a fuller UI
 - polished redraw/update behavior
 - true animated boot/splash screen during SOM startup
@@ -177,6 +186,7 @@ The safest currently proven baseline is:
 6. a visible portrait LVGL live status/debug screen is shown
 7. touch input reaches LVGL in portrait coordinates
 8. `brewie.service` starts `/opt/brewie/brewie_app` automatically
+9. simulator Home/menu/status navigation works after the latest cleanup
 
 This is the current anchor state.
 
@@ -209,15 +219,16 @@ Recommended next step:
 4. keep touch/input owned by `Platform/`, not directly inside screen code
 5. move toward `Screen_home` and fuller UI behavior
 6. keep the status/debug screen available as a service/developer screen
+7. keep diagnostic values in a scrollable list, since the list will grow over time
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:
-- add the first product-shaped home/navigation shell
+- continue refining the first product-shaped home/navigation shell
 - keep the current live status/debug screen as a diagnostic destination
 - show real bring-up status through the existing architecture
 
 Naming/orientation note:
-- `Screen_status` is currently the first live status/debug screen, not finished product UI
+- `Screen_status` is currently the live diagnostics screen, not finished product UI
 - a true animated boot/splash screen should be a separate future startup phase
 - the target render is now portrait
 - continuous full-screen animation is visibly choppy on the A13 SOM; keep the final UI
@@ -234,6 +245,7 @@ In particular:
 - current visible screen content is still a deliberate test-oriented render
 - touch mapping has only been proven through simple corner/button testing, not through a
   finished production UI
+- the latest Home/menu/status cleanup still needs a target-device run after deployment
 
 So Claude or any later assistant should not assume:
 - the display stack is fully polished
@@ -252,6 +264,7 @@ Current real status is now:
 - target portrait DRM display init proven
 - first visible portrait LVGL target output proven
 - touch device integrated and simple LVGL click events proven
+- simulator Home/menu/status navigation proven
 
 The UI is therefore no longer “not working”.
 A more accurate description is:

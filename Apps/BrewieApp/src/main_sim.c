@@ -1,15 +1,21 @@
 #include <stdio.h>
-#include <unistd.h>
 
+#include "Logic/Status_view_model.h"
 #include "Platform/Display.h"
 #include "Platform/Time_base.h"
 #include "UI/UI.h"
+
+#define SIM_UI_REFRESH_PERIOD_MS 250U
+#define SIM_HEARTBEAT_PERIOD_MS 1000U
 
 int main()
 {
     display_t display;
     ui_t ui;
     status_screen_view_model_t vm;
+    uint64_t now_ms;
+    uint64_t last_ui_update_ms;
+    uint64_t last_heartbeat_ms;
 
     if (!display_init(&display))
     {
@@ -35,17 +41,31 @@ int main()
     vm.solenoid_text = "closed";
     vm.fault_text = "none";
     vm.heartbeat_count = 0;
+    last_ui_update_ms = 0U;
+    last_heartbeat_ms = time_base_now_ms();
 
     for (;;)
     {
+        now_ms = time_base_now_ms();
+
         /*
-         * Keep one changing value visible so it is obvious the simulator event/render loop is
-         * alive. This loop should later be aligned with the target app_update() cadence.
+         * Keep the simulator's visible data cadence close to the target. The render/touch loop
+         * still runs every pass through display_update(), but UI values are refreshed at the
+         * same 250 ms pace as the appliance build.
          */
-        vm.heartbeat_count++;
-        ui_update(&ui, &vm);
-        display_update(&display, time_base_now_ms());
-        usleep(5000);
+        if ((now_ms - last_heartbeat_ms) >= SIM_HEARTBEAT_PERIOD_MS)
+        {
+            vm.heartbeat_count++;
+            last_heartbeat_ms = now_ms;
+        }
+
+        if ((now_ms - last_ui_update_ms) >= SIM_UI_REFRESH_PERIOD_MS)
+        {
+            ui_update(&ui, &vm);
+            last_ui_update_ms = now_ms;
+        }
+
+        display_update(&display, now_ms);
     }
 
     return 0;

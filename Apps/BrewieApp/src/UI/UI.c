@@ -4,36 +4,25 @@
 
 #include "UI_theme.h"
 
-typedef struct
-{
-    ui_action_t action;
-    ui_t *ui;
-} ui_placeholder_button_context_t;
-
 static void ui_handle_action(ui_action_t action, void *user_data);
 static lv_obj_t *ui_create_menu_screen(ui_t *ui);
 static lv_obj_t *ui_create_menu_row(lv_obj_t *parent,
                                     const char *text,
                                     ui_action_t action,
-                                    ui_placeholder_button_context_t *context,
+                                    ui_button_context_t *context,
                                     ui_t *ui);
-static lv_obj_t *ui_create_placeholder_screen(ui_t *ui, const char *title, const char *state, const char *message);
+static lv_obj_t *ui_create_placeholder_screen(ui_t *ui,
+                                              const char *title,
+                                              const char *state,
+                                              const char *message,
+                                              ui_button_context_t *back_context);
 static lv_obj_t *ui_create_placeholder_button(lv_obj_t *parent,
                                               const char *text,
                                               ui_action_t action,
                                               ui_t *ui,
-                                              ui_placeholder_button_context_t *context);
+                                              ui_button_context_t *context);
 static void ui_placeholder_button_event_cb(lv_event_t *event);
 static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id);
-
-static ui_placeholder_button_context_t manual_back_context;
-static ui_placeholder_button_context_t clean_back_context;
-static ui_placeholder_button_context_t settings_back_context;
-static ui_placeholder_button_context_t menu_home_context;
-static ui_placeholder_button_context_t menu_status_context;
-static ui_placeholder_button_context_t menu_clean_context;
-static ui_placeholder_button_context_t menu_manual_context;
-static ui_placeholder_button_context_t menu_settings_context;
 
 static void ui_handle_action(ui_action_t action, void *user_data)
 {
@@ -114,18 +103,18 @@ static lv_obj_t *ui_create_menu_screen(ui_t *ui)
     lv_obj_set_width(spacer, lv_pct(100));
     lv_obj_set_height(spacer, 24);
 
-    ui_create_menu_row(container, "HOME", UI_ACTION_SHOW_HOME, &menu_home_context, ui);
-    ui_create_menu_row(container, "STATUS", UI_ACTION_SHOW_STATUS, &menu_status_context, ui);
-    ui_create_menu_row(container, "CLEAN", UI_ACTION_SHOW_CLEAN, &menu_clean_context, ui);
-    ui_create_menu_row(container, "MANUAL", UI_ACTION_SHOW_MANUAL, &menu_manual_context, ui);
-    ui_create_menu_row(container, "SETTINGS", UI_ACTION_SHOW_SETTINGS, &menu_settings_context, ui);
+    ui_create_menu_row(container, "HOME", UI_ACTION_SHOW_HOME, &ui->menu_home_context, ui);
+    ui_create_menu_row(container, "STATUS", UI_ACTION_SHOW_STATUS, &ui->menu_status_context, ui);
+    ui_create_menu_row(container, "CLEAN", UI_ACTION_SHOW_CLEAN, &ui->menu_clean_context, ui);
+    ui_create_menu_row(container, "MANUAL", UI_ACTION_SHOW_MANUAL, &ui->menu_manual_context, ui);
+    ui_create_menu_row(container, "SETTINGS", UI_ACTION_SHOW_SETTINGS, &ui->menu_settings_context, ui);
 
     spacer = lv_obj_create(container);
     lv_obj_remove_style_all(spacer);
     lv_obj_set_width(spacer, lv_pct(100));
     lv_obj_set_flex_grow(spacer, 1);
 
-    ui_create_menu_row(container, "< BACK", UI_ACTION_SHOW_HOME, &menu_home_context, ui);
+    ui_create_menu_row(container, "< BACK", UI_ACTION_SHOW_HOME, &ui->menu_home_context, ui);
 
     return screen;
 }
@@ -133,7 +122,7 @@ static lv_obj_t *ui_create_menu_screen(ui_t *ui)
 static lv_obj_t *ui_create_menu_row(lv_obj_t *parent,
                                     const char *text,
                                     ui_action_t action,
-                                    ui_placeholder_button_context_t *context,
+                                    ui_button_context_t *context,
                                     ui_t *ui)
 {
     lv_obj_t *button;
@@ -167,7 +156,11 @@ static lv_obj_t *ui_create_menu_row(lv_obj_t *parent,
  * shell while making it obvious that brewing, cleaning, settings, and service behavior have
  * not been wired to hardware actions.
  */
-static lv_obj_t *ui_create_placeholder_screen(ui_t *ui, const char *title, const char *state, const char *message)
+static lv_obj_t *ui_create_placeholder_screen(ui_t *ui,
+                                              const char *title,
+                                              const char *state,
+                                              const char *message,
+                                              ui_button_context_t *back_context)
 {
     lv_obj_t *screen;
     lv_obj_t *container;
@@ -224,18 +217,7 @@ static lv_obj_t *ui_create_placeholder_screen(ui_t *ui, const char *title, const
     lv_obj_set_style_text_color(body, lv_color_hex(0xC8C8C8), 0);
     lv_obj_set_style_pad_top(body, 90, 0);
 
-    if (ui->manual_screen == NULL)
-    {
-        ui_create_placeholder_button(container, "Back", UI_ACTION_SHOW_HOME, ui, &manual_back_context);
-    }
-    else if (ui->clean_screen == NULL)
-    {
-        ui_create_placeholder_button(container, "Back", UI_ACTION_SHOW_HOME, ui, &clean_back_context);
-    }
-    else
-    {
-        ui_create_placeholder_button(container, "Back", UI_ACTION_SHOW_HOME, ui, &settings_back_context);
-    }
+    ui_create_placeholder_button(container, "Back", UI_ACTION_SHOW_HOME, ui, back_context);
 
     return screen;
 }
@@ -244,7 +226,7 @@ static lv_obj_t *ui_create_placeholder_button(lv_obj_t *parent,
                                               const char *text,
                                               ui_action_t action,
                                               ui_t *ui,
-                                              ui_placeholder_button_context_t *context)
+                                              ui_button_context_t *context)
 {
     lv_obj_t *button;
     lv_obj_t *label;
@@ -275,7 +257,7 @@ static lv_obj_t *ui_create_placeholder_button(lv_obj_t *parent,
 
 static void ui_placeholder_button_event_cb(lv_event_t *event)
 {
-    ui_placeholder_button_context_t *context;
+    ui_button_context_t *context;
 
     context = lv_event_get_user_data(event);
     if (context == NULL || context->ui == NULL)
@@ -344,20 +326,23 @@ void ui_init(ui_t *ui)
                                                      "Locked",
                                                      "Manual controls are not enabled yet. "
                                                      "This screen will require app logic and "
-                                                     "MCU interlocks before it can move hardware.");
+                                                     "MCU interlocks before it can move hardware.",
+                                                     &ui->manual_back_context);
     ui->clean_screen = ui_create_placeholder_screen(ui,
                                                     "Clean",
                                                     "Later",
                                                     "Clean workflows will be added after the "
                                                     "navigation shell is proven. Short clean, "
                                                     "full clean, drain, and unclogging are likely "
-                                                    "future destinations.");
+                                                    "future destinations.",
+                                                    &ui->clean_back_context);
     ui->settings_screen = ui_create_placeholder_screen(ui,
                                                        "Settings",
                                                        "Later",
                                                        "Settings starts with display and touch facts, "
                                                        "then can grow into network, system, and "
-                                                       "service options.");
+                                                       "service options.",
+                                                       &ui->settings_back_context);
     ui_show_screen(ui, UI_SCREEN_HOME);
 }
 

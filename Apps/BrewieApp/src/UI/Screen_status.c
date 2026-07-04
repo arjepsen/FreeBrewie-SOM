@@ -281,8 +281,6 @@ void screen_status_init(screen_status_t *status, ui_action_handler_t action_hand
 
 void screen_status_update(screen_status_t *status, const status_screen_view_model_t *view_model)
 {
-    char text[32];
-
     if (status == NULL || view_model == NULL)
     {
         return;
@@ -299,6 +297,18 @@ void screen_status_update(screen_status_t *status, const status_screen_view_mode
     screen_status_set_label_text(status->solenoid_value, view_model->solenoid_text);
     screen_status_set_label_text(status->fault_value, view_model->fault_text);
 
-    snprintf(text, sizeof(text), "%lu", (unsigned long)view_model->heartbeat_count);
-    screen_status_set_label_text(status->hb_counter_value, text);
+    /*
+     * The heartbeat count normally changes once per second, while screen_status_update()
+     * is called several times per second. Format this number only when it actually changed.
+     */
+    if (status->shown_heartbeat_count != view_model->heartbeat_count ||
+        status->heartbeat_count_text[0] == '\0')
+    {
+        status->shown_heartbeat_count = view_model->heartbeat_count;
+        snprintf(status->heartbeat_count_text,
+                 sizeof(status->heartbeat_count_text),
+                 "%lu",
+                 (unsigned long)view_model->heartbeat_count);
+        screen_status_set_label_text(status->hb_counter_value, status->heartbeat_count_text);
+    }
 }

@@ -32,6 +32,10 @@ typedef struct
     /** Temporary counters used while proving touch input on the real panel. */
     uint32_t touch_event_count;
     uint32_t button_click_count;
+    /** Last heartbeat count written to the visible label. */
+    uint32_t shown_heartbeat_count;
+    /** Stable text storage for the formatted heartbeat count. */
+    char heartbeat_count_text[16];
 } screen_status_t;
 
 void screen_status_init(screen_status_t *status, ui_action_handler_t action_handler, void *user_data);

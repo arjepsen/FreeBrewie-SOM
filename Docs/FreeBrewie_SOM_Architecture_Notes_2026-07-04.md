@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-07-02_
+_Date: 2026-07-04_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -7,7 +7,7 @@ This document defines the current target architecture for the Brewie SOM applica
 It is meant to keep file ownership, module boundaries, and subsystem responsibilities clear while the SOM app is still in early bring-up.
 
 It should be read together with:
-- `FreeBrewie_UI_Current_Status_2026-07-02.md`
+- `FreeBrewie_UI_Current_Status_2026-07-04.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
 - `Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
@@ -191,18 +191,29 @@ Current file set:
 - `Machine_targets.h`
 - `Startup_logic.c`
 - `Startup_logic.h`
+- `Status_view_model.c`
+- `Status_view_model.h`
 - `User_actions.c`
 - `User_actions.h`
 
 ### `App_logic`
 Owns:
 - app-level state progression
-- assembling compact screen-facing data from comms/platform facts
-- current status-screen view model
+- future workflow/interlock decisions that must stay independent from UI widgets
+- calling into specialized logic/view-model modules
 
-At the current stage, this is important because:
-- the status screen is now driven through logic-owned text/status data
-- communication facts are not supposed to be stuffed directly into widgets everywhere
+At the current stage, `App_logic` is deliberately small. It keeps a clear home for later
+machine-control decisions without becoming a formatting or widget file.
+
+### `Status_view_model`
+Owns:
+- the current diagnostic/status screen view model
+- stable backing storage for formatted diagnostic strings
+- cached comms snapshots so unchanged status text is not rebuilt every UI refresh
+
+This module exists because the status screen is a dense diagnostics view. It is acceptable
+for that screen to show compact text strings, but production brewing screens should move
+toward raw values and screen-specific dirty widget updates.
 
 ### `Fault_logic`
 Owns:
@@ -259,6 +270,8 @@ Owns:
 - top-level UI init/update
 - selecting which screens/components are active
 - keeping the UI layer together
+- owning button callback contexts for menu and placeholder navigation
+- deferring navigation requested from LVGL event callbacks until normal `ui_update()`
 
 Must not own:
 - serial I/O
@@ -267,13 +280,13 @@ Must not own:
 
 ### `Screen_status`
 Owns:
-- the current first visible status/debug screen
-- early visible bring-up path
-- current proof that target LVGL output works
+- the scrollable live diagnostics/status screen
+- status rows and temporary touch/click proof rows
+- dirty-checked label updates from `status_screen_view_model_t`
 
 Important current fact:
-`Screen_status` is intentionally the first visible screen used for bring-up and debugging.
-It is not yet the finished product UI.
+`Screen_status` is no longer intended to be the normal Home screen. It remains available
+from the menu as a service/developer diagnostics destination.
 
 Terminology/orientation note:
 - the current `Screen_status` role is really a live status/debug screen
@@ -286,14 +299,15 @@ Terminology/orientation note:
 - final screen components should avoid assuming long horizontal text fields will fit
 
 At the current stage it is the correct place for:
-- unmistakable visible text
 - compact status/debug information
+- a growing scrollable list of live values
 - simple proof that display + UI + logic are connected
 
 ### `Screen_home`
 Owns:
-- eventual main/home screen for the product UI
-- not yet the current bring-up focus
+- current first product-shaped Home screen
+- normal landing view for the user
+- menu entry point and simple status summaries
 
 ### `Screen_fault`
 Owns:

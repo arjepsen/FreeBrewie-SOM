@@ -9,6 +9,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Logic/Machine_state.c
     src/Logic/Machine_targets.c
     src/Logic/Startup_logic.c
+    src/Logic/Status_view_model.c
     src/Logic/User_actions.c
     src/Platform/Display.c
     src/Platform/Logging.c
