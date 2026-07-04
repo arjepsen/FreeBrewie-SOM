@@ -12,7 +12,7 @@
 
 #include <stdint.h>
 
-#include "Logic/App_types.h"
+#include "Logic/Status_view_model.h"
 #include "UI_types.h"
 #include "lvgl.h"
 

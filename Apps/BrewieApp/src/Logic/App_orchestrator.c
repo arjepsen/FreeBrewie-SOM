@@ -1,22 +1,23 @@
-#include "App_logic.h"
+#include "App_orchestrator.h"
 
 #include <string.h>
 
 /****************************************************************************************
  * @brief Initialize app-level logic state.
  *
- * App_logic is the owner of future machine/workflow decisions. It does not format LVGL
- * labels directly; diagnostic status text lives in Status_view_model.
+ * App_orchestrator will eventually tie together MCU facts, user requests, faults, and
+ * workflow modules. It does not format LVGL labels directly; diagnostic status text lives
+ * in Status_view_model.
  ****************************************************************************************/
-void app_logic_init(app_logic_t *logic)
+void app_orchestrator_init(app_orchestrator_t *orchestrator)
 {
-    if (logic == NULL)
+    if (orchestrator == NULL)
     {
         return;
     }
 
-    memset(logic, 0, sizeof(*logic));
-    status_view_model_init(&logic->status);
+    memset(orchestrator, 0, sizeof(*orchestrator));
+    status_view_model_init(&orchestrator->status);
 }
 
 /****************************************************************************************
@@ -26,9 +27,11 @@ void app_logic_init(app_logic_t *logic)
  * brewing, cleaning, and safety-interlock work a clear place to live without mixing it with
  * UI formatting code.
  ****************************************************************************************/
-void app_logic_update_fast(app_logic_t *logic, const comms_status_t *comms_status, uint64_t now_ms)
+void app_orchestrator_update_fast(app_orchestrator_t *orchestrator,
+                                  const comms_status_t *comms_status,
+                                  uint64_t now_ms)
 {
-    (void)logic;
+    (void)orchestrator;
     (void)comms_status;
     (void)now_ms;
 }

@@ -10,6 +10,7 @@
  * Does not own: hardware control or protocol messages.
  ****************************************************************************************/
 
+#include "Logic/Status_view_model.h"
 #include "UI_types.h"
 #include "lvgl.h"
 

@@ -181,8 +181,8 @@ Purpose:
 Own the SOM-side application logic and compact app state that sits above raw communications and below widgets.
 
 Current file set:
-- `App_logic.c`
-- `App_logic.h`
+- `App_orchestrator.c`
+- `App_orchestrator.h`
 - `Fault_logic.c`
 - `Fault_logic.h`
 - `Machine_state.c`
@@ -196,14 +196,15 @@ Current file set:
 - `User_actions.c`
 - `User_actions.h`
 
-### `App_logic`
+### `App_orchestrator`
 Owns:
-- app-level state progression
-- future workflow/interlock decisions that must stay independent from UI widgets
-- calling into specialized logic/view-model modules
+- high-level app state coherence
+- routing MCU facts and user requests through the right logic modules
+- future workflow and allowed-action coordination
 
-At the current stage, `App_logic` is deliberately small. It keeps a clear home for later
-machine-control decisions without becoming a formatting or widget file.
+At the current stage, `App_orchestrator` is deliberately small. It keeps a clear home for
+later workflow routing and allowed-action decisions without becoming a formatting, widget,
+or hardware-control file.
 
 ### `Status_view_model`
 Owns:

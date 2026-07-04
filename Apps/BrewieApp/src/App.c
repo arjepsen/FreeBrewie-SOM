@@ -13,7 +13,7 @@
  * @brief Bring the SOM application online.
  *
  * Initialization is ordered from lowest level to highest level:
- * platform/display first, then UI objects, app logic, and finally the MCU serial link.
+ * platform/display first, then UI objects, app orchestrator, and finally the MCU serial link.
  * The app currently treats a missing MCU link as fatal because most useful behavior depends
  * on exchanging heartbeats and status reports with the controller.
  ****************************************************************************************/
@@ -37,7 +37,7 @@ bool app_init(app_t *app)
         ui_init(&app->ui);
     }
 
-    app_logic_init(&app->logic);
+    app_orchestrator_init(&app->orchestrator);
 
     if (!comms_init(&app->comms, "/dev/ttyS1", 115200))
     {
@@ -45,15 +45,15 @@ bool app_init(app_t *app)
         return false;
     }
 
-    status_view_model_set_serial_ready(&app->logic.status, comms_is_serial_ready(&app->comms));
+    status_view_model_set_serial_ready(&app->orchestrator.status, comms_is_serial_ready(&app->comms));
     return true;
 }
 
 /****************************************************************************************
  * @brief Run one pass through the main application loop.
  *
- * This function is called forever from main(). Comms and fast app logic are serviced every
- * pass, while printf-style UI text formatting is refreshed at a slower human-readable rate.
+ * This function is called forever from main(). Comms and fast app orchestration are serviced
+ * every pass, while printf-style UI text formatting is refreshed at a slower human-readable rate.
  * LVGL still runs every pass through display_update(), which lets touch input and animations
  * remain responsive.
  ****************************************************************************************/
@@ -69,20 +69,20 @@ void app_update(app_t *app)
     now_ms = time_base_now_ms();
 
     comms_update(&app->comms, now_ms);
-    app_logic_update_fast(&app->logic, comms_get_status(&app->comms), now_ms);
+    app_orchestrator_update_fast(&app->orchestrator, comms_get_status(&app->comms), now_ms);
 
     if (app->display_enabled)
     {
         /*
          * The status screen is useful during bring-up, but formatting strings and rewriting
          * labels every loop makes the SOM do work faster than a human can read. Keep comms
-         * and fast app logic running every loop; refresh the diagnostic view model and UI at
-         * a modest rate.
+         * and fast app orchestration running every loop; refresh the diagnostic view model
+         * and UI at a modest rate.
          */
         if ((now_ms - app->last_ui_update_ms) >= APP_UI_REFRESH_PERIOD_MS)
         {
-            status_view_model_update(&app->logic.status, comms_get_status(&app->comms));
-            ui_update(&app->ui, &app->logic.status.values);
+            status_view_model_update(&app->orchestrator.status, comms_get_status(&app->comms));
+            ui_update(&app->ui, &app->orchestrator.status.values);
             app->last_ui_update_ms = now_ms;
         }
 

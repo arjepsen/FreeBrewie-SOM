@@ -10,8 +10,6 @@
  * Does not own: machine-control commands.
  ****************************************************************************************/
 
-#include "Logic/App_types.h"
-
 /**
  * Screen identifiers used by the first FreeBrewie navigation shell.
  *

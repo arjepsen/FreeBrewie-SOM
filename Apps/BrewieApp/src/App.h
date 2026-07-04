@@ -14,7 +14,7 @@
 #include <stdint.h>
 
 #include "Comms/Comms.h"
-#include "Logic/App_logic.h"
+#include "Logic/App_orchestrator.h"
 #include "Platform/Platform.h"
 #include "UI/UI.h"
 
@@ -24,8 +24,8 @@ typedef struct
     platform_t platform;
     /** Serial protocol state for the MCU link. */
     comms_t comms;
-    /** App-level state derived from comms and future workflows. */
-    app_logic_t logic;
+    /** Logic-side app state and future workflow routing. */
+    app_orchestrator_t orchestrator;
     /** LVGL screen objects and navigation state. */
     ui_t ui;
     /** Last time the human-readable UI labels were refreshed. */
