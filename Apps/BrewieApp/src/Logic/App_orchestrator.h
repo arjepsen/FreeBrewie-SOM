@@ -7,24 +7,17 @@
  *
  * Responsibility: Keep app state coherent by routing MCU facts and user requests through
  * the right logic modules.
- * Owns: High-level app state, allowed-action routing, and future workflow coordination.
- * Does not own: Widgets, serial transport, or protocol parsing.
+ * Owns: Future high-level app state, allowed-action routing, and workflow coordination.
+ * Must not own: Widgets, serial transport, protocol parsing, or low-level hardware control.
  ****************************************************************************************/
 
-#include <stdint.h>
-
-#include "Comms/Comms_types.h"
-#include "Status_view_model.h"
-
-typedef struct
-{
-    /** Diagnostic/status screen model. This is presentation data, not machine control. */
-    status_view_model_t status;
-} app_orchestrator_t;
-
-void app_orchestrator_init(app_orchestrator_t *orchestrator);
-void app_orchestrator_update_fast(app_orchestrator_t *orchestrator,
-                                  const comms_status_t *comms_status,
-                                  uint64_t now_ms);
+/*
+ * Reserved for the first real app-level routing step.
+ *
+ * The current UI only performs screen navigation, and the diagnostic status screen has its
+ * own Status_view_model module. Do not put presentation-only data here just to make the
+ * orchestrator active. Add public state/functions when a user request needs to be checked
+ * against faults, machine state, startup state, or workflow permissions.
+ */
 
 #endif

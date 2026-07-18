@@ -95,7 +95,7 @@ Owns:
 At the current stage, this means `App.c` coordinates:
 - platform init
 - comms init/update
-- logic init/update
+- status view-model init/update
 - UI init/update
 - display update
 
@@ -198,13 +198,17 @@ Current file set:
 
 ### `App_orchestrator`
 Owns:
-- high-level app state coherence
-- routing MCU facts and user requests through the right logic modules
+- future high-level app state coherence
+- future routing of MCU facts and user requests through the right logic modules
 - future workflow and allowed-action coordination
 
-At the current stage, `App_orchestrator` is deliberately small. It keeps a clear home for
-later workflow routing and allowed-action decisions without becoming a formatting, widget,
-or hardware-control file.
+At the current stage, `App_orchestrator` is deliberately reserved and has no active public
+state. The current UI only performs screen navigation, and the diagnostic status screen has
+its own `Status_view_model` module. Do not put presentation-only data in `App_orchestrator`
+just to make it active.
+
+The first real use of `App_orchestrator` should be a user request that needs to be checked
+against fault state, startup state, machine state, or workflow permissions.
 
 ### `Status_view_model`
 Owns:

@@ -168,7 +168,7 @@ At this stage, keep documentation compact and practical.
 The current useful SOM doc set is:
 
 - `README.md`
-- `Docs/README_2026-07-04.md`
+- `Docs/README_2026-07-05.md`
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
 - `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
@@ -176,12 +176,13 @@ The current useful SOM doc set is:
 - `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-04.md`
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-04.md`
 - `Docs/UI_Design/FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
+- `Docs/UI_Design/FreeBrewie_Old_UI_Map_2026-07-05.html`
 - `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
 - `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-03.html`
 
 Use them as follows:
 
-- `Docs/README_2026-07-04.md`
+- `Docs/README_2026-07-05.md`
   Short index of the SOM-side document set.
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
   Hardware/platform facts for the SOM target.
@@ -198,6 +199,9 @@ Use them as follows:
 - `Docs/UI_Design/FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
   UI/UX decision rules: imitate the original Brewie product feel first, but rebuild with
   clean structure, readable code, safety boundaries, and fast LVGL behavior.
+- `Docs/UI_Design/FreeBrewie_Old_UI_Map_2026-07-05.html`
+  Browser-viewable reference map of the old Brewie UI screens, navigation, and interaction
+  patterns. Use it for product inspiration, not implementation structure.
 - `Docs/UI_Design/FreeBrewie_UI_Navigation_Mockups_2026-07-03.md`
   First product-shaped UI flow, screen roles, and implementation order.
 - `Docs/UI_Design/FreeBrewie_UI_Design_Spec_2026-07-03.html`

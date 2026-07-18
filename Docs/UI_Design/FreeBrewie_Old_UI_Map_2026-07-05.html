@@ -1,0 +1,1565 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FreeBrewie Old UI Map</title>
+  <style>
+    :root {
+      --bg: #151413;
+      --panel: #1f1d1b;
+      --panel-2: #292929;
+      --row: #343434;
+      --line: #3f3f3f;
+      --text: #f4f4f4;
+      --muted: #c8c8c8;
+      --dim: #8c8c8c;
+      --orange: #f47b32;
+      --orange-old: #e67526;
+      --green: #55b047;
+      --red: #c94332;
+      --blue: #7fa7d8;
+      --paper: #f5efe8;
+      --ink: #201b16;
+      --asset-path: "../../../reb20-develop/data/assets/images/";
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0f0e0d;
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.45;
+    }
+
+    header {
+      padding: 28px 22px 18px;
+      background: #1b1917;
+      border-bottom: 1px solid #34302c;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 30px;
+      color: #ffffff;
+    }
+
+    h2 {
+      font-size: 22px;
+      margin: 34px 0 12px;
+      color: #ffffff;
+    }
+
+    h3 {
+      font-size: 17px;
+      margin: 0 0 8px;
+      color: #ffffff;
+    }
+
+    p {
+      margin: 8px 0;
+      color: var(--muted);
+    }
+
+    a {
+      color: #ffb174;
+      text-decoration: none;
+    }
+
+    code {
+      padding: 1px 4px;
+      background: #2c2926;
+      border: 1px solid #45403b;
+      border-radius: 3px;
+      color: #ffd8bc;
+      font-size: 0.93em;
+    }
+
+    .wrap {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 0 18px 48px;
+    }
+
+    .subtitle {
+      max-width: 900px;
+      margin-top: 8px;
+      color: #d0c6bd;
+      font-size: 15px;
+    }
+
+    .notice {
+      margin-top: 16px;
+      padding: 12px 14px;
+      background: #251f1a;
+      border-left: 4px solid var(--orange);
+      color: #e8ddd3;
+      max-width: 980px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+
+    .grid.two {
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .card {
+      background: #1c1a18;
+      border: 1px solid #35312d;
+      border-radius: 6px;
+      padding: 14px;
+    }
+
+    .card.light {
+      background: #211f1d;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 3px 7px;
+      border-radius: 3px;
+      background: #302c28;
+      color: #ded5cd;
+      border: 1px solid #47413c;
+      font-size: 12px;
+    }
+
+    .tag.orange {
+      background: #3a271c;
+      border-color: #7b4426;
+      color: #ffbe8f;
+    }
+
+    .tag.green {
+      background: #1d3322;
+      border-color: #426f46;
+      color: #bdf0bd;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: 330px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .phone {
+      width: 272px;
+      min-height: 480px;
+      background: var(--panel);
+      border: 1px solid #46413b;
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+      color: white;
+      position: relative;
+    }
+
+    .phone.small {
+      width: 210px;
+      min-height: 370px;
+      box-shadow: none;
+    }
+
+    .status {
+      height: 24px;
+      padding: 4px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: #bcbcbc;
+      background: #171615;
+      border-bottom: 1px solid #2d2a27;
+    }
+
+    .bar {
+      height: 64px;
+      padding: 0 12px;
+      display: grid;
+      grid-template-columns: 36px 1fr 36px;
+      align-items: center;
+      background: #1f1d1b;
+    }
+
+    .icon {
+      font-size: 24px;
+      text-align: center;
+      color: white;
+    }
+
+    .caption {
+      text-align: center;
+      color: var(--muted);
+      font-size: 26px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .subcaption {
+      text-align: center;
+      color: var(--orange);
+      font-size: 14px;
+      margin-top: -8px;
+    }
+
+    .content {
+      padding: 8px;
+    }
+
+    .row-button {
+      height: 58px;
+      margin: 8px 0;
+      background: var(--row);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      text-transform: uppercase;
+    }
+
+    .full-button {
+      height: 52px;
+      margin: 10px 0 0;
+      background: var(--orange);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 18px;
+    }
+
+    .empty-button {
+      height: 48px;
+      margin-top: 8px;
+      border: 1px solid #6c625b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-transform: uppercase;
+      font-size: 16px;
+    }
+
+    .hero-image {
+      height: 170px;
+      background: linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.75)),
+        url("../../../reb20-develop/data/assets/images/beer.jpg") center / cover;
+      position: relative;
+    }
+
+    .recipe-strip {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 64px;
+      padding: 10px 12px;
+      background: #292929;
+    }
+
+    .recipe-title {
+      font-size: 20px;
+      font-weight: 700;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .recipe-type {
+      color: var(--orange);
+      font-size: 12px;
+      text-transform: uppercase;
+      margin-top: 3px;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 8px;
+      background: #141414;
+    }
+
+    .tile {
+      height: 58px;
+      border: 1px solid var(--line);
+      background: #292929;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      text-transform: uppercase;
+      font-size: 14px;
+    }
+
+    .form-panel {
+      margin: 7px 0;
+      padding: 8px;
+      background: #282828;
+      border-top: 1px solid #383838;
+    }
+
+    .form-title {
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .field {
+      min-height: 31px;
+      margin: 5px 0;
+      padding: 6px 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      background: #1f1f1f;
+      border-left: 3px solid #4a4a4a;
+      color: #f2f2f2;
+      font-size: 12px;
+    }
+
+    .field span:first-child {
+      color: #b9b9b9;
+      text-transform: uppercase;
+    }
+
+    .field span:last-child {
+      color: #ffffff;
+      text-align: right;
+    }
+
+    .delete-mark {
+      color: #9b9b9b;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .two-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .two-buttons .empty-button,
+    .two-buttons .full-button {
+      height: 40px;
+      margin: 0;
+      font-size: 13px;
+    }
+
+    .tiny-note {
+      color: var(--orange);
+      font-size: 11px;
+      line-height: 1.3;
+      margin: 6px 0 0;
+    }
+
+    .progress {
+      width: 162px;
+      height: 162px;
+      margin: 24px auto 12px;
+      border-radius: 50%;
+      border: 13px solid #313131;
+      outline: 13px solid #1f1d1b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 44px;
+      position: relative;
+    }
+
+    .progress:after {
+      content: "";
+      position: absolute;
+      inset: -13px;
+      border-radius: 50%;
+      border: 13px solid transparent;
+      border-top-color: var(--orange);
+      border-right-color: var(--orange);
+      transform: rotate(32deg);
+    }
+
+    .machine {
+      margin: 24px auto 14px;
+      width: 220px;
+      height: 150px;
+      background: #2d2b2a;
+      display: grid;
+      grid-template-columns: 1fr 36px 1fr;
+      gap: 10px;
+      padding: 12px;
+    }
+
+    .machine .tank {
+      background: linear-gradient(#48372a 78%, var(--orange) 78%);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 16px;
+    }
+
+    .machine .screen {
+      background: #e4e4e4;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding-top: 20px;
+    }
+
+    .machine .screen span {
+      display: block;
+      width: 22px;
+      height: 42px;
+      background: #1a1a1a;
+    }
+
+    .asset-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .asset {
+      width: 76px;
+      min-height: 96px;
+      padding: 8px;
+      background: #23211f;
+      border: 1px solid #38342f;
+      text-align: center;
+      font-size: 11px;
+      color: #d8d0c8;
+    }
+
+    .asset img {
+      max-width: 52px;
+      max-height: 52px;
+      display: block;
+      margin: 0 auto 7px;
+      object-fit: contain;
+    }
+
+    .flow {
+      display: grid;
+      gap: 8px;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .flow-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .node {
+      padding: 7px 9px;
+      background: #24211f;
+      border: 1px solid #433d38;
+      border-radius: 5px;
+      color: #f0e6dd;
+      font-size: 13px;
+    }
+
+    .node.hot {
+      border-color: #a4582e;
+      background: #342117;
+      color: #ffd0ad;
+    }
+
+    .arrow {
+      color: var(--orange);
+      font-weight: 700;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1b1917;
+      border: 1px solid #34302c;
+      margin: 10px 0 22px;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid #34302c;
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+
+    th {
+      color: #ffffff;
+      background: #25221f;
+    }
+
+    td {
+      color: #d8d0c8;
+    }
+
+    .source {
+      color: #9f948a;
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .screen-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+    }
+
+    .mini-screen {
+      border: 1px solid #393530;
+      background: #1b1917;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .mini-title {
+      padding: 8px 10px;
+      background: #25221f;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .mini-body {
+      padding: 10px;
+      color: #d6cec6;
+      font-size: 13px;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .pill {
+      padding: 3px 6px;
+      background: #302b27;
+      color: #e6ded7;
+      border-radius: 3px;
+      font-size: 11px;
+    }
+
+    @media (max-width: 800px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .phone {
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Old Brewie UI Map</h1>
+      <p class="subtitle">
+        Reference document for the original Qt/QML Brewie UI found in
+        <code>reb20-develop/src/gui/ui</code>. This maps the old screens, shared shell,
+        navigation paths, overlays, and graphic vocabulary so the new LVGL UI can take
+        inspiration without copying the old implementation.
+      </p>
+      <div class="notice">
+        This document is descriptive, not prescriptive. The old UI gives us product feel,
+        screen names, assets, and user-flow clues. The new FreeBrewie UI should still use
+        clean module boundaries, fast redraw behavior, and safer app-level action routing.
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <h2>Old UI Shell</h2>
+    <div class="shell">
+      <div class="phone">
+        <div class="status"><span>status</span><span>wifi</span></div>
+        <div class="bar">
+          <div class="icon">&lt;</div>
+          <div>
+            <div class="caption">Home</div>
+            <div class="subcaption"></div>
+          </div>
+          <div class="icon">&#9776;</div>
+        </div>
+        <div class="content">
+          <div class="card light">
+            <h3>MainView</h3>
+            <p>Owns current view, popups, notification overlay, status bar, and the slide
+            animations used when changing screens.</p>
+          </div>
+          <div class="row-button">HOME</div>
+          <div class="row-button">RECIPES</div>
+          <div class="row-button">EXTRAS</div>
+          <div class="row-button">SETTINGS</div>
+          <div class="empty-button">&lt; BACK</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Shell pieces</h3>
+        <table>
+          <tr><th>Piece</th><th>Old source</th><th>Behavior</th></tr>
+          <tr>
+            <td>MainView</td>
+            <td><code>views/MainView.qml</code></td>
+            <td>Holds current screen, popup stack, status bar, main menu popup, and mouse
+            event blocker during animations.</td>
+          </tr>
+          <tr>
+            <td>BView</td>
+            <td><code>views/BView.qml</code></td>
+            <td>Base screen with default header, back behavior, menu button, and default
+            slide-in/out animation choices.</td>
+          </tr>
+          <tr>
+            <td>HeaderBar</td>
+            <td><code>views/HeaderBar.qml</code></td>
+            <td>Top title bar with optional back arrow, menu icon, and tag/refresh icon.</td>
+          </tr>
+          <tr>
+            <td>MainMenu</td>
+            <td><code>views/MainMenu.qml</code></td>
+            <td>Slides from top and temporarily hides the current view. Rows: Home,
+            Recipes, Extras, Settings.</td>
+          </tr>
+          <tr>
+            <td>Notifications</td>
+            <td><code>views/Notifications.qml</code>, <code>Notification.qml</code></td>
+            <td>Modal guide/confirm/status cards stacked above the current view.</td>
+          </tr>
+        </table>
+        <p class="source">Primary sources: <code>main.qml</code>, <code>MainView.qml</code>,
+        <code>BView.qml</code>, <code>HeaderBar.qml</code>, <code>MainMenu.qml</code>.</p>
+      </div>
+    </div>
+
+    <h2>Top-Level Navigation</h2>
+    <div class="card">
+      <div class="flow">
+        <div class="flow-line">
+          <span class="node hot">Startup/loading</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">First settings if needed</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node hot">Home</span>
+        </div>
+        <div class="flow-line">
+          <span class="node hot">Header menu</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">Home</span>
+          <span class="node">Recipes</span>
+          <span class="node">Extras</span>
+          <span class="node">Settings</span>
+        </div>
+        <div class="flow-line">
+          <span class="node hot">Home</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">Let's Brew</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">Recipe chooser</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">Recipe menu</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">Water inlet</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">Checklist</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node hot">Active brewing</span>
+        </div>
+        <div class="flow-line">
+          <span class="node hot">Extras</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node">Clean modes</span>
+          <span class="node">Drain modes</span>
+          <span class="node">Unclogging guide</span>
+          <span class="arrow">-&gt;</span>
+          <span class="node hot">Active brewing/cleaning/draining</span>
+        </div>
+      </div>
+    </div>
+
+    <h2>Representative Old Screens</h2>
+    <div class="screen-grid">
+      <div class="mini-screen">
+        <div class="mini-title">Home</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="status"><span></span><span>wifi</span></div>
+            <div class="bar"><div></div><div class="caption">Home</div><div class="icon">&#9776;</div></div>
+            <div class="content">
+              <div class="card light"><h3>Profile</h3><p>Account/profile box area.</p></div>
+              <div class="row-button" style="display:none">Actual brewing</div>
+              <div style="height:125px"></div>
+              <div class="full-button">Let's Brew</div>
+            </div>
+          </div>
+          <p>Shows profile area, optional active brewing shortcut, and a dominant Let's Brew
+          button.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Main Menu</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="content">
+              <div class="row-button">Home</div>
+              <div class="row-button">Recipes</div>
+              <div class="row-button">Extras</div>
+              <div class="row-button">Settings</div>
+              <div style="height:82px"></div>
+              <div class="empty-button">&lt; Back</div>
+            </div>
+          </div>
+          <p>Top menu is a full-screen popup with dark rows and a bottom Back row.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Recipe Menu</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="hero-image">
+              <div class="recipe-strip">
+                <div class="recipe-title">Hopus Pocus</div>
+                <div class="recipe-type">American IPA</div>
+              </div>
+            </div>
+            <div class="button-grid">
+              <div class="tile">Details</div>
+              <div class="tile">Ingredients</div>
+              <div class="tile">Brewing</div>
+              <div class="tile">Fermentations</div>
+            </div>
+            <div class="content"><div class="full-button">Brew</div></div>
+          </div>
+          <p>Recipe detail landing uses a large beer image, recipe title strip, edit menu,
+          section tiles, and Brew button.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Water Inlet</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">First settings</div><div></div></div>
+            <div class="content">
+              <h3 style="text-transform:uppercase">Set your brewing parameters</h3>
+              <p><span style="color:var(--green)">[x]</span> Automatic Water Inlet</p>
+              <p><span style="color:var(--green)">[x]</span> Automatic Cooling</p>
+              <div style="height:135px"></div>
+              <div class="full-button">Start</div>
+            </div>
+          </div>
+          <p>Pre-start options choose automatic water inlet and cooling before checklist or
+          active cleaning.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Active Brewing</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Brewing</div><div class="icon">&#9776;</div></div>
+            <div style="height:32px;background:var(--orange);display:grid;grid-template-columns:1fr 1fr;align-items:center;text-align:center;color:#000;font-size:13px">
+              <span style="color:white">Overall</span><span>Actions</span>
+            </div>
+            <div class="progress">42</div>
+            <div class="content">
+              <p style="text-align:center;color:white">Boiling - 42%</p>
+              <p style="text-align:center;color:var(--dim)">Remaining time: 01:28</p>
+              <div class="full-button">Pause</div>
+            </div>
+          </div>
+          <p>Active process screen has Overall/Actions tabs, circular progress, pause/stop
+          behavior, and periodic refresh.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Brewing Actions</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div></div><div class="caption">Actions</div><div></div></div>
+            <div class="machine">
+              <div class="tank">21.2C</div>
+              <div class="screen"><span></span></div>
+              <div class="tank" style="background:linear-gradient(#333e29 78%, var(--green) 78%)">20.8C</div>
+            </div>
+            <p style="text-align:center">Boiling tank / Mashing tank diagram</p>
+          </div>
+          <p>Shows a simplified machine diagram with tank temperatures and heater state.</p>
+        </div>
+      </div>
+    </div>
+
+    <h2>Recipe Data Entry Screens</h2>
+    <p>
+      The old recipe editor is not one screen. It is a chain of list screens, tab screens,
+      edit forms, selector popups, number-entry popups, and save/cancel flows. This is the
+      part of the old UI we should study carefully for workflow ideas, while redesigning the
+      implementation for clearer state ownership and faster LVGL updates.
+    </p>
+
+    <div class="screen-grid">
+      <div class="mini-screen">
+        <div class="mini-title">Create / Rename Recipe</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Creating Recipe</div><div></div></div>
+            <div class="content">
+              <p style="color:#fff;text-transform:uppercase;font-weight:700">First step</p>
+              <p>Name your recipe</p>
+              <div class="field"><span>Name</span><span>Summer Ale</span></div>
+              <div style="height:150px"></div>
+              <div class="two-buttons">
+                <div class="empty-button">Cancel</div>
+                <div class="full-button">Done</div>
+              </div>
+            </div>
+          </div>
+          <p>Name entry is a simple form, with the shared keyboard popup behind the text
+          field.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Details Edit</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Details Edit</div><div></div></div>
+            <div class="content">
+              <div class="form-panel">
+                <div class="form-title">Beer Style</div>
+                <div class="field"><span>BJCP number</span><span>21A</span></div>
+                <div class="field"><span>Category</span><span>IPA</span></div>
+                <div class="field"><span>Type</span><span>American IPA</span></div>
+                <div class="field"><span>ABV</span><span>5.5 - 7.5</span></div>
+                <div class="field"><span>IBU</span><span>40 - 70</span></div>
+                <div class="field"><span>OG</span><span>1.056 - 1.070</span></div>
+              </div>
+              <div class="full-button">Save</div>
+              <div class="full-button" style="background:#393939">Cancel</div>
+            </div>
+          </div>
+          <p>BJCP selectors update each other and fill style ranges.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Fermentables</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Fermentables edit</div><div></div></div>
+            <div class="content">
+              <div class="form-panel">
+                <div class="form-title">Bag 1</div>
+                <div class="field"><span>Pale malt</span><span>4.20 kg <b class="delete-mark">x</b></span></div>
+                <div class="field"><span>Crystal malt</span><span>0.35 kg <b class="delete-mark">x</b></span></div>
+                <div class="empty-button">Add Fermentables</div>
+              </div>
+              <div class="form-panel">
+                <div class="form-title">Bag 2</div>
+                <div class="field"><span>Select</span><span>0.00 kg</span></div>
+              </div>
+              <div class="two-buttons"><div class="empty-button">Cancel</div><div class="full-button">Save</div></div>
+            </div>
+          </div>
+          <p>Bag panels contain fermentable selector rows, amount rows, and delete icons.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Hop Cages</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Hops editing</div><div></div></div>
+            <div class="content">
+              <div class="form-panel">
+                <div class="form-title">Hop Cage o</div>
+                <div class="field"><span>Cascade</span><span>6.1% <b class="delete-mark">x</b></span></div>
+                <div class="field"><span>Amount</span><span>18 g</span></div>
+                <div class="empty-button">Add Hop</div>
+              </div>
+              <div class="form-panel">
+                <div class="form-title">Hop Cage oo</div>
+                <div class="field"><span>Centennial</span><span>10 g</span></div>
+              </div>
+              <div class="two-buttons"><div class="empty-button">Cancel</div><div class="full-button">Save</div></div>
+            </div>
+          </div>
+          <p>Each cage can hold hop rows with type, alpha acid, amount, and add/delete.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Brewing Waters</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Brewing waters</div><div></div></div>
+            <div class="content">
+              <div class="form-panel">
+                <div class="form-title">Mash In Water</div>
+                <div class="field"><span>Temperature</span><span>67 C</span></div>
+                <div class="field"><span>Amount</span><span>14.50 L</span></div>
+              </div>
+              <div class="form-panel">
+                <div class="form-title">Sparging Water</div>
+                <div class="field"><span>Temperature</span><span>78 C</span></div>
+                <div class="field"><span>Time</span><span>12 min</span></div>
+                <div class="field"><span>Amount</span><span>7.25 L <b class="delete-mark">x</b></span></div>
+              </div>
+              <div class="two-buttons"><div class="empty-button">Cancel</div><div class="full-button">Save</div></div>
+            </div>
+          </div>
+          <p>Water setup has mash-in values plus optional sparging values.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Mashing Steps</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Mashing steps</div><div></div></div>
+            <div class="content">
+              <div class="form-panel">
+                <div class="form-title">1. Step</div>
+                <div class="field"><span>Temperature</span><span>65 C</span></div>
+                <div class="field"><span>Time</span><span>45 min</span></div>
+              </div>
+              <div class="form-panel">
+                <div class="form-title">Mash out</div>
+                <div class="field"><span>Temperature</span><span>78 C <b class="delete-mark">x</b></span></div>
+                <div class="field"><span>Time</span><span>10 min</span></div>
+              </div>
+              <div class="empty-button">Add More Step</div>
+              <div class="two-buttons"><div class="empty-button">Cancel</div><div class="full-button">Save</div></div>
+            </div>
+          </div>
+          <p>A scrollable step list; first step stays, later steps can be deleted.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Hopping Steps</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Hopping steps</div><div></div></div>
+            <div class="content">
+              <div class="form-panel">
+                <div class="form-title">Delayed Hopping</div>
+                <div class="field"><span>Time</span><span>20 min</span></div>
+                <div class="empty-button">Remove Delayed Hopping Step</div>
+              </div>
+              <div class="form-panel">
+                <div class="form-title">Hop Cage o</div>
+                <div class="field"><span>Cascade</span><span>18 g</span></div>
+                <div class="field"><span>Time</span><span>45 min</span></div>
+              </div>
+              <div class="two-buttons"><div class="empty-button">Cancel</div><div class="full-button">Save</div></div>
+            </div>
+          </div>
+          <p>Delayed boil/hopping is a separate optional timing block before cage timings.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Cooling Target</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Cooling</div><div></div></div>
+            <div class="content">
+              <p style="color:#fff;text-transform:uppercase;font-weight:700">Target temperature</p>
+              <div class="field"><span>Temperature</span><span>24 C</span></div>
+              <p class="tiny-note">Cooling temperature depends on tap water temperature. If no value is set, the machine cools as low as possible.</p>
+              <div style="height:92px"></div>
+              <div class="empty-button">Modify</div>
+            </div>
+          </div>
+          <p>Cooling is an inline edit panel, not a separate save/cancel screen until modified.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Fermentation</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="bar"><div class="icon">&lt;</div><div class="caption">Fermentation</div><div></div></div>
+            <div class="content">
+              <div class="form-panel">
+                <div class="form-title">1. Stage</div>
+                <div class="two-buttons"><div class="empty-button">Bottling</div><div class="empty-button">Racking</div></div>
+                <div class="field"><span>Duration</span><span>14 days</span></div>
+                <div class="field"><span>Temperature</span><span>19 C</span></div>
+                <div class="field"><span>Storage</span><span>Fermenter</span></div>
+                <div class="field"><span>Dry hop</span><span>25 g <b class="delete-mark">x</b></span></div>
+                <div class="two-buttons"><div class="empty-button">Add Ingredient</div><div class="empty-button">Delete Stage</div></div>
+              </div>
+              <div class="empty-button">Add Stage</div>
+            </div>
+          </div>
+          <p>Fermentation stages include toggles, duration, temperature, storage, and ingredients.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Selector Popup</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="content">
+              <div class="field"><span>Search</span><span>cascade</span></div>
+              <div class="row-button" style="height:42px;font-size:13px">Cascade</div>
+              <div class="row-button" style="height:42px;font-size:13px">Cascade Cryo</div>
+              <div class="row-button" style="height:42px;font-size:13px">Centennial</div>
+              <div style="height:88px"></div>
+              <div class="two-buttons"><div class="empty-button">Cancel</div><div class="full-button">OK</div></div>
+            </div>
+          </div>
+          <p>The old shared selector is effectively a modal search/list picker.</p>
+        </div>
+      </div>
+
+      <div class="mini-screen">
+        <div class="mini-title">Number Input</div>
+        <div class="mini-body">
+          <div class="phone small">
+            <div class="content">
+              <p style="color:#fff;text-transform:uppercase;text-align:center;font-weight:700">Mash In Water</p>
+              <p style="text-align:center">0 - 90 C</p>
+              <div class="field"><span>Temperature</span><span>67 C</span></div>
+              <div class="button-grid" style="grid-template-columns:repeat(3,1fr)">
+                <div class="tile">1</div><div class="tile">2</div><div class="tile">3</div>
+                <div class="tile">4</div><div class="tile">5</div><div class="tile">6</div>
+                <div class="tile">7</div><div class="tile">8</div><div class="tile">9</div>
+              </div>
+              <div class="two-buttons"><div class="empty-button">Cancel</div><div class="full-button">OK</div></div>
+            </div>
+          </div>
+          <p>Number editing is modal and reused across most recipe fields.</p>
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <tr>
+        <th>Screen or editor</th>
+        <th>Fields and controls</th>
+        <th>Interaction pattern</th>
+        <th>Old sources</th>
+      </tr>
+      <tr>
+        <td>Create recipe</td>
+        <td>Recipe name text field.</td>
+        <td>Cancel returns back. Done creates the recipe when the name is non-empty, then
+        opens the recipe menu.</td>
+        <td><code>NewRecipe.qml</code></td>
+      </tr>
+      <tr>
+        <td>Rename / Save as recipe</td>
+        <td>Single recipe-name text field.</td>
+        <td>Opened from the recipe context menu. Save either renames or duplicates the active
+        recipe depending on mode. Text input uses the shared keyboard overlay.</td>
+        <td><code>RecipeMenu.qml</code>, <code>RecipeModify.qml</code>,
+        <code>EditText.qml</code>, <code>Keyboard.qml</code></td>
+      </tr>
+      <tr>
+        <td>Details edit</td>
+        <td>BJCP number selector, category selector, type selector, plus read-only style
+        ranges for ABV, SRM, IBU, OG, and FG.</td>
+        <td>Changing one BJCP selector updates the others and refreshes the style range
+        fields. Save commits through the details view; Cancel/back discards.</td>
+        <td><code>DetailsView.qml</code>, <code>DetailsForm.qml</code>,
+        <code>InputSelector.qml</code></td>
+      </tr>
+      <tr>
+        <td>Ingredients tab screen</td>
+        <td>Tabbed sections for fermentables and hops.</td>
+        <td>Acts as a landing screen for ingredient sub-editors. The actual data entry
+        happens in the fermentables and hops forms.</td>
+        <td><code>IngredientsView.qml</code>, <code>TabbedPanel.qml</code></td>
+      </tr>
+      <tr>
+        <td>Fermentables form</td>
+        <td>Bag panels. Each fermentable row has a fermentable selector, amount number
+        field, and delete icon. Each bag has an Add Fermentables button.</td>
+        <td>Selector opens the shared searchable ingredient selector. Amount opens numeric
+        entry and is limited by remaining bag capacity. Save/Cancel are bottom actions.</td>
+        <td><code>Fermentables.qml</code>, <code>FermentablesForm.qml</code>,
+        <code>FermentablesItem.qml</code></td>
+      </tr>
+      <tr>
+        <td>Hops form</td>
+        <td>Hop cage panels. Each hop row has hop selector, alpha-acid number field, amount
+        number field, and delete icon. Each cage has Add Hop.</td>
+        <td>Hop choice uses the shared selector. Amount is unit-converted between kg and
+        grams/ounces. Save/Cancel are bottom actions.</td>
+        <td><code>Hops.qml</code>, <code>HopsForm.qml</code></td>
+      </tr>
+      <tr>
+        <td>Brewing waters form</td>
+        <td>Mash-in water temperature and amount. Optional sparging water temperature,
+        time, amount, and delete sparge icon.</td>
+        <td>Add Sparging reveals the sparging section. Numeric fields validate against
+        recipe bounds and unit settings. Save/Cancel are bottom actions.</td>
+        <td><code>Waters.qml</code>, <code>WatersForm.qml</code></td>
+      </tr>
+      <tr>
+        <td>Mashing steps form</td>
+        <td>Scrollable mash step panels. Each step has temperature, time, and a delete icon
+        except for the first step.</td>
+        <td>Add More Step appends a mash step. Number fields validate temperature and time.
+        Save/Cancel are bottom actions.</td>
+        <td><code>Mashing.qml</code>, <code>MashingForm.qml</code></td>
+      </tr>
+      <tr>
+        <td>Hopping steps form</td>
+        <td>Optional delayed hopping section with time. Hop cage sections show the hops in
+        each cage and a cage time field.</td>
+        <td>Add Delayed Hopping Step reveals the delayed-boil timer. Remove Delayed Hopping
+        Step clears it. Each cage time is edited with numeric input.</td>
+        <td><code>Hopping.qml</code>, <code>HoppingForm.qml</code></td>
+      </tr>
+      <tr>
+        <td>Cooling target editor</td>
+        <td>Target cooling temperature, explanatory text, Modify button, then Save/Cancel
+        while editing.</td>
+        <td>Unlike most recipe editors, this behaves more like an inline edit panel inside
+        the brewing tab section.</td>
+        <td><code>Cooling.qml</code></td>
+      </tr>
+      <tr>
+        <td>Fermentation form</td>
+        <td>Stage panels with Bottling and Racking toggles, duration, temperature, storage
+        selector, ingredient rows, Add Ingredient, Delete Stage, and Add Stage.</td>
+        <td>Fermentation ingredients have category selector, subtype selector, amount field,
+        and delete icon. Subtype options depend on category: dry hop, fermentable, or yeast.</td>
+        <td><code>Fermentation.qml</code>, <code>FermentationForm.qml</code>,
+        <code>FermentationItem.qml</code></td>
+      </tr>
+      <tr>
+        <td>Shared selector popup</td>
+        <td>Search/filter field, list rows, Cancel and OK buttons.</td>
+        <td>Used by BJCP style selection, fermentable selection, hop selection, yeast and
+        fermentation ingredient selection, time zone/language selection, and other pick lists.</td>
+        <td><code>InputSelector.qml</code>, <code>Selector.qml</code></td>
+      </tr>
+      <tr>
+        <td>Shared number/text entry</td>
+        <td>Numeric editor with header/subheader/range validation, and text editor with
+        keyboard overlay.</td>
+        <td>Used broadly by recipe forms. Old UI relies heavily on dynamic text and modal
+        input overlays; our LVGL design should preserve clarity but keep updates lean.</td>
+        <td><code>EditNumber.qml</code>, <code>InputNumpad.qml</code>,
+        <code>EditText.qml</code>, <code>Keyboard.qml</code></td>
+      </tr>
+    </table>
+
+    <h2>Screen Inventory and Interactions</h2>
+    <p>
+      This table maps the user-facing areas and flows. The following section lists the
+      individual QML files more mechanically, because the old UI has a mixture of true
+      ViewManager destinations, menu/popup screens, first-run overlays, input overlays, and
+      reusable screen parts.
+    </p>
+    <table>
+      <tr>
+        <th>Area</th>
+        <th>Screens</th>
+        <th>Main interactions</th>
+        <th>Old sources</th>
+      </tr>
+      <tr>
+        <td>Startup and shell</td>
+        <td>Loading animation, MainView, StatusBar, HeaderBar, MainMenu, Notifications</td>
+        <td>Load fonts/assets, load views, show first settings if needed, otherwise Home.
+        Menu opens from header. Back uses previous view.</td>
+        <td><code>main.qml</code>, <code>MainView.qml</code>, <code>BView.qml</code>,
+        <code>MainMenu.qml</code></td>
+      </tr>
+      <tr>
+        <td>First-run setup</td>
+        <td>EULA, first clean, calibration guide, calibration screen</td>
+        <td>EULA accepted -> first clean notification -> calibration notification series
+        -> Home.</td>
+        <td><code>FirstSettings.qml</code>, <code>EULA.qml</code>,
+        <code>Calibration.qml</code>, <code>NotificationHandler</code></td>
+      </tr>
+      <tr>
+        <td>Home</td>
+        <td>Home, ProfileBox, active brewing shortcut</td>
+        <td>Let's Brew -> Recipes. Active brewing shortcut -> ActiveBrewing when a process
+        exists.</td>
+        <td><code>home/Home.qml</code>, <code>home/ProfileBox.qml</code></td>
+      </tr>
+      <tr>
+        <td>Recipes</td>
+        <td>RecipeChooser, NewRecipe, RecipeMenu, RecipeModify</td>
+        <td>Search/filter list, select recipe, create recipe, rename/save-as/delete via
+        context menu.</td>
+        <td><code>recipe/RecipeChooser.qml</code>, <code>RecipeMenu.qml</code>,
+        <code>NewRecipe.qml</code>, <code>RecipeModify.qml</code></td>
+      </tr>
+      <tr>
+        <td>Recipe sections</td>
+        <td>Details, Ingredients, Fermentables, Hops, Waters, Mashing, Hopping, Cooling,
+        Brewings, Fermentation</td>
+        <td>RecipeMenu section tiles lead to read/edit screens. Forms generally use
+        Save/Cancel buttons and return to the previous section.</td>
+        <td><code>recipe/*View.qml</code>, <code>recipe/*Form.qml</code></td>
+      </tr>
+      <tr>
+        <td>Start brew</td>
+        <td>WaterInlet, BrewingCheckList, ActiveBrewing</td>
+        <td>Brew validates recipe -> water/cooling choices -> checklist -> start brewing
+        -> active process screen.</td>
+        <td><code>brewing/WaterInlet.qml</code>, <code>BrewingCheckList.qml</code>,
+        <code>ActiveBrewing.qml</code></td>
+      </tr>
+      <tr>
+        <td>Active process</td>
+        <td>ActiveBrewing, BrewingOverall, BrewingActions</td>
+        <td>Overall and Actions tabs. Overall shows circular progress, step text,
+        remaining time, pause/continue/stop. Actions shows tank/heater state.</td>
+        <td><code>brewing/ActiveBrewing.qml</code>, <code>BrewingOverall.qml</code>,
+        <code>BrewingActions.qml</code></td>
+      </tr>
+      <tr>
+        <td>Extras</td>
+        <td>Short Clean, Sanitizing Clean, Full Clean, Drain After Brew, Full Drain,
+        Unclogging</td>
+        <td>Clean modes call recipe handler then WaterInlet/ActiveBrewing. Drain modes use
+        DrainSettings. Unclogging uses notification guide then ActiveBrewing.</td>
+        <td><code>settings/Extras.qml</code>, <code>brewing/DrainSettings.qml</code>,
+        <code>NotificationHandler</code></td>
+      </tr>
+      <tr>
+        <td>Settings</td>
+        <td>WiFi, Units, Time, Water Settings, Calibration, Language, About, EULA</td>
+        <td>Settings menu rows navigate to individual forms. Most forms use Save/Cancel.
+        About links to terms/EULA.</td>
+        <td><code>settings/Settings.qml</code>, <code>settings/*.qml</code></td>
+      </tr>
+      <tr>
+        <td>Hidden/service</td>
+        <td>Debug</td>
+        <td>Recipe search codes navigate to Debug and can show a responsibility warning.</td>
+        <td><code>RecipeChooser.qml</code>, <code>settings/Debug.qml</code></td>
+      </tr>
+    </table>
+
+    <h2>Complete Old QML Inventory</h2>
+    <p>
+      This is the exhaustive QML inventory found in the old UI resource file and the
+      <code>reb20-develop/src/gui/ui</code> tree. Some entries are full navigable screens;
+      others are popups, reusable controls, tab contents, list rows, or utility objects.
+    </p>
+
+    <table>
+      <tr>
+        <th>Kind</th>
+        <th>Old QML files</th>
+        <th>How they appear to the user</th>
+      </tr>
+      <tr>
+        <td>Application shell</td>
+        <td><code>main.qml</code>, <code>views/MainView.qml</code>,
+        <code>views/BView.qml</code>, <code>views/HeaderBar.qml</code>,
+        <code>views/StatusBar.qml</code></td>
+        <td>Root window, rotated target container, shared header/back/menu behavior,
+        status bar, current-view host, popup host, and page transition behavior.</td>
+      </tr>
+      <tr>
+        <td>Menus and notifications</td>
+        <td><code>views/MainMenu.qml</code>, <code>views/Notifications.qml</code>,
+        <code>views/Notification.qml</code>, <code>components/ContextMenu.qml</code></td>
+        <td>Hamburger menu, stacked modal notifications/guides/confirmations, and the
+        recipe context menu for rename/save-as/delete.</td>
+      </tr>
+      <tr>
+        <td>Home</td>
+        <td><code>views/home/Home.qml</code>, <code>views/home/ProfileBox.qml</code></td>
+        <td>Landing screen with profile area, optional active-brewing shortcut, and
+        Let's Brew entry point.</td>
+      </tr>
+      <tr>
+        <td>Recipe top level</td>
+        <td><code>views/recipe/RecipeChooser.qml</code>,
+        <code>views/recipe/NewRecipe.qml</code>, <code>views/recipe/RecipeMenu.qml</code>,
+        <code>views/recipe/RecipeModify.qml</code></td>
+        <td>Recipe list/search, create recipe, recipe detail landing page, and rename/copy
+        style recipe modification screen.</td>
+      </tr>
+      <tr>
+        <td>Recipe details</td>
+        <td><code>views/recipe/DetailsView.qml</code>,
+        <code>views/recipe/DetailsForm.qml</code></td>
+        <td>Recipe metadata, beer style/category fields, and edit form.</td>
+      </tr>
+      <tr>
+        <td>Recipe ingredients</td>
+        <td><code>views/recipe/IngredientsView.qml</code>,
+        <code>views/recipe/Fermentables.qml</code>,
+        <code>views/recipe/FermentablesItem.qml</code>,
+        <code>views/recipe/FermentablesForm.qml</code>,
+        <code>views/recipe/Hops.qml</code>, <code>views/recipe/HopsForm.qml</code></td>
+        <td>Ingredients tab set, fermentables list/items/form, and hops list/form.</td>
+      </tr>
+      <tr>
+        <td>Recipe brewing setup</td>
+        <td><code>views/recipe/Brewings.qml</code>, <code>views/recipe/Waters.qml</code>,
+        <code>views/recipe/WatersForm.qml</code>, <code>views/recipe/Mashing.qml</code>,
+        <code>views/recipe/MashingForm.qml</code>, <code>views/recipe/Hopping.qml</code>,
+        <code>views/recipe/HoppingForm.qml</code>, <code>views/recipe/Cooling.qml</code></td>
+        <td>Water, mash, hop, and cooling schedule sections with add/edit forms.</td>
+      </tr>
+      <tr>
+        <td>Recipe fermentation</td>
+        <td><code>views/recipe/Fermentation.qml</code>,
+        <code>views/recipe/FermentationItem.qml</code>,
+        <code>views/recipe/FermentationForm.qml</code></td>
+        <td>Fermentation schedule list, list row component, and add/edit form.</td>
+      </tr>
+      <tr>
+        <td>Brewing, cleaning, draining</td>
+        <td><code>views/brewing/WaterInlet.qml</code>,
+        <code>views/brewing/BrewingCheckList.qml</code>,
+        <code>views/brewing/ActiveBrewing.qml</code>,
+        <code>views/brewing/BrewingOverall.qml</code>,
+        <code>views/brewing/BrewingActions.qml</code>,
+        <code>views/brewing/DrainSettings.qml</code></td>
+        <td>Pre-start water/cooling choices, checklist, active process screen, progress tab,
+        action/tank diagram tab, and drain mode setup.</td>
+      </tr>
+      <tr>
+        <td>Settings and service</td>
+        <td><code>views/settings/Settings.qml</code>,
+        <code>views/settings/ConnectionChooser.qml</code>,
+        <code>views/settings/ConnectionListItem.qml</code>,
+        <code>views/settings/ConnectionSelector.qml</code>,
+        <code>views/settings/UnitSettings.qml</code>,
+        <code>views/settings/TimeSettings.qml</code>,
+        <code>views/settings/WaterSettings.qml</code>,
+        <code>views/settings/Calibration.qml</code>,
+        <code>views/settings/LanguageSettingsView.qml</code>,
+        <code>views/settings/About.qml</code>, <code>views/settings/EULA.qml</code>,
+        <code>views/settings/Extras.qml</code>, <code>views/settings/Debug.qml</code></td>
+        <td>Settings menu, WiFi connection screens, units, time zone, water settings,
+        calibration, language, about/EULA, extras/service actions, and hidden debug screen.</td>
+      </tr>
+      <tr>
+        <td>First-run and utilities</td>
+        <td><code>util/FirstSettings.qml</code>, <code>util/ViewManager.qml</code>,
+        <code>util/Animations.qml</code>, <code>util/BStyle.qml</code>,
+        <code>util/BFonts.qml</code>, <code>util/FpsItem.qml</code>,
+        <code>util/UnitConverter.qml</code></td>
+        <td>First-run EULA/clean/calibration routing, view loading/navigation,
+        animation definitions, style/font setup, FPS debug overlay, and unit conversion.</td>
+      </tr>
+      <tr>
+        <td>Input overlays</td>
+        <td><code>util/inputs/Input.qml</code>, <code>util/inputs/InputSelector.qml</code>,
+        <code>util/inputs/InputNumpad.qml</code>, <code>util/inputs/Keyboard.qml</code></td>
+        <td>Modal selector/search, numeric input, text keyboard, and shared popup input host.</td>
+      </tr>
+      <tr>
+        <td>Reusable controls</td>
+        <td><code>components/EditNumber.qml</code>, <code>components/EditText.qml</code>,
+        <code>components/EmptyButton.qml</code>, <code>components/FullButton.qml</code>,
+        <code>components/LabeledText.qml</code>, <code>components/RunningText.qml</code>,
+        <code>components/TabbedPanel.qml</code>, <code>components/RadioButtons.qml</code>,
+        <code>components/Selector.qml</code>, <code>components/SubPanel.qml</code></td>
+        <td>Shared buttons, editable text/number fields, labels, running text, tabs,
+        radio groups, selector rows, and sub-panels.</td>
+      </tr>
+    </table>
+
+    <h2>ViewManager Destinations</h2>
+    <p>
+      These are the old views loaded and held by <code>ViewManager.qml</code>. This is the
+      closest thing the old app has to an official list of navigable screens.
+    </p>
+    <div class="tag-row">
+      <span class="tag orange">home</span>
+      <span class="tag orange">recipeChooser</span>
+      <span class="tag orange">activeBrewing</span>
+      <span class="tag orange">recipeMenu</span>
+      <span class="tag">newRecipe</span>
+      <span class="tag">extras</span>
+      <span class="tag">settings</span>
+      <span class="tag">drainSettings</span>
+      <span class="tag">recipeModify</span>
+      <span class="tag">details</span>
+      <span class="tag">detailsForm</span>
+      <span class="tag">ingredients</span>
+      <span class="tag">fermentablesForm</span>
+      <span class="tag">hopsForm</span>
+      <span class="tag">brewings</span>
+      <span class="tag">fermentation</span>
+      <span class="tag">connections</span>
+      <span class="tag">connectionSelector</span>
+      <span class="tag">unitSettings</span>
+      <span class="tag">timeSettings</span>
+      <span class="tag">waterSettings</span>
+      <span class="tag">calibration</span>
+      <span class="tag">languageSettings</span>
+      <span class="tag">about</span>
+      <span class="tag">waterInlet</span>
+      <span class="tag">checklist</span>
+      <span class="tag">watersForm</span>
+      <span class="tag">mashingForm</span>
+      <span class="tag">hoppingForm</span>
+      <span class="tag">fermentationForm</span>
+      <span class="tag red">debug</span>
+      <span class="tag">eula</span>
+    </div>
+
+    <h2>Old Graphic Vocabulary</h2>
+    <p>
+      The old UI used a small set of recognizable image assets for product feel,
+      cleaning/draining instructions, recipe ambience, WiFi state, and machine diagrams.
+      These should be treated as visual references. We can reuse ideas or recreate cleaner
+      LVGL-friendly assets later.
+    </p>
+    <div class="asset-row">
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/logo_rgb.png" alt="">logo</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/Brewie.png" alt="">brand</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/beer.jpg" alt="">beer hero</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/tank_active.png" alt="">tank on</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/tank_inactive.png" alt="">tank off</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/hoptank_active.png" alt="">hop tank</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/machine_pump.png" alt="">drain pump</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/machine_sedimentation.png" alt="">sediment</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/cleaning.png" alt="">clean</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/drain.png" alt="">drain</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/unclogging.png" alt="">unclog</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/wifi4.png" alt="">wifi</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/attention.png" alt="">attention</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/error.png" alt="">error</div>
+      <div class="asset"><img src="../../../reb20-develop/data/assets/images/check.png" alt="">check</div>
+    </div>
+
+    <h2>Interaction Rules Observed in the Old UI</h2>
+    <div class="grid three">
+      <div class="card">
+        <h3>Header behavior</h3>
+        <p>Most screens inherit a back arrow and hamburger menu from <code>BView</code>.
+        Home and top-level menu destinations often disable Back.</p>
+        <div class="tag-row"><span class="tag orange">HeaderBar</span><span class="tag">Back</span><span class="tag">Menu</span></div>
+      </div>
+      <div class="card">
+        <h3>Menu behavior</h3>
+        <p>The main menu is a full-screen popup that slides down, hides the background, and
+        navigates to one of four major destinations.</p>
+        <div class="tag-row"><span class="tag orange">HOME</span><span class="tag orange">RECIPES</span><span class="tag orange">EXTRAS</span><span class="tag orange">SETTINGS</span></div>
+      </div>
+      <div class="card">
+        <h3>Forms</h3>
+        <p>Settings and recipe edit screens commonly use a pair of bottom actions:
+        grey Cancel and orange Save.</p>
+        <div class="tag-row"><span class="tag">Cancel</span><span class="tag orange">Save</span></div>
+      </div>
+      <div class="card">
+        <h3>Process start</h3>
+        <p>Brewing and cleaning start through parameter confirmation, guide/notification
+        prompts, and a checklist before the active process screen.</p>
+        <div class="tag-row"><span class="tag">Water inlet</span><span class="tag">Checklist</span><span class="tag green">Start</span></div>
+      </div>
+      <div class="card">
+        <h3>Active process</h3>
+        <p>The process screen separates progress overview from actions/temperature state
+        using tabs and frequent refresh.</p>
+        <div class="tag-row"><span class="tag orange">Overall</span><span class="tag">Actions</span><span class="tag">Pause</span></div>
+      </div>
+      <div class="card">
+        <h3>Notifications</h3>
+        <p>Instructional guides, warnings, confirmations, and completion messages are modal
+        notification cards driven by <code>NotificationHandler</code>.</p>
+        <div class="tag-row"><span class="tag">Guides</span><span class="tag">Warnings</span><span class="tag">Confirm</span></div>
+      </div>
+    </div>
+
+    <h2>What To Carry Forward</h2>
+    <div class="grid two">
+      <div class="card">
+        <h3>Good inspiration</h3>
+        <ul>
+          <li>Warm orange on charcoal/black.</li>
+          <li>Large touch rows for menu, extras, and settings.</li>
+          <li>Clear recipe browsing -> recipe detail -> brew flow.</li>
+          <li>Home as the normal landing screen.</li>
+          <li>Status/progress split during active brewing.</li>
+          <li>Graphic machine/tank vocabulary for service and process screens.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Things not to copy blindly</h3>
+        <ul>
+          <li>Heavy full-screen slide transitions on the A13 SOM.</li>
+          <li>UI directly invoking machine actions without our new safety routing.</li>
+          <li>Hidden debug access via recipe search magic strings.</li>
+          <li>Dense edit screens before we know which workflows are needed first.</li>
+          <li>String-heavy dynamic UI updates where raw values and dirty widgets are better.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Source Files Used</h2>
+    <table>
+      <tr><th>Topic</th><th>Files</th></tr>
+      <tr><td>Shell and navigation</td><td><code>main.qml</code>, <code>ViewManager.qml</code>, <code>MainView.qml</code>, <code>BView.qml</code>, <code>HeaderBar.qml</code>, <code>MainMenu.qml</code></td></tr>
+      <tr><td>Home and menu</td><td><code>views/home/Home.qml</code>, <code>views/home/ProfileBox.qml</code>, <code>views/MainMenu.qml</code></td></tr>
+      <tr><td>Recipes</td><td><code>views/recipe/*.qml</code></td></tr>
+      <tr><td>Brewing/cleaning/drain</td><td><code>views/brewing/*.qml</code>, <code>views/settings/Extras.qml</code></td></tr>
+      <tr><td>Settings</td><td><code>views/settings/*.qml</code></td></tr>
+      <tr><td>Notifications and guides</td><td><code>views/Notification.qml</code>, <code>utils/notificationhandler.cpp</code></td></tr>
+      <tr><td>Assets</td><td><code>reb20-develop/data/assets/images</code></td></tr>
+    </table>
+  </main>
+</body>
+</html>

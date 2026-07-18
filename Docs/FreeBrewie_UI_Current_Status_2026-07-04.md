@@ -110,6 +110,7 @@ Owns:
 - application-side logic/state interpretation
 - status-screen view-model data in `Status_view_model.c`
 - non-UI machine/application reasoning
+- reserved future app-level routing in `App_orchestrator.c`
 
 ### `src/UI/`
 Owns:
@@ -149,6 +150,7 @@ The following are **not** yet finished:
 - stable final home/status/fault screen design
 - final real screen flow between startup / home / status / fault screens
 - binding real machine state to a fuller UI
+- routing hardware-affecting user actions through `App_orchestrator`
 - polished redraw/update behavior
 - true animated boot/splash screen during SOM startup
 
