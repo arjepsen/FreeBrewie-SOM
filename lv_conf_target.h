@@ -13,6 +13,13 @@
 #define LV_USE_OS 0
 #define LV_USE_LOG 1
 
+/*
+ * The A13 uses a Cortex-A8 CPU with NEON. LVGL's software renderer has NEON paths for
+ * common RGB565 blending/conversion operations. Keep this target-only so the simulator
+ * still builds for the host CPU.
+ */
+#define LV_USE_DRAW_SW_ASM 1
+
 #if defined(BREWIE_ENABLE_LVGL_MATRIX_ROTATION) && BREWIE_ENABLE_LVGL_MATRIX_ROTATION
 /*
  * Matrix rotation is disabled in normal target builds because it crashed during early

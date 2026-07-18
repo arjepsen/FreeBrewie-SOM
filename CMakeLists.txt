@@ -10,11 +10,24 @@ set(CONFIG_LV_BUILD_EXAMPLES OFF CACHE BOOL "Build LVGL examples" FORCE)
 set(CONFIG_LV_BUILD_DEMOS OFF CACHE BOOL "Build LVGL demos" FORCE)
 
 set(BREWIE_ENABLE_LVGL_MATRIX_ROTATION OFF CACHE BOOL "Enable LVGL matrix rotation for isolated display probes")
+set(BREWIE_ENABLE_A13_OPTIMIZATIONS ON CACHE BOOL "Enable Cortex-A8/NEON compile options for the SOM target")
 set(BREWIE_TARGET_DISPLAY_BACKEND "drm" CACHE STRING "Target display backend: drm or fbdev")
 set_property(CACHE BREWIE_TARGET_DISPLAY_BACKEND PROPERTY STRINGS drm fbdev)
 if(NOT BREWIE_TARGET_DISPLAY_BACKEND STREQUAL "drm" AND
    NOT BREWIE_TARGET_DISPLAY_BACKEND STREQUAL "fbdev")
     message(FATAL_ERROR "BREWIE_TARGET_DISPLAY_BACKEND must be 'drm' or 'fbdev'")
+endif()
+
+if(CMAKE_CROSSCOMPILING AND BREWIE_ENABLE_A13_OPTIMIZATIONS)
+    # The Olimex A13-SOM is an ARMv7 Cortex-A8 part with NEON and hard-float ABI. These
+    # flags are target-only and are added before LVGL is included, so LVGL's software
+    # renderer and BrewieApp are compiled for the same CPU/FPU. Optimization level still
+    # comes from the selected CMake build type; for example RelWithDebInfo gives -O2.
+    add_compile_options(
+        -mcpu=cortex-a8
+        -mfpu=neon
+        -mfloat-abi=hard
+    )
 endif()
 
 # LVGL reads its configuration while external/lvgl is being added. Keep the simulator and

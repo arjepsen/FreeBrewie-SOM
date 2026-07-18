@@ -454,6 +454,8 @@ Known limitations:
 - `Screen_status` is still a bring-up/debug screen, not finished product UI
 - DRM build path currently includes some build-environment friction/workarounds described in the development-environment doc
 - display, touch, Home/menu/status, and comms are proven together on the real SOM
+- Cortex-A8/NEON target optimization flags and LVGL NEON drawing are enabled and build,
+  but still need target-side measurement after deployment
 - the UI layer is not yet feature-complete
 - `Screen_recipes` is currently a static safe scaffold, not real recipe storage or recipe
   selection

@@ -18,9 +18,20 @@
     },
     {
       "name": "target-debug",
-      "displayName": "Target Debug",
+      "displayName": "Target Optimized",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/build-target",
+      "toolchainFile": "${sourceDir}/cmake/toolchain-armhf-bullseye.cmake",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "target-debug-noopt",
+      "displayName": "Target Debug No Optimization",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/build-target-debug",
       "toolchainFile": "${sourceDir}/cmake/toolchain-armhf-bullseye.cmake",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
@@ -34,8 +45,16 @@
       "configurePreset": "sim-debug"
     },
     {
+      "name": "build-target-optimized",
+      "configurePreset": "target-debug"
+    },
+    {
       "name": "build-target-debug",
       "configurePreset": "target-debug"
+    },
+    {
+      "name": "build-target-debug-noopt",
+      "configurePreset": "target-debug-noopt"
     }
   ]
 }

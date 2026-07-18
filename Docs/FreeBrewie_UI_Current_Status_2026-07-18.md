@@ -45,6 +45,8 @@ The following is currently proven on the real SOM target:
 - MCU RX reports continue increasing sequence numbers while the UI is running
 - target CPU use was first observed around 1.4-1.7% during the current Home/menu/status
   baseline, then around 0.7% after the first top-level navigation cleanup
+- normal target builds now use `RelWithDebInfo`, Cortex-A8/NEON CPU flags, and LVGL's
+  NEON software drawing path for supported RGB565 blend/convert operations
 - Home `LET'S BREW` now opens a safe first `Recipes` scaffold inspired by the old recipe
   chooser
 - `Screen_status` is structured as a scrollable diagnostics list
@@ -270,7 +272,8 @@ In particular:
 - current visible screen content is still a deliberate test-oriented render
 - touch mapping has only been proven through simple corner/button testing, not through a
   finished production UI
-- the latest Home/menu/status cleanup still needs a target-device run after deployment
+- NEON/optimized target flags build successfully, but still need a target-device run to
+  measure real-world CPU and responsiveness
 
 So Claude or any later assistant should not assume:
 - the display stack is fully polished
