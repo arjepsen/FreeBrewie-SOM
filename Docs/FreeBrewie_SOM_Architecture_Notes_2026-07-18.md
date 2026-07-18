@@ -261,6 +261,8 @@ Current file set:
 - `Screen_fault.h`
 - `Screen_home.c`
 - `Screen_home.h`
+- `Screen_recipes.c`
+- `Screen_recipes.h`
 - `UI.c`
 - `UI.h`
 - `UI_dialog.c`
@@ -313,6 +315,18 @@ Owns:
 - current first product-shaped Home screen
 - normal landing view for the user
 - menu entry point and simple status summaries
+
+### `Screen_recipes`
+Owns:
+- safe first recipe chooser scaffold
+- old-Brewie-inspired recipe-list presentation
+- Recipes screen back/menu navigation callbacks
+
+Must not own yet:
+- recipe persistence
+- recipe selection side effects
+- brewing start logic
+- direct hardware control
 
 ### `Screen_fault`
 Owns:
@@ -438,10 +452,12 @@ The current SOM app is still in early bring-up.
 
 Known limitations:
 - `Screen_status` is still a bring-up/debug screen, not finished product UI
-- touch/input path is not yet reintegrated into BrewieApp
 - DRM build path currently includes some build-environment friction/workarounds described in the development-environment doc
-- display output is proven, but the UI layer is not yet feature-complete
-- `Screen_home` / `Screen_fault` are not yet the active focus
+- display, touch, Home/menu/status, and comms are proven together on the real SOM
+- the UI layer is not yet feature-complete
+- `Screen_recipes` is currently a static safe scaffold, not real recipe storage or recipe
+  selection
+- `Screen_fault` is not yet the active focus
 
 ---
 
@@ -473,10 +489,12 @@ Given the current code and bring-up state, the most sensible next UI-side direct
 
 1. keep current comms baseline intact
 2. keep DRM target display path intact
-3. keep `Screen_status` as the current live status/debug screen
+3. keep Home as the normal first screen
 4. keep a true animated boot/splash screen as a separate future startup phase
 5. keep touch/input owned by the platform layer
-6. use the proven touch path to build the first home/navigation shell
+6. use the proven touch path to grow the old-style top-level navigation shell
 7. keep `Screen_status` available as a diagnostic destination
+8. grow `Screen_recipes` from static chooser scaffold toward recipe browsing/details
+   before implementing any brewing action
 
 This avoids mixing live status, future boot animation, and broader UI redesign.

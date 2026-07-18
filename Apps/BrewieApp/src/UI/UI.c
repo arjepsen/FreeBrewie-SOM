@@ -288,7 +288,7 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
     }
     else if (screen_id == UI_SCREEN_RECIPES)
     {
-        screen = ui->recipes_screen;
+        screen = ui->recipes.screen;
     }
     else if (screen_id == UI_SCREEN_EXTRAS)
     {
@@ -319,15 +319,9 @@ void ui_init(ui_t *ui)
     memset(ui, 0, sizeof(*ui));
     ui_theme_init();
     screen_home_init(&ui->home, ui_handle_action, ui);
+    screen_recipes_init(&ui->recipes, ui_handle_action, ui);
     screen_status_init(&ui->status, ui_handle_action, ui);
     ui->menu_screen = ui_create_menu_screen(ui);
-    ui->recipes_screen = ui_create_placeholder_screen(ui,
-                                                      "Recipes",
-                                                      "Later",
-                                                      "Recipe browsing and recipe setup will be "
-                                                      "added after the Home/menu shell is stable. "
-                                                      "This destination is navigation-only for now.",
-                                                      &ui->recipes_back_context);
     ui->extras_screen = ui_create_placeholder_screen(ui,
                                                      "Extras",
                                                      "Locked",

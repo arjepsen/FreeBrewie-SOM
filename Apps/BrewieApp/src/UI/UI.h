@@ -13,6 +13,7 @@
 #include <stdbool.h>
 
 #include "Screen_home.h"
+#include "Screen_recipes.h"
 #include "Screen_status.h"
 #include "UI_types.h"
 
@@ -30,10 +31,11 @@ struct ui_t
     screen_home_t home;
     /** Bring-up/status screen with comms and touch diagnostics. */
     screen_status_t status;
+    /** Safe first recipe chooser scaffold. */
+    screen_recipes_t recipes;
     /** Full-screen navigation menu. */
     lv_obj_t *menu_screen;
     /** Placeholder screens used until real workflows are implemented. */
-    lv_obj_t *recipes_screen;
     lv_obj_t *extras_screen;
     lv_obj_t *settings_screen;
     /** Screen currently loaded into LVGL. */
@@ -43,7 +45,6 @@ struct ui_t
     /** True when pending_screen should be applied during ui_update(). */
     bool has_pending_screen;
     /** Button callback contexts owned by this UI instance. */
-    ui_button_context_t recipes_back_context;
     ui_button_context_t extras_back_context;
     ui_button_context_t settings_back_context;
     ui_button_context_t menu_home_context;

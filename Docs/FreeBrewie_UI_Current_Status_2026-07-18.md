@@ -43,8 +43,10 @@ The following is currently proven on the real SOM target:
 - Home/menu/status navigation has now also been verified on the real SOM display
 - touch has been verified on the real SOM screen after the latest Home/menu cleanup
 - MCU RX reports continue increasing sequence numbers while the UI is running
-- target CPU use has been observed around 1.4-1.7% during the current Home/menu/status
-  baseline
+- target CPU use was first observed around 1.4-1.7% during the current Home/menu/status
+  baseline, then around 0.7% after the first top-level navigation cleanup
+- Home `LET'S BREW` now opens a safe first `Recipes` scaffold inspired by the old recipe
+  chooser
 - `Screen_status` is structured as a scrollable diagnostics list
 - status text formatting is separated into `Logic/Status_view_model.*`
 - visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
@@ -159,6 +161,7 @@ The following are **not** yet finished:
 - stable final home/status/fault screen design
 - final real screen flow between startup / home / status / fault screens
 - binding real machine state to a fuller UI
+- real recipe storage and recipe selection/detail screens
 - routing hardware-affecting user actions through `App_orchestrator`
 - polished redraw/update behavior
 - true animated boot/splash screen during SOM startup
@@ -201,7 +204,8 @@ The safest currently proven baseline is:
 10. real SOM Home/menu/status navigation works after the latest cleanup
 11. real SOM touch still works after the latest cleanup
 12. MCU RX reports keep increasing sequence numbers while the UI is running
-13. target CPU is roughly 1.4-1.7% in the current verified baseline
+13. target CPU was roughly 1.4-1.7% in the first verified baseline
+14. target CPU was roughly 0.7% after the first top-level navigation cleanup
 
 This is the current anchor state.
 
@@ -236,6 +240,8 @@ Recommended next step:
 6. keep the status/debug screen available as a service/developer screen
 7. keep diagnostic values in a scrollable list, since the list will grow over time
 8. add safe placeholder destinations before implementing hardware-affecting workflows
+9. grow `Screen_recipes` from a static chooser scaffold into the old-style recipe browsing
+   and details flow
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:
@@ -243,6 +249,8 @@ The next goal is:
 - keep the current live status/debug screen as a diagnostic destination
 - keep Recipes, Extras, and Settings as safe navigation targets until their workflows are
   designed and routed through app logic
+- use the old UI as the screen/functionality reference, but keep the new implementation
+  modular, readable, safe, and optimized
 
 Naming/orientation note:
 - `Screen_status` is currently the live diagnostics screen, not finished product UI
