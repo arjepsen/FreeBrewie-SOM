@@ -64,8 +64,10 @@ The following is currently proven on the real SOM target:
 - the selected recipe `BREW` button now opens a safe old-style Brew Setup scaffold with
   local Automatic Water Inlet and Automatic Cooling toggles
 - Brew Setup `START` now opens a safe old-style Brewing Checklist scaffold with local
-  checklist toggles; the final active-brewing `START` remains disabled until app-level
-  safety/preflight routing exists
+  checklist toggles
+- Brewing Checklist `START` now opens a safe old-style Active Brewing scaffold with local
+  Overall/Actions tabs, static process values, and inert Pause presentation; no MCU or
+  hardware actions are emitted
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
 - Manual/Cleaning now has a safe old-style scaffold in `Screen_manual`: Short Clean,
@@ -199,7 +201,8 @@ The following are **not** yet finished:
 - final real screen flow between startup / home / status / fault screens
 - binding real machine state to a fuller UI
 - real recipe storage and recipe selection/detail screens
-- real preflight validation and active brewing transition
+- real preflight validation, active brewing state binding, pause/stop routing, and MCU
+  process commands
 - real Manual/Cleaning confirmations, safety routing, and active clean/drain workflows
 - real Settings forms, persistence, system/network integration, and calibration routing
 - routing hardware-affecting user actions through `App_orchestrator`

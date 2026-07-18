@@ -18,7 +18,8 @@ static lv_obj_t *screen_brew_checklist_create_item_row(lv_obj_t *parent,
                                                        const screen_brew_checklist_item_info_t *item_info,
                                                        screen_brew_checklist_item_context_t *context,
                                                        lv_obj_t **check_fill);
-static lv_obj_t *screen_brew_checklist_create_disabled_start_button(lv_obj_t *parent);
+static lv_obj_t *screen_brew_checklist_create_start_button(lv_obj_t *parent,
+                                                           screen_brew_checklist_nav_context_t *context);
 static void screen_brew_checklist_update_item(screen_brew_checklist_t *checklist,
                                               screen_brew_checklist_item_id_t item_id);
 static void screen_brew_checklist_back_event_cb(lv_event_t *event);
@@ -163,7 +164,8 @@ static lv_obj_t *screen_brew_checklist_create_item_row(lv_obj_t *parent,
     return button;
 }
 
-static lv_obj_t *screen_brew_checklist_create_disabled_start_button(lv_obj_t *parent)
+static lv_obj_t *screen_brew_checklist_create_start_button(lv_obj_t *parent,
+                                                           screen_brew_checklist_nav_context_t *context)
 {
     lv_obj_t *button;
     lv_obj_t *label;
@@ -172,8 +174,9 @@ static lv_obj_t *screen_brew_checklist_create_disabled_start_button(lv_obj_t *pa
     lv_obj_set_width(button, lv_pct(100));
     lv_obj_set_height(button, 48);
     lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_state(button, LV_STATE_DISABLED);
+    lv_obj_add_event_cb(button, screen_brew_checklist_back_event_cb, LV_EVENT_CLICKED, context);
 
     label = lv_label_create(button);
     lv_label_set_text(label, "START");
@@ -249,6 +252,9 @@ void screen_brew_checklist_init(screen_brew_checklist_t *checklist,
     checklist->back_button_context.action = UI_ACTION_SHOW_BREW_SETUP;
     checklist->back_button_context.handler = action_handler;
     checklist->back_button_context.user_data = user_data;
+    checklist->start_button_context.action = UI_ACTION_SHOW_ACTIVE_BREWING;
+    checklist->start_button_context.handler = action_handler;
+    checklist->start_button_context.user_data = user_data;
     for (item_index = 0U; item_index < SCREEN_BREW_CHECKLIST_ITEM_COUNT; ++item_index)
     {
         checklist->item_checked[item_index] = true;
@@ -300,7 +306,7 @@ void screen_brew_checklist_init(screen_brew_checklist_t *checklist,
     lv_obj_set_width(spacer, lv_pct(100));
     lv_obj_set_flex_grow(spacer, 1);
 
-    screen_brew_checklist_create_disabled_start_button(container);
+    screen_brew_checklist_create_start_button(container, &checklist->start_button_context);
 }
 
 void screen_brew_checklist_show_recipe(screen_brew_checklist_t *checklist, const recipe_t *recipe)
@@ -312,5 +318,6 @@ void screen_brew_checklist_show_recipe(screen_brew_checklist_t *checklist, const
 
     lv_label_set_text(checklist->recipe_label, recipe->name);
     checklist->back_button_context.value = recipe->id;
+    checklist->start_button_context.value = recipe->id;
     checklist->shown_recipe_id = recipe->id;
 }

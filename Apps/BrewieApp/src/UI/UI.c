@@ -73,6 +73,10 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
     {
         screen_id = UI_SCREEN_BREW_CHECKLIST;
     }
+    else if (action == UI_ACTION_SHOW_ACTIVE_BREWING)
+    {
+        screen_id = UI_SCREEN_ACTIVE_BREWING;
+    }
     else if (action == UI_ACTION_SHOW_MANUAL)
     {
         screen_id = UI_SCREEN_MANUAL;
@@ -175,6 +179,23 @@ static void ui_show_screen(ui_t *ui,
 
         screen_brew_checklist_show_recipe(&ui->brew_checklist, recipe);
         screen = ui->brew_checklist.screen;
+    }
+    else if (screen_id == UI_SCREEN_ACTIVE_BREWING)
+    {
+        recipe = recipe_catalog_find_by_id(value);
+        if (recipe == NULL)
+        {
+            return;
+        }
+
+        if (!ui->active_brewing_created)
+        {
+            screen_active_brewing_init(&ui->active_brewing, ui_handle_action, ui);
+            ui->active_brewing_created = true;
+        }
+
+        screen_active_brewing_show_recipe(&ui->active_brewing, recipe);
+        screen = ui->active_brewing.screen;
     }
     else if (screen_id == UI_SCREEN_MANUAL)
     {

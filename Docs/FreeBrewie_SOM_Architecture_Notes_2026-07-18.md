@@ -274,6 +274,8 @@ Purpose:
 Own LVGL screen construction and screen updating.
 
 Current file set:
+- `Screen_active_brewing.c`
+- `Screen_active_brewing.h`
 - `Screen_brew_checklist.c`
 - `Screen_brew_checklist.h`
 - `Screen_brew_setup.c`
@@ -463,7 +465,7 @@ Owns:
 - safe old-Brewie-inspired pre-brew checklist scaffold
 - selected recipe label
 - local display-only checklist toggles
-- inert final Start button presentation
+- Start navigation to the safe Active Brewing scaffold
 
 Must not own:
 - checklist validation authority
@@ -476,6 +478,27 @@ Important current fact:
 `Screen_brew_checklist` is intentionally a UI scaffold. Checklist rows are local UI state
 only. The real final Start action must later be controlled by app-level validation and MCU
 state, not by the screen layer.
+
+### `Screen_active_brewing`
+Owns:
+- safe old-Brewie-inspired Active Brewing presentation scaffold
+- selected recipe label
+- local Overall/Actions tab switching
+- static process/progress/tank presentation
+- inert Pause button presentation
+
+Must not own:
+- active brewing process state
+- pause/continue/stop authority
+- heaters, pumps, valves, or sensors
+- MCU commands
+- direct hardware control
+
+Important current fact:
+`Screen_active_brewing` is intentionally UI-only. It shows the shape of the old active
+process screen but is not the source of truth for real brewing. Later this screen should
+render state from app/process logic and emit user requests to `App_orchestrator`, not drive
+hardware directly.
 
 ### `Screen_fault`
 Owns:

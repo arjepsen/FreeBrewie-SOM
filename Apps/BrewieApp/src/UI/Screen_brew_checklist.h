@@ -55,6 +55,8 @@ typedef struct screen_brew_checklist_t
     lv_obj_t *item_check_fills[SCREEN_BREW_CHECKLIST_ITEM_COUNT];
     /** Event callback context for returning to Brew Setup. */
     screen_brew_checklist_nav_context_t back_button_context;
+    /** Event callback context for moving to the safe Active Brewing scaffold. */
+    screen_brew_checklist_nav_context_t start_button_context;
     /** Event callback contexts for local checklist rows. */
     screen_brew_checklist_item_context_t item_contexts[SCREEN_BREW_CHECKLIST_ITEM_COUNT];
     /** Recipe currently shown, used to avoid unchanged label updates. */
