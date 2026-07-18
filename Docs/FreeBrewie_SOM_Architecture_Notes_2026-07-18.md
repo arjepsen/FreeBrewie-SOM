@@ -398,7 +398,12 @@ It must not own:
 Owns:
 - RGB565 pixel mapping from logical portrait LVGL dirty rectangles into the physical
   landscape DRM framebuffer
-- the scalar rotation loop, with room for a future measured NEON implementation
+- the production rotation path, which uses a NEON 8x8 tiled core on the A13 target and
+  scalar edge handling/fallback elsewhere
+
+Related tool:
+- `Tools/DisplayRotationBenchmark` measures the explicit scalar fallback against the
+  production best-available rotation path on the SOM.
 
 ### `Logging`
 Owns:

@@ -19,5 +19,10 @@ void display_rotation_copy_counterclockwise_rgb565(uint8_t *destination_buffer,
                                                    const lv_area_t *source_area,
                                                    const uint16_t *source_pixels,
                                                    uint32_t logical_height);
+void display_rotation_copy_counterclockwise_rgb565_scalar(uint8_t *destination_buffer,
+                                                          uint32_t destination_pitch_bytes,
+                                                          const lv_area_t *source_area,
+                                                          const uint16_t *source_pixels,
+                                                          uint32_t logical_height);
 
 #endif

@@ -47,6 +47,9 @@ The following is currently proven on the real SOM target:
   baseline, then around 0.7% after the first top-level navigation cleanup
 - normal target builds now use `RelWithDebInfo`, Cortex-A8/NEON CPU flags, and LVGL's
   NEON software drawing path for supported RGB565 blend/convert operations
+- `Tools/DisplayRotationBenchmark` showed the NEON 8x8 tiled rotation path is materially
+  faster than scalar on the A13 SOM, so that path is now used by production target builds
+  with scalar fallback/edge handling
 - Home `LET'S BREW` now opens a safe first `Recipes` scaffold inspired by the old recipe
   chooser
 - `Screen_status` is structured as a scrollable diagnostics list
