@@ -13,6 +13,8 @@ static lv_obj_t *screen_recipe_detail_create_section_button(lv_obj_t *parent,
                                                             const char *title,
                                                             const char *subtitle,
                                                             screen_recipe_detail_button_context_t *context);
+static lv_obj_t *screen_recipe_detail_create_brew_button(lv_obj_t *parent,
+                                                         screen_recipe_detail_button_context_t *context);
 static lv_obj_t *screen_recipe_detail_create_disabled_button(lv_obj_t *parent, const char *text);
 static void screen_recipe_detail_button_event_cb(lv_event_t *event);
 
@@ -154,6 +156,27 @@ static lv_obj_t *screen_recipe_detail_create_section_button(lv_obj_t *parent,
     return button;
 }
 
+static lv_obj_t *screen_recipe_detail_create_brew_button(lv_obj_t *parent,
+                                                         screen_recipe_detail_button_context_t *context)
+{
+    lv_obj_t *button;
+    lv_obj_t *label;
+
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(100));
+    lv_obj_set_height(button, 44);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
+    lv_obj_set_style_radius(button, 5, 0);
+    lv_obj_add_event_cb(button, screen_recipe_detail_button_event_cb, LV_EVENT_CLICKED, context);
+
+    label = lv_label_create(button);
+    lv_label_set_text(label, "BREW");
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(label);
+    return button;
+}
+
 static lv_obj_t *screen_recipe_detail_create_disabled_button(lv_obj_t *parent, const char *text)
 {
     lv_obj_t *button;
@@ -218,6 +241,9 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     detail->fermentation_context.action = UI_ACTION_SHOW_RECIPE_FERMENTATION_SECTION;
     detail->fermentation_context.handler = action_handler;
     detail->fermentation_context.user_data = user_data;
+    detail->brew_context.action = UI_ACTION_SHOW_BREW_SETUP;
+    detail->brew_context.handler = action_handler;
+    detail->brew_context.user_data = user_data;
 
     detail->screen = lv_obj_create(NULL);
     screen_recipe_detail_set_static(detail->screen);
@@ -291,7 +317,7 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     lv_obj_set_layout(actions, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(actions, LV_FLEX_FLOW_COLUMN);
 
-    screen_recipe_detail_create_disabled_button(actions, "BREW LATER");
+    screen_recipe_detail_create_brew_button(actions, &detail->brew_context);
     screen_recipe_detail_create_disabled_button(actions, "EDIT LATER");
 }
 
@@ -308,5 +334,6 @@ void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const reci
     detail->ingredients_context.value = recipe->id;
     detail->brewing_context.value = recipe->id;
     detail->fermentation_context.value = recipe->id;
+    detail->brew_context.value = recipe->id;
     detail->shown_recipe_id = recipe->id;
 }

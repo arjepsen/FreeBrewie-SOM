@@ -6,7 +6,7 @@
  * @brief Safe old-Brewie-inspired recipe detail screen.
  *
  * Responsibility: show one selected recipe and emit navigation requests.
- * Owns: Recipe-detail LVGL objects and safe/inert action button presentation.
+ * Owns: Recipe-detail LVGL objects and safe navigation/action button presentation.
  * Must not own: recipe storage, recipe editing, brewing start logic, or MCU commands.
  ****************************************************************************************/
 
@@ -38,6 +38,7 @@ typedef struct
     screen_recipe_detail_button_context_t ingredients_context;
     screen_recipe_detail_button_context_t brewing_context;
     screen_recipe_detail_button_context_t fermentation_context;
+    screen_recipe_detail_button_context_t brew_context;
 } screen_recipe_detail_t;
 
 void screen_recipe_detail_init(screen_recipe_detail_t *detail,

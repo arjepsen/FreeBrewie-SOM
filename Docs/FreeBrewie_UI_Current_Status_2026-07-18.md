@@ -61,6 +61,9 @@ The following is currently proven on the real SOM target:
 - recipe section screens now show structured read-only rows instead of one paragraph, so
   they are ready to grow into old-style Details, Ingredients, Brewing, and Fermentation
   views before editing/storage exists
+- the selected recipe `BREW` button now opens a safe old-style Brew Setup scaffold with
+  local Automatic Water Inlet and Automatic Cooling toggles; the final Start action remains
+  disabled until app-level safety/preflight routing exists
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
 - Manual/Cleaning now has a safe old-style scaffold in `Screen_manual`: Short Clean,
@@ -194,6 +197,7 @@ The following are **not** yet finished:
 - final real screen flow between startup / home / status / fault screens
 - binding real machine state to a fuller UI
 - real recipe storage and recipe selection/detail screens
+- real Brew Setup checklist, preflight validation, and active brewing transition
 - real Manual/Cleaning confirmations, safety routing, and active clean/drain workflows
 - real Settings forms, persistence, system/network integration, and calibration routing
 - routing hardware-affecting user actions through `App_orchestrator`

@@ -65,6 +65,10 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
         screen_id = UI_SCREEN_RECIPE_SECTION;
         recipe_section_id = RECIPE_SECTION_FERMENTATION;
     }
+    else if (action == UI_ACTION_SHOW_BREW_SETUP)
+    {
+        screen_id = UI_SCREEN_BREW_SETUP;
+    }
     else if (action == UI_ACTION_SHOW_MANUAL)
     {
         screen_id = UI_SCREEN_MANUAL;
@@ -133,6 +137,23 @@ static void ui_show_screen(ui_t *ui,
 
         screen_recipe_section_show(&ui->recipe_section, recipe, recipe_section_id);
         screen = ui->recipe_section.screen;
+    }
+    else if (screen_id == UI_SCREEN_BREW_SETUP)
+    {
+        recipe = recipe_catalog_find_by_id(value);
+        if (recipe == NULL)
+        {
+            return;
+        }
+
+        if (!ui->brew_setup_created)
+        {
+            screen_brew_setup_init(&ui->brew_setup, ui_handle_action, ui);
+            ui->brew_setup_created = true;
+        }
+
+        screen_brew_setup_show_recipe(&ui->brew_setup, recipe);
+        screen = ui->brew_setup.screen;
     }
     else if (screen_id == UI_SCREEN_MANUAL)
     {

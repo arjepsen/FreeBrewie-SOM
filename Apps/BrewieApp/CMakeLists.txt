@@ -17,6 +17,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Platform/Logging.c
     src/Platform/Platform.c
     src/Platform/Time_base.c
+    src/UI/Screen_brew_setup.c
     src/UI/Screen_status.c
     src/UI/Screen_fault.c
     src/UI/Screen_home.c

@@ -12,6 +12,7 @@
 
 #include <stdbool.h>
 
+#include "Screen_brew_setup.h"
 #include "Screen_home.h"
 #include "Screen_manual.h"
 #include "Screen_menu.h"
@@ -36,6 +37,10 @@ struct ui_t
     screen_recipe_detail_t recipe_detail;
     /** Safe selected-recipe section placeholder screen. */
     screen_recipe_section_t recipe_section;
+    /** Safe brew setup scaffold, lazy-created on first use. */
+    screen_brew_setup_t brew_setup;
+    /** True after the Brew Setup scaffold has been created. */
+    bool brew_setup_created;
     /** Full-screen navigation menu. */
     screen_menu_t menu;
     /** Safe Manual/Cleaning scaffold, lazy-created on first use. */
