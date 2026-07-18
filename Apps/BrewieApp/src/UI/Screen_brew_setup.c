@@ -19,7 +19,8 @@ static lv_obj_t *screen_brew_setup_create_option_row(lv_obj_t *parent,
                                                      const screen_brew_setup_option_info_t *option_info,
                                                      screen_brew_setup_option_context_t *context,
                                                      lv_obj_t **check_fill);
-static lv_obj_t *screen_brew_setup_create_disabled_start_button(lv_obj_t *parent);
+static lv_obj_t *screen_brew_setup_create_start_button(lv_obj_t *parent,
+                                                       screen_brew_setup_nav_context_t *context);
 static void screen_brew_setup_update_option_label(screen_brew_setup_t *setup,
                                                   screen_brew_setup_option_id_t option_id);
 static void screen_brew_setup_nav_event_cb(lv_event_t *event);
@@ -166,7 +167,8 @@ static lv_obj_t *screen_brew_setup_create_option_row(lv_obj_t *parent,
     return button;
 }
 
-static lv_obj_t *screen_brew_setup_create_disabled_start_button(lv_obj_t *parent)
+static lv_obj_t *screen_brew_setup_create_start_button(lv_obj_t *parent,
+                                                       screen_brew_setup_nav_context_t *context)
 {
     lv_obj_t *button;
     lv_obj_t *label;
@@ -175,11 +177,12 @@ static lv_obj_t *screen_brew_setup_create_disabled_start_button(lv_obj_t *parent
     lv_obj_set_width(button, lv_pct(100));
     lv_obj_set_height(button, 48);
     lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_state(button, LV_STATE_DISABLED);
+    lv_obj_add_event_cb(button, screen_brew_setup_nav_event_cb, LV_EVENT_CLICKED, context);
 
     label = lv_label_create(button);
-    lv_label_set_text(label, "START LATER");
+    lv_label_set_text(label, "START");
     lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_center(label);
     return button;
@@ -251,6 +254,9 @@ void screen_brew_setup_init(screen_brew_setup_t *setup,
     setup->back_button_context.action = UI_ACTION_SHOW_RECIPE_DETAIL;
     setup->back_button_context.handler = action_handler;
     setup->back_button_context.user_data = user_data;
+    setup->checklist_button_context.action = UI_ACTION_SHOW_BREW_CHECKLIST;
+    setup->checklist_button_context.handler = action_handler;
+    setup->checklist_button_context.user_data = user_data;
     setup->option_enabled[SCREEN_BREW_SETUP_OPTION_WATER_INLET] = true;
     setup->option_enabled[SCREEN_BREW_SETUP_OPTION_COOLING] = true;
 
@@ -300,7 +306,7 @@ void screen_brew_setup_init(screen_brew_setup_t *setup,
     lv_obj_set_width(checklist, lv_pct(100));
     lv_obj_set_flex_grow(checklist, 1);
 
-    screen_brew_setup_create_disabled_start_button(container);
+    screen_brew_setup_create_start_button(container, &setup->checklist_button_context);
 }
 
 void screen_brew_setup_show_recipe(screen_brew_setup_t *setup, const recipe_t *recipe)
@@ -312,5 +318,6 @@ void screen_brew_setup_show_recipe(screen_brew_setup_t *setup, const recipe_t *r
 
     lv_label_set_text(setup->recipe_label, recipe->name);
     setup->back_button_context.value = recipe->id;
+    setup->checklist_button_context.value = recipe->id;
     setup->shown_recipe_id = recipe->id;
 }

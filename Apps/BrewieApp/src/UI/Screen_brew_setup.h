@@ -53,6 +53,8 @@ typedef struct screen_brew_setup_t
     lv_obj_t *option_check_fills[SCREEN_BREW_SETUP_OPTION_COUNT];
     /** Event callback context for returning to the selected recipe detail. */
     screen_brew_setup_nav_context_t back_button_context;
+    /** Event callback context for moving to the safe checklist scaffold. */
+    screen_brew_setup_nav_context_t checklist_button_context;
     /** Event callback contexts for local option rows. */
     screen_brew_setup_option_context_t option_contexts[SCREEN_BREW_SETUP_OPTION_COUNT];
     /** Recipe currently shown, used to avoid unchanged label updates. */

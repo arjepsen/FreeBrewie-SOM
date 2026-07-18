@@ -12,6 +12,7 @@
 
 #include <stdbool.h>
 
+#include "Screen_brew_checklist.h"
 #include "Screen_brew_setup.h"
 #include "Screen_home.h"
 #include "Screen_manual.h"
@@ -41,6 +42,10 @@ struct ui_t
     screen_brew_setup_t brew_setup;
     /** True after the Brew Setup scaffold has been created. */
     bool brew_setup_created;
+    /** Safe brewing checklist scaffold, lazy-created on first use. */
+    screen_brew_checklist_t brew_checklist;
+    /** True after the brewing checklist scaffold has been created. */
+    bool brew_checklist_created;
     /** Full-screen navigation menu. */
     screen_menu_t menu;
     /** Safe Manual/Cleaning scaffold, lazy-created on first use. */
