@@ -66,8 +66,9 @@ The following is currently proven on the real SOM target:
 - Brew Setup `START` now opens a safe old-style Brewing Checklist scaffold with local
   checklist toggles
 - Brewing Checklist `START` now opens a safe old-style Active Brewing scaffold with local
-  Overall/Actions tabs, static process values, a lightweight drawn tank/action overview,
-  and inert Pause/Stop presentation; no MCU or hardware actions are emitted
+  Overall/Actions tabs, a lightweight drawn tank/action overview, inert Pause/Stop
+  presentation, and read-only live MCU facts for current mash/boil temperatures and pump
+  state; no MCU or hardware actions are emitted
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
 - Manual/Cleaning now has a safe old-style scaffold in `Screen_manual`: Short Clean,
@@ -82,6 +83,8 @@ The following is currently proven on the real SOM target:
   of during startup, keeping boot-time UI creation smaller and safer
 - `Screen_status` is structured as a scrollable diagnostics list
 - status text formatting is separated into `Logic/Status_view_model.*`
+- `Status_view_model` also exposes a compact raw machine snapshot so product-shaped
+  screens can update specific widgets without parsing diagnostic text strings
 - visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
   LVGL
 

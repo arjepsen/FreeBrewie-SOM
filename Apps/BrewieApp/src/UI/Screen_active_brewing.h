@@ -13,6 +13,7 @@
 #include <stdbool.h>
 
 #include "Logic/Recipe_types.h"
+#include "Logic/Status_view_model.h"
 #include "UI_types.h"
 #include "lvgl.h"
 
@@ -49,6 +50,14 @@ typedef struct screen_active_brewing_t
     lv_obj_t *screen;
     /** Selected recipe name shown in the active brewing shell. */
     lv_obj_t *recipe_label;
+    /** Overall tab state label updated from live read-only machine facts. */
+    lv_obj_t *overall_state_label;
+    /** Overall tab secondary label updated from live read-only machine facts. */
+    lv_obj_t *overall_detail_label;
+    /** Actions tab mash temperature label. */
+    lv_obj_t *mash_temperature_label;
+    /** Actions tab boil temperature label. */
+    lv_obj_t *boil_temperature_label;
     /** Tab button objects styled when the local tab changes. */
     lv_obj_t *tab_buttons[SCREEN_ACTIVE_BREWING_TAB_COUNT];
     /** Tab content containers shown/hidden when the local tab changes. */
@@ -63,11 +72,25 @@ typedef struct screen_active_brewing_t
     recipe_id_t shown_recipe_id;
     /** Currently selected local tab. */
     screen_active_brewing_tab_id_t selected_tab_id;
+    /** Last raw machine snapshot rendered into this screen. */
+    status_machine_snapshot_t shown_machine;
+    /** True after shown_machine contains meaningful cache data. */
+    bool has_shown_machine;
+    /** Small backing storage for formatted Overall text. */
+    char overall_state_text[32];
+    /** Small backing storage for formatted Overall detail text. */
+    char overall_detail_text[48];
+    /** Small backing storage for formatted Mash temperature text. */
+    char mash_temperature_text[24];
+    /** Small backing storage for formatted Boil temperature text. */
+    char boil_temperature_text[24];
 } screen_active_brewing_t;
 
 void screen_active_brewing_init(screen_active_brewing_t *active_brewing,
                                 ui_action_handler_t action_handler,
                                 void *user_data);
 void screen_active_brewing_show_recipe(screen_active_brewing_t *active_brewing, const recipe_t *recipe);
+void screen_active_brewing_update(screen_active_brewing_t *active_brewing,
+                                  const status_screen_view_model_t *view_model);
 
 #endif

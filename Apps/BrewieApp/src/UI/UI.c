@@ -260,4 +260,8 @@ void ui_update(ui_t *ui, const status_screen_view_model_t *view_model)
 
     screen_home_update(&ui->home, view_model);
     screen_status_update(&ui->status, view_model);
+    if (ui->current_screen == UI_SCREEN_ACTIVE_BREWING && ui->active_brewing_created)
+    {
+        screen_active_brewing_update(&ui->active_brewing, view_model);
+    }
 }

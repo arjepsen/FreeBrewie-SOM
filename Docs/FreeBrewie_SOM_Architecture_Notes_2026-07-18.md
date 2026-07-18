@@ -218,6 +218,8 @@ Owns:
 - the current diagnostic/status screen view model
 - stable backing storage for formatted diagnostic strings
 - cached comms snapshots so unchanged status text is not rebuilt every UI refresh
+- a compact read-only machine snapshot for product-shaped screens that need raw current
+  values instead of diagnostic strings
 
 This module exists because the status screen is a dense diagnostics view. It is acceptable
 for that screen to show compact text strings, but production brewing screens should move
@@ -484,8 +486,9 @@ Owns:
 - safe old-Brewie-inspired Active Brewing presentation scaffold
 - selected recipe label
 - local Overall/Actions tab switching
-- static process/progress/tank presentation using simple LVGL objects rather than bitmap
-  assets
+- read-only live mash/boil temperature and pump-state presentation from the logic-layer
+  machine snapshot
+- process/progress/tank presentation using simple LVGL objects rather than bitmap assets
 - inert Pause/Stop process-control presentation
 
 Must not own:
@@ -496,10 +499,10 @@ Must not own:
 - direct hardware control
 
 Important current fact:
-`Screen_active_brewing` is intentionally UI-only. It shows the shape of the old active
-process screen but is not the source of truth for real brewing. Later this screen should
-render state from app/process logic and emit user requests to `App_orchestrator`, not drive
-hardware directly.
+`Screen_active_brewing` is intentionally UI-only. It now renders read-only facts from the
+logic-layer machine snapshot, but it is not the source of truth for real brewing. Later
+this screen should render full process state from app/process logic and emit user requests
+to `App_orchestrator`, not drive hardware directly.
 
 ### `Screen_fault`
 Owns:

@@ -25,6 +25,29 @@
 typedef struct
 {
     /*
+     * Small raw machine snapshot shared with product-shaped screens.
+     *
+     * The dense status screen still uses formatted diagnostic strings, but normal screens
+     * should read compact values like these and update only the widgets that changed.
+     */
+    bool mcu_status_valid;
+    uint8_t mash_target_c;
+    uint8_t boil_target_c;
+    int16_t mash_temp_c_x10;
+    int16_t boil_temp_c_x10;
+    uint8_t mash_pump_setpoint;
+    uint8_t boil_pump_setpoint;
+    bool mash_pump_running;
+    bool boil_pump_running;
+    uint16_t pressure_count;
+    uint8_t solenoid_state_bits;
+    uint8_t status_bits;
+    uint16_t fault_flags;
+} status_machine_snapshot_t;
+
+typedef struct
+{
+    /*
      * This is the current diagnostic status-screen view model. It intentionally stores
      * readable strings because the screen is a bring-up/debug view.
      *
@@ -43,6 +66,7 @@ typedef struct
     const char *solenoid_text;
     const char *fault_text;
     uint32_t heartbeat_count;
+    status_machine_snapshot_t machine;
 } status_screen_view_model_t;
 
 typedef struct

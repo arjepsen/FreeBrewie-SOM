@@ -20,6 +20,8 @@ static void status_view_model_update_mcu_status_text(status_view_model_t *model,
 static void status_view_model_update_fault_text(status_view_model_t *model,
                                                 const comms_mcu_status_report_t *mcu_status,
                                                 const comms_mcu_fault_report_t *mcu_faults);
+static void status_view_model_update_machine_snapshot(status_view_model_t *model,
+                                                       const comms_mcu_status_report_t *mcu_status);
 
 /****************************************************************************************
  * @brief Compare two decoded MCU status reports field by field.
@@ -161,6 +163,31 @@ static void status_view_model_update_mcu_status_text(status_view_model_t *model,
              (mcu_status->solenoid_state_bits & MCU_SOLENOID_BIT_COOLING_INLET) != 0U ? "on" : "off",
              (mcu_status->status_bits & MCU_STATUS_BIT_HEARTBEAT_ALIVE) != 0U ? "ok" : "lost");
     model->values.solenoid_text = model->solenoid_text;
+}
+
+/****************************************************************************************
+ * @brief Copy raw MCU status facts into the product-screen machine snapshot.
+ *
+ * Diagnostic strings are useful on the Status screen, but the normal product screens need
+ * simple numbers and flags. Keeping this copy here avoids text parsing in UI code and gives
+ * future screens one stable read-only place to look for live machine facts.
+ ****************************************************************************************/
+static void status_view_model_update_machine_snapshot(status_view_model_t *model,
+                                                       const comms_mcu_status_report_t *mcu_status)
+{
+    model->values.machine.mcu_status_valid = mcu_status->valid;
+    model->values.machine.mash_target_c = mcu_status->mash_target_c;
+    model->values.machine.boil_target_c = mcu_status->boil_target_c;
+    model->values.machine.mash_temp_c_x10 = mcu_status->mash_temp_c_x10;
+    model->values.machine.boil_temp_c_x10 = mcu_status->boil_temp_c_x10;
+    model->values.machine.mash_pump_setpoint = mcu_status->mash_pump_setpoint;
+    model->values.machine.boil_pump_setpoint = mcu_status->boil_pump_setpoint;
+    model->values.machine.mash_pump_running = mcu_status->mash_pump_running;
+    model->values.machine.boil_pump_running = mcu_status->boil_pump_running;
+    model->values.machine.pressure_count = mcu_status->pressure_count;
+    model->values.machine.solenoid_state_bits = mcu_status->solenoid_state_bits;
+    model->values.machine.status_bits = mcu_status->status_bits;
+    model->values.machine.fault_flags = mcu_status->fault_flags;
 }
 
 /****************************************************************************************
@@ -319,6 +346,7 @@ void status_view_model_update(status_view_model_t *model, const comms_status_t *
     if (mcu_status_changed)
     {
         status_view_model_update_mcu_status_text(model, mcu_status);
+        status_view_model_update_machine_snapshot(model, mcu_status);
         model->cached_mcu_status = *mcu_status;
     }
 
