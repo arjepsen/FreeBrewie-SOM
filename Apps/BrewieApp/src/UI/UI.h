@@ -18,16 +18,11 @@
 #include "Screen_recipe_detail.h"
 #include "Screen_recipe_section.h"
 #include "Screen_recipes.h"
+#include "Screen_settings.h"
 #include "Screen_status.h"
 #include "UI_types.h"
 
 typedef struct ui_t ui_t;
-
-typedef struct
-{
-    ui_action_t action;
-    ui_t *ui;
-} ui_button_context_t;
 
 struct ui_t
 {
@@ -47,8 +42,10 @@ struct ui_t
     screen_manual_t manual;
     /** True after the Manual/Cleaning scaffold has been created. */
     bool manual_created;
-    /** Placeholder screen used until real Settings workflows are implemented. */
-    lv_obj_t *settings_screen;
+    /** Safe Settings scaffold, lazy-created on first use. */
+    screen_settings_t settings;
+    /** True after the Settings scaffold has been created. */
+    bool settings_created;
     /** Screen currently loaded into LVGL. */
     ui_screen_id_t current_screen;
     /** Deferred navigation target requested from an LVGL event callback. */
@@ -59,8 +56,6 @@ struct ui_t
     recipe_section_id_t pending_recipe_section;
     /** True when pending_screen should be applied during ui_update(). */
     bool has_pending_screen;
-    /** Button callback contexts owned by this UI instance. */
-    ui_button_context_t settings_back_context;
 };
 
 void ui_init(ui_t *ui);

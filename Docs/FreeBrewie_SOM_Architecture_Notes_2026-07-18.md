@@ -286,6 +286,8 @@ Current file set:
 - `Screen_menu.h`
 - `Screen_recipes.c`
 - `Screen_recipes.h`
+- `Screen_settings.c`
+- `Screen_settings.h`
 - `UI.c`
 - `UI.h`
 - `UI_dialog.c`
@@ -374,6 +376,25 @@ Important current fact:
 `Screen_manual` is intentionally presentation-only. Selecting a row updates local
 explanation text. Later, starting a real clean, drain, or unclogging workflow must route
 through app-level logic and safety checks before becoming protocol traffic.
+
+### `Screen_settings`
+Owns:
+- old-Brewie-inspired Settings scaffold
+- safe selectable rows for WiFi, Units, Time, Water Settings, Calibration, Language,
+  and About
+- local selected-category explanation labels
+
+Must not own:
+- persistent settings storage
+- network configuration writes
+- calibration writes
+- MCU commands
+- direct system mutation
+
+Important current fact:
+`Screen_settings` is intentionally presentation-only. Selecting a row updates local
+explanation text. Later, changing settings must route through app/system services and
+validation rather than being performed directly from LVGL callbacks.
 
 ### `Screen_recipes`
 Owns:

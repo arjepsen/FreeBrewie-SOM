@@ -66,6 +66,9 @@ The following is currently proven on the real SOM target:
 - Manual/Cleaning now has a safe old-style scaffold in `Screen_manual`: Short Clean,
   Sanitizing Clean, Full Clean, Drain After Brew, Full Drain, and Unclogging rows can be
   selected to show local explanations, but they do not emit MCU/hardware actions
+- Settings now has a safe old-style scaffold in `Screen_settings`: WiFi, Units, Time,
+  Water Settings, Calibration, Language, and About rows can be selected to show local
+  explanations, but they do not change persistent settings or system state
 - the target LVGL heap is explicitly sized to 256 KB after the old-style navigation shell
   exposed that the default 64 KB heap was too small for the growing widget tree
 - Manual/Cleaning and Settings screens are lazy-created when opened instead
@@ -192,6 +195,7 @@ The following are **not** yet finished:
 - binding real machine state to a fuller UI
 - real recipe storage and recipe selection/detail screens
 - real Manual/Cleaning confirmations, safety routing, and active clean/drain workflows
+- real Settings forms, persistence, system/network integration, and calibration routing
 - routing hardware-affecting user actions through `App_orchestrator`
 - polished redraw/update behavior
 - true animated boot/splash screen during SOM startup
