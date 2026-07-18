@@ -52,6 +52,8 @@ The following is currently proven on the real SOM target:
   with scalar fallback/edge handling
 - Home `LET'S BREW` now opens a safe first `Recipes` scaffold inspired by the old recipe
   chooser
+- the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
+  Home, Recipes, Manual/Cleaning, Settings, and Status
 - `Screen_status` is structured as a scrollable diagnostics list
 - status text formatting is separated into `Logic/Status_view_model.*`
 - visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
@@ -253,8 +255,8 @@ So the next goal is **not** “build the whole UI”.
 The next goal is:
 - continue refining the first product-shaped home/navigation shell
 - keep the current live status/debug screen as a diagnostic destination
-- keep Recipes, Extras, and Settings as safe navigation targets until their workflows are
-  designed and routed through app logic
+- keep Recipes, Manual/Cleaning, and Settings as safe navigation targets until their
+  workflows are designed and routed through app logic
 - use the old UI as the screen/functionality reference, but keep the new implementation
   modular, readable, safe, and optimized
 

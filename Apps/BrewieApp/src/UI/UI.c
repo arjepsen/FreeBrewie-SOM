@@ -5,12 +5,6 @@
 #include "UI_theme.h"
 
 static void ui_handle_action(ui_action_t action, void *user_data);
-static lv_obj_t *ui_create_menu_screen(ui_t *ui);
-static lv_obj_t *ui_create_menu_row(lv_obj_t *parent,
-                                    const char *text,
-                                    ui_action_t action,
-                                    ui_button_context_t *context,
-                                    ui_t *ui);
 static lv_obj_t *ui_create_placeholder_screen(ui_t *ui,
                                               const char *title,
                                               const char *state,
@@ -52,9 +46,9 @@ static void ui_handle_action(ui_action_t action, void *user_data)
     {
         screen_id = UI_SCREEN_RECIPES;
     }
-    else if (action == UI_ACTION_SHOW_EXTRAS)
+    else if (action == UI_ACTION_SHOW_MANUAL)
     {
-        screen_id = UI_SCREEN_EXTRAS;
+        screen_id = UI_SCREEN_MANUAL;
     }
     else if (action == UI_ACTION_SHOW_SETTINGS)
     {
@@ -69,84 +63,6 @@ static void ui_handle_action(ui_action_t action, void *user_data)
      */
     ui->pending_screen = screen_id;
     ui->has_pending_screen = true;
-}
-
-/**
- * Create the full-screen menu inspired by the original Brewie MainMenu.
- *
- * The old UI used a slide-down menu with large dark rows. We keep the large row structure
- * because it is touch-friendly and cheap for LVGL to render, but use normal screen
- * navigation for now rather than animation.
- */
-static lv_obj_t *ui_create_menu_screen(ui_t *ui)
-{
-    lv_obj_t *screen;
-    lv_obj_t *container;
-    lv_obj_t *spacer;
-
-    screen = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(screen, lv_color_hex(0x000000), 0);
-    lv_obj_set_style_bg_opa(screen, LV_OPA_COVER, 0);
-
-    container = lv_obj_create(screen);
-    lv_obj_set_size(container, lv_pct(100), lv_pct(100));
-    lv_obj_set_style_bg_color(container, lv_color_hex(0x000000), 0);
-    lv_obj_set_style_bg_opa(container, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_width(container, 0, 0);
-    lv_obj_set_style_pad_all(container, 8, 0);
-    lv_obj_set_style_pad_row(container, 10, 0);
-    lv_obj_set_layout(container, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
-
-    spacer = lv_obj_create(container);
-    lv_obj_remove_style_all(spacer);
-    lv_obj_set_width(spacer, lv_pct(100));
-    lv_obj_set_height(spacer, 24);
-
-    ui_create_menu_row(container, "HOME", UI_ACTION_SHOW_HOME, &ui->menu_home_context, ui);
-    ui_create_menu_row(container, "RECIPES", UI_ACTION_SHOW_RECIPES, &ui->menu_recipes_context, ui);
-    ui_create_menu_row(container, "EXTRAS", UI_ACTION_SHOW_EXTRAS, &ui->menu_extras_context, ui);
-    ui_create_menu_row(container, "SETTINGS", UI_ACTION_SHOW_SETTINGS, &ui->menu_settings_context, ui);
-    ui_create_menu_row(container, "STATUS", UI_ACTION_SHOW_STATUS, &ui->menu_status_context, ui);
-
-    spacer = lv_obj_create(container);
-    lv_obj_remove_style_all(spacer);
-    lv_obj_set_width(spacer, lv_pct(100));
-    lv_obj_set_flex_grow(spacer, 1);
-
-    ui_create_menu_row(container, "< BACK", UI_ACTION_SHOW_HOME, &ui->menu_home_context, ui);
-
-    return screen;
-}
-
-static lv_obj_t *ui_create_menu_row(lv_obj_t *parent,
-                                    const char *text,
-                                    ui_action_t action,
-                                    ui_button_context_t *context,
-                                    ui_t *ui)
-{
-    lv_obj_t *button;
-    lv_obj_t *label;
-
-    context->action = action;
-    context->ui = ui;
-
-    button = lv_button_create(parent);
-    lv_obj_set_width(button, lv_pct(100));
-    lv_obj_set_height(button, 60);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0x343434), 0);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0x454545), LV_STATE_PRESSED);
-    lv_obj_set_style_border_width(button, 0, 0);
-    lv_obj_set_style_radius(button, 0, 0);
-    lv_obj_add_event_cb(button, ui_placeholder_button_event_cb, LV_EVENT_CLICKED, context);
-
-    label = lv_label_create(button);
-    lv_label_set_text(label, text);
-    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_set_style_text_font(label, &lv_font_montserrat_20, 0);
-    lv_obj_center(label);
-
-    return button;
 }
 
 /**
@@ -280,7 +196,7 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
     screen = ui->home.screen;
     if (screen_id == UI_SCREEN_MENU)
     {
-        screen = ui->menu_screen;
+        screen = ui->menu.screen;
     }
     else if (screen_id == UI_SCREEN_STATUS)
     {
@@ -290,9 +206,9 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
     {
         screen = ui->recipes.screen;
     }
-    else if (screen_id == UI_SCREEN_EXTRAS)
+    else if (screen_id == UI_SCREEN_MANUAL)
     {
-        screen = ui->extras_screen;
+        screen = ui->manual_screen;
     }
     else if (screen_id == UI_SCREEN_SETTINGS)
     {
@@ -321,14 +237,14 @@ void ui_init(ui_t *ui)
     screen_home_init(&ui->home, ui_handle_action, ui);
     screen_recipes_init(&ui->recipes, ui_handle_action, ui);
     screen_status_init(&ui->status, ui_handle_action, ui);
-    ui->menu_screen = ui_create_menu_screen(ui);
-    ui->extras_screen = ui_create_placeholder_screen(ui,
-                                                     "Extras",
+    screen_menu_init(&ui->menu, ui_handle_action, ui);
+    ui->manual_screen = ui_create_placeholder_screen(ui,
+                                                     "Manual / Cleaning",
                                                      "Locked",
-                                                     "Clean, drain, unclogging, and manual-service "
-                                                     "flows belong here later. They must pass through "
-                                                     "app logic and MCU interlocks before touching hardware.",
-                                                     &ui->extras_back_context);
+                                                     "Clean, drain, unclogging, and manual-service flows "
+                                                     "belong here later. They must pass through app logic "
+                                                     "and MCU interlocks before touching hardware.",
+                                                     &ui->manual_back_context);
     ui->settings_screen = ui_create_placeholder_screen(ui,
                                                        "Settings",
                                                        "Later",

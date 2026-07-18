@@ -261,6 +261,8 @@ Current file set:
 - `Screen_fault.h`
 - `Screen_home.c`
 - `Screen_home.h`
+- `Screen_menu.c`
+- `Screen_menu.h`
 - `Screen_recipes.c`
 - `Screen_recipes.h`
 - `UI.c`
@@ -277,7 +279,7 @@ Owns:
 - top-level UI init/update
 - selecting which screens/components are active
 - keeping the UI layer together
-- owning button callback contexts for menu and placeholder navigation
+- owning button callback contexts for placeholder navigation
 - deferring navigation requested from LVGL event callbacks until normal `ui_update()`
 
 Must not own:
@@ -315,6 +317,17 @@ Owns:
 - current first product-shaped Home screen
 - normal landing view for the user
 - menu entry point and simple status summaries
+
+### `Screen_menu`
+Owns:
+- old-Brewie-inspired top-level navigation menu
+- menu rows for Home, Recipes, Manual/Cleaning, Settings, and Status
+- menu row callback contexts
+
+Must not own:
+- workflow state
+- machine-control decisions
+- hardware-affecting actions
 
 ### `Screen_recipes`
 Owns:
