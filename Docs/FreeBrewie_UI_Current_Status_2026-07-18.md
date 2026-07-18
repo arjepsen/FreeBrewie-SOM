@@ -58,8 +58,15 @@ The following is currently proven on the real SOM target:
   longer descriptions stay on the detail screen
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe placeholder screen
+- recipe section screens now show structured read-only rows instead of one paragraph, so
+  they are ready to grow into old-style Details, Ingredients, Brewing, and Fermentation
+  views before editing/storage exists
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
+- the target LVGL heap is explicitly sized to 256 KB after the old-style navigation shell
+  exposed that the default 64 KB heap was too small for the growing widget tree
+- Manual/Cleaning and Settings placeholder screens are lazy-created when opened instead
+  of during startup, keeping boot-time UI creation smaller and safer
 - `Screen_status` is structured as a scrollable diagnostics list
 - status text formatting is separated into `Logic/Status_view_model.*`
 - visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
@@ -116,6 +123,11 @@ So the current split is:
 
 - simulator build -> SDL
 - target build -> custom rotated DRM
+
+The target build also uses LVGL's built-in allocator with `LV_MEM_SIZE` set to 256 KB.
+The first larger navigation shell proved that relying on LVGL's default 64 KB heap can
+produce a black screen and a process stuck before `/dev/ttyS1` opens. Optional screens
+should therefore be created lazily unless they must exist at startup.
 
 ---
 
@@ -254,7 +266,7 @@ Recommended next step:
 6. keep the status/debug screen available as a service/developer screen
 7. keep diagnostic values in a scrollable list, since the list will grow over time
 8. add safe placeholder destinations before implementing hardware-affecting workflows
-9. replace the safe recipe-section placeholders with real read-only section content before
+9. fill the read-only recipe-section rows with more realistic static/catalog data before
    adding editing/storage behavior
 
 So the next goal is **not** “build the whole UI”.

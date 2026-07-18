@@ -266,10 +266,32 @@ static void ui_show_screen(ui_t *ui,
     }
     else if (screen_id == UI_SCREEN_MANUAL)
     {
+        if (ui->manual_screen == NULL)
+        {
+            ui->manual_screen = ui_create_placeholder_screen(ui,
+                                                             "Manual / Cleaning",
+                                                             "Locked",
+                                                             "Clean, drain, unclogging, and manual-service "
+                                                             "flows belong here later. They must pass through "
+                                                             "app logic and MCU interlocks before touching "
+                                                             "hardware.",
+                                                             &ui->manual_back_context);
+        }
+
         screen = ui->manual_screen;
     }
     else if (screen_id == UI_SCREEN_SETTINGS)
     {
+        if (ui->settings_screen == NULL)
+        {
+            ui->settings_screen = ui_create_placeholder_screen(ui,
+                                                               "Settings",
+                                                               "Later",
+                                                               "Display, touch, network, system, and service "
+                                                               "options belong here later.",
+                                                               &ui->settings_back_context);
+        }
+
         screen = ui->settings_screen;
     }
 
@@ -280,7 +302,6 @@ static void ui_show_screen(ui_t *ui,
 
     ui->current_screen = screen_id;
     lv_screen_load(screen);
-    lv_refr_now(NULL);
 }
 
 void ui_init(ui_t *ui)
@@ -298,20 +319,6 @@ void ui_init(ui_t *ui)
     screen_recipe_section_init(&ui->recipe_section, ui_handle_action, ui);
     screen_status_init(&ui->status, ui_handle_action, ui);
     screen_menu_init(&ui->menu, ui_handle_action, ui);
-    ui->manual_screen = ui_create_placeholder_screen(ui,
-                                                     "Manual / Cleaning",
-                                                     "Locked",
-                                                     "Clean, drain, unclogging, and manual-service flows "
-                                                     "belong here later. They must pass through app logic "
-                                                     "and MCU interlocks before touching hardware.",
-                                                     &ui->manual_back_context);
-    ui->settings_screen = ui_create_placeholder_screen(ui,
-                                                       "Settings",
-                                                       "Later",
-                                                       "Settings starts with display and touch facts, "
-                                                       "then can grow into network, system, and "
-                                                       "service options.",
-                                                       &ui->settings_back_context);
     ui_show_screen(ui, UI_SCREEN_HOME, 0U, RECIPE_SECTION_DETAILS);
 }
 

@@ -300,11 +300,18 @@ Owns:
 - keeping the UI layer together
 - owning button callback contexts for placeholder navigation
 - deferring navigation requested from LVGL event callbacks until normal `ui_update()`
+- lazy-creating optional placeholder screens that are not needed at startup
 
 Must not own:
 - serial I/O
 - Linux DRM setup
 - raw protocol parsing
+
+Important current fact:
+The target LVGL build uses the built-in allocator with `LV_MEM_SIZE` set to 256 KB. The
+old-style navigation shell exceeded LVGL's default 64 KB heap when too many screens were
+created during boot. New optional screens should therefore be created lazily unless they
+are required for the first visible Home path.
 
 ### `Screen_status`
 Owns:
@@ -376,8 +383,8 @@ Must not own yet:
 
 ### `Screen_recipe_section`
 Owns:
-- safe placeholder presentation for one selected recipe section
-- selected recipe/section labels and placeholder body text
+- safe read-only presentation for one selected recipe section
+- selected recipe/section labels and fixed reusable row widgets
 - back/menu navigation callbacks
 
 Must not own yet:
@@ -486,7 +493,7 @@ The intended current SOM-side flow is:
 1. `main.c` enters the app
 2. `App.c` initializes platform, comms, logic, and UI
 3. `Display.c` initializes LVGL backend
-4. `Screen_status` becomes the first visible screen
+4. `Screen_home` becomes the first visible screen
 5. runtime loop continues:
    - comms update
    - logic update
@@ -511,7 +518,8 @@ The following is now proven on the SOM target:
 - heartbeat is sent
 - MCU `STATUS_REPORT` frames are received
 - target DRM display init succeeds
-- live status/debug text has been shown on screen
+- Home/menu/status navigation works on the real portrait display
+- live status/debug text remains available from the menu
 
 This means:
 - the restructured app is alive

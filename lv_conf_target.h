@@ -14,6 +14,15 @@
 #define LV_USE_LOG 1
 
 /*
+ * LVGL's default built-in heap is only 64 KB. That was enough for the first status
+ * screen, but the old-style navigation shell now creates several screens and labels.
+ * Keep the allocator deterministic, but reserve enough space that startup does not hang
+ * when adding normal UI widgets.
+ */
+#define LV_USE_STDLIB_MALLOC LV_STDLIB_BUILTIN
+#define LV_MEM_SIZE (256 * 1024U)
+
+/*
  * The A13 uses a Cortex-A8 CPU with NEON. LVGL's software renderer has NEON paths for
  * common RGB565 blending/conversion operations. Keep this target-only so the simulator
  * still builds for the host CPU.

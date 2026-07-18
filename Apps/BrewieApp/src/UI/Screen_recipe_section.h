@@ -15,6 +15,8 @@
 #include "UI_types.h"
 #include "lvgl.h"
 
+#define SCREEN_RECIPE_SECTION_MAX_ROWS 6U
+
 typedef enum
 {
     RECIPE_SECTION_DETAILS = 0,
@@ -36,7 +38,9 @@ typedef struct
     lv_obj_t *screen;
     lv_obj_t *title_label;
     lv_obj_t *recipe_label;
-    lv_obj_t *body_label;
+    lv_obj_t *row_objects[SCREEN_RECIPE_SECTION_MAX_ROWS];
+    lv_obj_t *row_title_labels[SCREEN_RECIPE_SECTION_MAX_ROWS];
+    lv_obj_t *row_value_labels[SCREEN_RECIPE_SECTION_MAX_ROWS];
     recipe_id_t shown_recipe_id;
     recipe_section_id_t shown_section_id;
     screen_recipe_section_button_context_t back_button_context;
