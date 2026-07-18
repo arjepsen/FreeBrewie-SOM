@@ -358,6 +358,8 @@ Own target/simulator platform glue that is not business logic and not UI semanti
 Current file set:
 - `Display.c`
 - `Display.h`
+- `Display_rotation.c`
+- `Display_rotation.h`
 - `Logging.c`
 - `Logging.h`
 - `Platform.c`
@@ -375,6 +377,7 @@ Owns:
 Important current fact:
 - simulator path uses SDL
 - target path now uses Linux DRM
+- DRM rotation math is isolated in `Display_rotation`
 - target DRM init succeeds on the SOM
 - first visible text has now been shown on the real screen
 
@@ -386,9 +389,16 @@ This is a major bring-up milestone.
 - LVGL periodic handler progression
 
 It must not own:
+- low-level pixel rotation loops
 - screen-specific content
 - serial data interpretation
 - app state decisions
+
+### `Display_rotation`
+Owns:
+- RGB565 pixel mapping from logical portrait LVGL dirty rectangles into the physical
+  landscape DRM framebuffer
+- the scalar rotation loop, with room for a future measured NEON implementation
 
 ### `Logging`
 Owns:

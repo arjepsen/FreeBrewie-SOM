@@ -9,6 +9,7 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#include "Platform/Display_rotation.h"
 #include "Platform/Logging.h"
 
 #if !defined(__arm__) && !defined(__aarch64__)
@@ -98,9 +99,6 @@ static bool display_drm_page_flip(display_drm_context_t *context);
 static void display_drm_destroy_buffers(display_drm_context_t *context);
 static void display_drm_destroy_buffer(display_drm_context_t *context, display_drm_buffer_t *buffer);
 static void display_drm_flush_cb(lv_display_t *display, const lv_area_t *area, uint8_t *px_map);
-static void display_drm_copy_area_counterclockwise(display_drm_context_t *context,
-                                                   const lv_area_t *area,
-                                                   const uint16_t *pixels);
 static void display_drm_page_flip_handler(int fd,
                                           unsigned int sequence,
                                           unsigned int tv_sec,
@@ -646,7 +644,11 @@ static void display_drm_flush_cb(lv_display_t *display, const lv_area_t *area, u
         context->frame_prepared = true;
     }
 
-    display_drm_copy_area_counterclockwise(context, area, (const uint16_t *)px_map);
+    display_rotation_copy_counterclockwise_rgb565(back_buffer->map,
+                                                  back_buffer->pitch,
+                                                  area,
+                                                  (const uint16_t *)px_map,
+                                                  DISPLAY_PORTRAIT_HEIGHT);
 
     if (lv_display_flush_is_last(display))
     {
@@ -659,50 +661,6 @@ static void display_drm_flush_cb(lv_display_t *display, const lv_area_t *area, u
     }
 
     lv_display_flush_ready(display);
-}
-
-static void display_drm_copy_area_counterclockwise(display_drm_context_t *context,
-                                                   const lv_area_t *area,
-                                                   const uint16_t *pixels)
-{
-    int32_t area_width;
-    int32_t source_x;
-    int32_t source_y;
-
-    area_width = area->x2 - area->x1 + 1;
-
-    /*
-     * The panel is mounted portrait, while DRM scans out the physical landscape buffer.
-     * Counterclockwise mapping matched the physical appliance during probe testing:
-     *
-     *   portrait x,y -> landscape x = portrait_height - 1 - y
-     *                   landscape y = x
-     *
-     * Iterate by source X first so each inner loop writes mostly along one framebuffer row.
-     */
-    for (source_x = area->x1; source_x <= area->x2; ++source_x)
-    {
-        uint32_t destination_y;
-        uint8_t *destination_row;
-        uint16_t *destination_pixels;
-        int32_t local_x;
-
-        destination_y = (uint32_t)source_x;
-        destination_row = context->buffers[context->back_buffer_index].map +
-                          ((size_t)destination_y * context->buffers[context->back_buffer_index].pitch);
-        destination_pixels = (uint16_t *)destination_row;
-        local_x = source_x - area->x1;
-
-        for (source_y = area->y1; source_y <= area->y2; ++source_y)
-        {
-            int32_t local_y;
-            uint32_t destination_x;
-
-            local_y = source_y - area->y1;
-            destination_x = (uint32_t)((int32_t)DISPLAY_PORTRAIT_HEIGHT - 1 - source_y);
-            destination_pixels[destination_x] = pixels[(size_t)local_y * (size_t)area_width + (size_t)local_x];
-        }
-    }
 }
 
 static void display_drm_page_flip_handler(int fd,

@@ -12,6 +12,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Logic/Status_view_model.c
     src/Logic/User_actions.c
     src/Platform/Display.c
+    src/Platform/Display_rotation.c
     src/Platform/Logging.c
     src/Platform/Platform.c
     src/Platform/Time_base.c

@@ -90,6 +90,7 @@ For the real SOM target, the current display path is:
 
 - LVGL
 - custom Linux DRM scanout backend in `Platform/Display.c`
+- RGB565 dirty-rectangle rotation in `Platform/Display_rotation.c`
 - DRM device path: `/dev/dri/card0`
 - logical LVGL resolution: 272x480
 - physical DRM scanout: 480x272 RGB565
