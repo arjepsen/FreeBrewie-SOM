@@ -16,6 +16,10 @@ static lv_obj_t *screen_active_brewing_create_menu_button(lv_obj_t *parent,
 static lv_obj_t *screen_active_brewing_create_tab_button(lv_obj_t *parent,
                                                          const char *text,
                                                          screen_active_brewing_tab_context_t *context);
+static lv_obj_t *screen_active_brewing_create_tank(lv_obj_t *parent,
+                                                   const char *title,
+                                                   const char *temperature_text,
+                                                   bool filled);
 static void screen_active_brewing_create_overall_page(lv_obj_t *parent);
 static void screen_active_brewing_create_actions_page(lv_obj_t *parent);
 static void screen_active_brewing_select_tab(screen_active_brewing_t *active_brewing,
@@ -151,6 +155,53 @@ static lv_obj_t *screen_active_brewing_create_tab_button(lv_obj_t *parent,
     return button;
 }
 
+static lv_obj_t *screen_active_brewing_create_tank(lv_obj_t *parent,
+                                                   const char *title,
+                                                   const char *temperature_text,
+                                                   bool filled)
+{
+    lv_obj_t *tank;
+    lv_obj_t *fill;
+    lv_obj_t *label;
+
+    tank = lv_obj_create(parent);
+    screen_active_brewing_set_static(tank);
+    lv_obj_set_width(tank, 104);
+    lv_obj_set_height(tank, 138);
+    lv_obj_set_style_bg_color(tank, lv_color_hex(0x1F1D1B), 0);
+    lv_obj_set_style_bg_opa(tank, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(tank, lv_color_hex(0x4B4741), 0);
+    lv_obj_set_style_border_width(tank, 2, 0);
+    lv_obj_set_style_radius(tank, 4, 0);
+    lv_obj_set_style_pad_all(tank, 6, 0);
+
+    fill = lv_obj_create(tank);
+    screen_active_brewing_set_static(fill);
+    lv_obj_set_width(fill, lv_pct(100));
+    lv_obj_set_height(fill, filled ? 44 : 16);
+    lv_obj_align(fill, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_set_style_bg_color(fill, filled ? lv_color_hex(0x55B047) : lv_color_hex(0x38342E), 0);
+    lv_obj_set_style_bg_opa(fill, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(fill, 0, 0);
+    lv_obj_set_style_radius(fill, 0, 0);
+
+    label = lv_label_create(tank);
+    lv_label_set_text(label, title);
+    lv_obj_set_width(label, lv_pct(100));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 8);
+
+    label = lv_label_create(tank);
+    lv_label_set_text(label, temperature_text);
+    lv_obj_set_width(label, lv_pct(100));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xE67526), 0);
+    lv_obj_align(label, LV_ALIGN_CENTER, 0, -6);
+
+    return tank;
+}
+
 static void screen_active_brewing_create_overall_page(lv_obj_t *parent)
 {
     lv_obj_t *progress;
@@ -205,40 +256,50 @@ static void screen_active_brewing_create_overall_page(lv_obj_t *parent)
 
 static void screen_active_brewing_create_actions_page(lv_obj_t *parent)
 {
-    lv_obj_t *row;
+    lv_obj_t *machine;
+    lv_obj_t *center_panel;
     lv_obj_t *label;
 
-    row = lv_obj_create(parent);
-    screen_active_brewing_set_static(row);
-    lv_obj_set_width(row, lv_pct(100));
-    lv_obj_set_height(row, 64);
-    lv_obj_set_style_bg_color(row, lv_color_hex(0x282828), 0);
-    lv_obj_set_style_bg_opa(row, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(row, lv_color_hex(0x343434), 0);
-    lv_obj_set_style_border_width(row, 1, 0);
-    lv_obj_set_style_radius(row, 0, 0);
-    lv_obj_set_style_pad_all(row, 8, 0);
+    machine = lv_obj_create(parent);
+    screen_active_brewing_set_static(machine);
+    lv_obj_set_width(machine, lv_pct(100));
+    lv_obj_set_height(machine, 154);
+    lv_obj_set_style_bg_color(machine, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(machine, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(machine, 0, 0);
+    lv_obj_set_style_pad_all(machine, 0, 0);
+    lv_obj_set_style_pad_column(machine, 4, 0);
+    lv_obj_set_layout(machine, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(machine, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(machine, LV_FLEX_ALIGN_SPACE_BETWEEN, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER);
 
-    label = lv_label_create(row);
-    lv_label_set_text(label, "Mash tank        --.- C");
-    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
+    screen_active_brewing_create_tank(machine, "Boil", "--.- C", false);
 
-    row = lv_obj_create(parent);
-    screen_active_brewing_set_static(row);
-    lv_obj_set_width(row, lv_pct(100));
-    lv_obj_set_height(row, 64);
-    lv_obj_set_style_bg_color(row, lv_color_hex(0x282828), 0);
-    lv_obj_set_style_bg_opa(row, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(row, lv_color_hex(0x343434), 0);
-    lv_obj_set_style_border_width(row, 1, 0);
-    lv_obj_set_style_radius(row, 0, 0);
-    lv_obj_set_style_pad_all(row, 8, 0);
+    center_panel = lv_obj_create(machine);
+    screen_active_brewing_set_static(center_panel);
+    lv_obj_set_width(center_panel, 32);
+    lv_obj_set_height(center_panel, 138);
+    lv_obj_set_style_bg_color(center_panel, lv_color_hex(0x282828), 0);
+    lv_obj_set_style_bg_opa(center_panel, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(center_panel, lv_color_hex(0x343434), 0);
+    lv_obj_set_style_border_width(center_panel, 1, 0);
+    lv_obj_set_style_radius(center_panel, 3, 0);
 
-    label = lv_label_create(row);
-    lv_label_set_text(label, "Boil tank        --.- C");
-    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
+    label = lv_label_create(center_panel);
+    lv_label_set_text(label, "P\nH\nV");
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(label, lv_color_hex(0x8C8C8C), 0);
+    lv_obj_center(label);
+
+    screen_active_brewing_create_tank(machine, "Mash", "--.- C", true);
+
+    label = lv_label_create(parent);
+    lv_label_set_text(label, "Machine overview");
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_width(label, lv_pct(100));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(label, lv_color_hex(0x8C8C8C), 0);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 170);
 }
 
 static void screen_active_brewing_select_tab(screen_active_brewing_t *active_brewing,

@@ -484,7 +484,8 @@ Owns:
 - safe old-Brewie-inspired Active Brewing presentation scaffold
 - selected recipe label
 - local Overall/Actions tab switching
-- static process/progress/tank presentation
+- static process/progress/tank presentation using simple LVGL objects rather than bitmap
+  assets
 - inert Pause button presentation
 
 Must not own:
