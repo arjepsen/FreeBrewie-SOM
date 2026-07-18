@@ -8,6 +8,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Logic/Fault_logic.c
     src/Logic/Machine_state.c
     src/Logic/Machine_targets.c
+    src/Logic/Recipe_catalog.c
     src/Logic/Startup_logic.c
     src/Logic/Status_view_model.c
     src/Logic/User_actions.c
@@ -20,6 +21,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/UI/Screen_fault.c
     src/UI/Screen_home.c
     src/UI/Screen_menu.c
+    src/UI/Screen_recipe_detail.c
     src/UI/Screen_recipes.c
     src/UI/UI.c
     src/UI/UI_dialog.c

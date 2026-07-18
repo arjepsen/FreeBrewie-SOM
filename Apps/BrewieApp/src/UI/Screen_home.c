@@ -225,7 +225,7 @@ static void screen_home_button_event_cb(lv_event_t *event)
         return;
     }
 
-    context->handler(context->action, context->user_data);
+    context->handler(context->action, context->value, context->user_data);
 }
 
 void screen_home_init(screen_home_t *home, ui_action_handler_t action_handler, void *user_data)

@@ -2,9 +2,10 @@
 
 #include <string.h>
 
+#include "Logic/Recipe_catalog.h"
 #include "UI_theme.h"
 
-static void ui_handle_action(ui_action_t action, void *user_data);
+static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data);
 static lv_obj_t *ui_create_placeholder_screen(ui_t *ui,
                                               const char *title,
                                               const char *state,
@@ -16,9 +17,9 @@ static lv_obj_t *ui_create_placeholder_button(lv_obj_t *parent,
                                               ui_t *ui,
                                               ui_button_context_t *context);
 static void ui_placeholder_button_event_cb(lv_event_t *event);
-static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id);
+static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id, uint32_t value);
 
-static void ui_handle_action(ui_action_t action, void *user_data)
+static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data)
 {
     ui_t *ui;
     ui_screen_id_t screen_id;
@@ -46,6 +47,10 @@ static void ui_handle_action(ui_action_t action, void *user_data)
     {
         screen_id = UI_SCREEN_RECIPES;
     }
+    else if (action == UI_ACTION_SHOW_RECIPE_DETAIL)
+    {
+        screen_id = UI_SCREEN_RECIPE_DETAIL;
+    }
     else if (action == UI_ACTION_SHOW_MANUAL)
     {
         screen_id = UI_SCREEN_MANUAL;
@@ -60,8 +65,9 @@ static void ui_handle_action(ui_action_t action, void *user_data)
      * current click/release event is still bubbling can be fragile. Queue navigation and
      * apply it during the normal UI update instead; that keeps button callbacks tiny and
      * avoids re-entering the refresh/event path.
-     */
+    */
     ui->pending_screen = screen_id;
+    ui->pending_value = value;
     ui->has_pending_screen = true;
 }
 
@@ -181,12 +187,13 @@ static void ui_placeholder_button_event_cb(lv_event_t *event)
         return;
     }
 
-    ui_handle_action(context->action, context->ui);
+    ui_handle_action(context->action, 0U, context->ui);
 }
 
-static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
+static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id, uint32_t value)
 {
     lv_obj_t *screen;
+    const recipe_t *recipe;
 
     if (ui == NULL)
     {
@@ -205,6 +212,17 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
     else if (screen_id == UI_SCREEN_RECIPES)
     {
         screen = ui->recipes.screen;
+    }
+    else if (screen_id == UI_SCREEN_RECIPE_DETAIL)
+    {
+        recipe = recipe_catalog_find_by_id(value);
+        if (recipe == NULL)
+        {
+            return;
+        }
+
+        screen_recipe_detail_show_recipe(&ui->recipe_detail, recipe);
+        screen = ui->recipe_detail.screen;
     }
     else if (screen_id == UI_SCREEN_MANUAL)
     {
@@ -236,6 +254,7 @@ void ui_init(ui_t *ui)
     ui_theme_init();
     screen_home_init(&ui->home, ui_handle_action, ui);
     screen_recipes_init(&ui->recipes, ui_handle_action, ui);
+    screen_recipe_detail_init(&ui->recipe_detail, ui_handle_action, ui);
     screen_status_init(&ui->status, ui_handle_action, ui);
     screen_menu_init(&ui->menu, ui_handle_action, ui);
     ui->manual_screen = ui_create_placeholder_screen(ui,
@@ -252,7 +271,7 @@ void ui_init(ui_t *ui)
                                                        "then can grow into network, system, and "
                                                        "service options.",
                                                        &ui->settings_back_context);
-    ui_show_screen(ui, UI_SCREEN_HOME);
+    ui_show_screen(ui, UI_SCREEN_HOME, 0U);
 }
 
 void ui_update(ui_t *ui, const status_screen_view_model_t *view_model)
@@ -265,7 +284,7 @@ void ui_update(ui_t *ui, const status_screen_view_model_t *view_model)
     if (ui->has_pending_screen)
     {
         ui->has_pending_screen = false;
-        ui_show_screen(ui, ui->pending_screen);
+        ui_show_screen(ui, ui->pending_screen, ui->pending_value);
     }
 
     screen_home_update(&ui->home, view_model);

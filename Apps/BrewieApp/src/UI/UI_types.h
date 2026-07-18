@@ -10,6 +10,8 @@
  * Does not own: machine-control commands.
  ****************************************************************************************/
 
+#include <stdint.h>
+
 /**
  * Screen identifiers used by the first FreeBrewie navigation shell.
  *
@@ -24,6 +26,7 @@ typedef enum
     UI_SCREEN_MENU,
     UI_SCREEN_STATUS,
     UI_SCREEN_RECIPES,
+    UI_SCREEN_RECIPE_DETAIL,
     UI_SCREEN_MANUAL,
     UI_SCREEN_SETTINGS,
     UI_SCREEN_FAULT
@@ -42,10 +45,11 @@ typedef enum
     UI_ACTION_SHOW_MENU,
     UI_ACTION_SHOW_STATUS,
     UI_ACTION_SHOW_RECIPES,
+    UI_ACTION_SHOW_RECIPE_DETAIL,
     UI_ACTION_SHOW_MANUAL,
     UI_ACTION_SHOW_SETTINGS
 } ui_action_t;
 
-typedef void (*ui_action_handler_t)(ui_action_t action, void *user_data);
+typedef void (*ui_action_handler_t)(ui_action_t action, uint32_t value, void *user_data);
 
 #endif

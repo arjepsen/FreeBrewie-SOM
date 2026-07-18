@@ -52,6 +52,10 @@ The following is currently proven on the real SOM target:
   with scalar fallback/edge handling
 - Home `LET'S BREW` now opens a safe first `Recipes` scaffold inspired by the old recipe
   chooser
+- Recipes rows now come from `Logic/Recipe_catalog` and open a safe selected-recipe detail
+  screen using stable recipe IDs
+- the Recipes list is scrollable and recipe rows now show compact title/style information;
+  longer descriptions stay on the detail screen
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
 - `Screen_status` is structured as a scrollable diagnostics list
@@ -248,8 +252,8 @@ Recommended next step:
 6. keep the status/debug screen available as a service/developer screen
 7. keep diagnostic values in a scrollable list, since the list will grow over time
 8. add safe placeholder destinations before implementing hardware-affecting workflows
-9. grow `Screen_recipes` from a static chooser scaffold into the old-style recipe browsing
-   and details flow
+9. grow the safe recipe detail flow into old-style recipe sections such as details,
+   ingredients, brewing, and fermentation
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:

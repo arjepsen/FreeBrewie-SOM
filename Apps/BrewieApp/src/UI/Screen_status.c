@@ -136,7 +136,7 @@ static void screen_status_home_event_cb(lv_event_t *event)
         return;
     }
 
-    status->action_handler(UI_ACTION_SHOW_HOME, status->action_user_data);
+    status->action_handler(UI_ACTION_SHOW_HOME, 0U, status->action_user_data);
 }
 
 static void screen_status_touch_event_cb(lv_event_t *event)

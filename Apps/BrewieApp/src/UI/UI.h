@@ -14,6 +14,7 @@
 
 #include "Screen_home.h"
 #include "Screen_menu.h"
+#include "Screen_recipe_detail.h"
 #include "Screen_recipes.h"
 #include "Screen_status.h"
 #include "UI_types.h"
@@ -34,6 +35,8 @@ struct ui_t
     screen_status_t status;
     /** Safe first recipe chooser scaffold. */
     screen_recipes_t recipes;
+    /** Safe selected-recipe detail screen. */
+    screen_recipe_detail_t recipe_detail;
     /** Full-screen navigation menu. */
     screen_menu_t menu;
     /** Placeholder screens used until real workflows are implemented. */
@@ -43,6 +46,8 @@ struct ui_t
     ui_screen_id_t current_screen;
     /** Deferred navigation target requested from an LVGL event callback. */
     ui_screen_id_t pending_screen;
+    /** Optional value for the pending navigation, currently recipe_id for recipe detail. */
+    uint32_t pending_value;
     /** True when pending_screen should be applied during ui_update(). */
     bool has_pending_screen;
     /** Button callback contexts owned by this UI instance. */

@@ -83,7 +83,7 @@ static void screen_menu_button_event_cb(lv_event_t *event)
         return;
     }
 
-    context->handler(context->action, context->user_data);
+    context->handler(context->action, context->value, context->user_data);
 }
 
 void screen_menu_init(screen_menu_t *menu, ui_action_handler_t action_handler, void *user_data)

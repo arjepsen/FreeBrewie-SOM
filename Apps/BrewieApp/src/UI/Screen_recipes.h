@@ -11,12 +11,15 @@
  ****************************************************************************************/
 
 #include "UI_types.h"
+#include "Logic/Recipe_types.h"
 #include "lvgl.h"
 
 typedef struct
 {
     /** Navigation action emitted when this button is clicked. */
     ui_action_t action;
+    /** Optional action value, used as recipe_id for recipe detail navigation. */
+    uint32_t value;
     /** Callback owned by the UI shell. */
     ui_action_handler_t handler;
     /** Opaque pointer passed back to the callback, normally the ui_t instance. */
@@ -31,6 +34,8 @@ typedef struct
     screen_recipes_button_context_t back_button_context;
     /** Event callback context for opening the top-level menu. */
     screen_recipes_button_context_t menu_button_context;
+    /** Event callback contexts for recipe rows. */
+    screen_recipes_button_context_t recipe_row_contexts[8];
 } screen_recipes_t;
 
 void screen_recipes_init(screen_recipes_t *recipes, ui_action_handler_t action_handler, void *user_data);

@@ -189,6 +189,9 @@ Current file set:
 - `Machine_state.h`
 - `Machine_targets.c`
 - `Machine_targets.h`
+- `Recipe_catalog.c`
+- `Recipe_catalog.h`
+- `Recipe_types.h`
 - `Startup_logic.c`
 - `Startup_logic.h`
 - `Status_view_model.c`
@@ -219,6 +222,22 @@ Owns:
 This module exists because the status screen is a dense diagnostics view. It is acceptable
 for that screen to show compact text strings, but production brewing screens should move
 toward raw values and screen-specific dirty widget updates.
+
+### `Recipe_types`
+Owns:
+- plain recipe-domain data types and stable recipe IDs
+
+This is intentionally not tied to LVGL. The embedded UI, future recipe storage, and future
+web/API interface should be able to share these plain recipe data shapes.
+
+### `Recipe_catalog`
+Owns:
+- the current read-only static recipe list
+- lookup by index and recipe ID
+
+This is a temporary catalog until real persistence exists, but it establishes the right
+boundary: recipe data comes from `Logic/`, while screens only render it and emit user
+actions.
 
 ### `Fault_logic`
 Owns:
@@ -334,11 +353,24 @@ Owns:
 - safe first recipe chooser scaffold
 - old-Brewie-inspired recipe-list presentation
 - Recipes screen back/menu navigation callbacks
+- recipe-row navigation requests using stable recipe IDs
 
 Must not own yet:
 - recipe persistence
 - recipe selection side effects
 - brewing start logic
+- direct hardware control
+
+### `Screen_recipe_detail`
+Owns:
+- safe selected-recipe detail presentation
+- inert Brew/Edit button presentation
+- detail-screen back/menu navigation callbacks
+
+Must not own yet:
+- editing forms
+- recipe save/delete behavior
+- brewing preflight or start behavior
 - direct hardware control
 
 ### `Screen_fault`

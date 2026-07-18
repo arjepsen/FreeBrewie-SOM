@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "Logic/Recipe_catalog.h"
+
 #define SCREEN_RECIPES_PAD 8
 
 static void screen_recipes_set_static(lv_obj_t *object);
@@ -10,10 +12,10 @@ static lv_obj_t *screen_recipes_create_back_button(lv_obj_t *parent, screen_reci
 static lv_obj_t *screen_recipes_create_menu_button(lv_obj_t *parent, screen_recipes_t *recipes);
 static lv_obj_t *screen_recipes_create_search_box(lv_obj_t *parent);
 static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
-                                                  const char *name,
-                                                  const char *style,
-                                                  const char *meta,
-                                                  uint32_t accent_color);
+                                                  const recipe_t *recipe,
+                                                  screen_recipes_button_context_t *context,
+                                                  ui_action_handler_t action_handler,
+                                                  void *user_data);
 static lv_obj_t *screen_recipes_create_create_button(lv_obj_t *parent);
 static void screen_recipes_button_event_cb(lv_event_t *event);
 
@@ -158,27 +160,37 @@ static lv_obj_t *screen_recipes_create_search_box(lv_obj_t *parent)
 /**
  * Create one static recipe-list row.
  *
- * These rows intentionally look selectable, but do not open recipe details yet. Real recipe
- * selection should be added only when recipe data ownership and action routing are clear.
+ * The chooser only needs the title and the most important category/style text. Longer
+ * descriptions belong on the detail screen, where there is enough vertical room for them.
  */
 static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
-                                                  const char *name,
-                                                  const char *style,
-                                                  const char *meta,
-                                                  uint32_t accent_color)
+                                                  const recipe_t *recipe,
+                                                  screen_recipes_button_context_t *context,
+                                                  ui_action_handler_t action_handler,
+                                                  void *user_data)
 {
     lv_obj_t *row;
     lv_obj_t *accent;
     lv_obj_t *text_block;
     lv_obj_t *name_label;
     lv_obj_t *style_label;
-    lv_obj_t *meta_label;
 
-    row = lv_obj_create(parent);
-    screen_recipes_set_static(row);
-    lv_obj_set_width(row, lv_pct(100));
-    lv_obj_set_height(row, 74);
+    if (parent == NULL || recipe == NULL || context == NULL)
+    {
+        return NULL;
+    }
+
+    context->action = UI_ACTION_SHOW_RECIPE_DETAIL;
+    context->value = recipe->id;
+    context->handler = action_handler;
+    context->user_data = user_data;
+
+    row = lv_button_create(parent);
+    lv_obj_set_width(row, lv_pct(95));
+    lv_obj_set_height(row, 64);
+    lv_obj_set_style_align(row, LV_ALIGN_LEFT_MID, 0);
     lv_obj_set_style_bg_color(row, lv_color_hex(0x282828), 0);
+    lv_obj_set_style_bg_color(row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
     lv_obj_set_style_bg_opa(row, LV_OPA_COVER, 0);
     lv_obj_set_style_border_color(row, lv_color_hex(0x343434), 0);
     lv_obj_set_style_border_width(row, 1, 0);
@@ -187,11 +199,12 @@ static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
     lv_obj_set_layout(row, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
     lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
+    lv_obj_add_event_cb(row, screen_recipes_button_event_cb, LV_EVENT_CLICKED, context);
 
     accent = lv_obj_create(row);
     screen_recipes_set_static(accent);
-    lv_obj_set_size(accent, 10, 72);
-    lv_obj_set_style_bg_color(accent, lv_color_hex(accent_color), 0);
+    lv_obj_set_size(accent, 10, 62);
+    lv_obj_set_style_bg_color(accent, lv_color_hex(recipe->accent_color), 0);
     lv_obj_set_style_bg_opa(accent, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(accent, 0, 0);
     lv_obj_set_style_radius(accent, 0, 0);
@@ -203,27 +216,31 @@ static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
     lv_obj_set_height(text_block, LV_SIZE_CONTENT);
     lv_obj_set_style_pad_left(text_block, 8, 0);
     lv_obj_set_style_pad_right(text_block, 6, 0);
-    lv_obj_set_style_pad_row(text_block, 3, 0);
+    lv_obj_set_style_pad_row(text_block, 5, 0);
     lv_obj_set_layout(text_block, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(text_block, LV_FLEX_FLOW_COLUMN);
 
     name_label = lv_label_create(text_block);
-    lv_label_set_text(name_label, name);
+    lv_label_set_text(name_label, recipe->name);
     lv_label_set_long_mode(name_label, LV_LABEL_LONG_DOT);
     lv_obj_set_width(name_label, lv_pct(100));
     lv_obj_set_style_text_color(name_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_font(name_label, &lv_font_montserrat_20, 0);
 
     style_label = lv_label_create(text_block);
-    lv_label_set_text(style_label, style);
+    lv_label_set_text(style_label, recipe->style);
     lv_label_set_long_mode(style_label, LV_LABEL_LONG_DOT);
     lv_obj_set_width(style_label, lv_pct(100));
     lv_obj_set_style_text_color(style_label, lv_color_hex(0xE67526), 0);
 
-    meta_label = lv_label_create(text_block);
-    lv_label_set_text(meta_label, meta);
-    lv_label_set_long_mode(meta_label, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(meta_label, lv_pct(100));
-    lv_obj_set_style_text_color(meta_label, lv_color_hex(0x9B9B9B), 0);
+    /*
+     * The parent row is the only clickable object. Children render text/accent only, which
+     * keeps hit testing predictable on the physical touch panel.
+     */
+    lv_obj_remove_flag(accent, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(text_block, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(name_label, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(style_label, LV_OBJ_FLAG_CLICKABLE);
 
     return row;
 }
@@ -259,7 +276,7 @@ static void screen_recipes_button_event_cb(lv_event_t *event)
         return;
     }
 
-    context->handler(context->action, context->user_data);
+    context->handler(context->action, context->value, context->user_data);
 }
 
 void screen_recipes_init(screen_recipes_t *recipes, ui_action_handler_t action_handler, void *user_data)
@@ -268,6 +285,8 @@ void screen_recipes_init(screen_recipes_t *recipes, ui_action_handler_t action_h
     lv_obj_t *list;
     lv_obj_t *notice;
     lv_obj_t *spacer;
+    size_t recipe_index;
+    size_t recipe_count;
 
     if (recipes == NULL)
     {
@@ -303,19 +322,33 @@ void screen_recipes_init(screen_recipes_t *recipes, ui_action_handler_t action_h
 
     list = lv_obj_create(container);
     lv_obj_set_width(list, lv_pct(100));
+    lv_obj_set_height(list, 180);
     lv_obj_set_flex_grow(list, 1);
     lv_obj_set_style_bg_color(list, lv_color_hex(0x000000), 0);
     lv_obj_set_style_bg_opa(list, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(list, 0, 0);
     lv_obj_set_style_pad_all(list, 0, 0);
+    lv_obj_set_style_pad_right(list, 6, 0);
     lv_obj_set_style_pad_row(list, 8, 0);
     lv_obj_set_scrollbar_mode(list, LV_SCROLLBAR_MODE_AUTO);
+    lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_layout(list, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
 
-    screen_recipes_create_recipe_row(list, "Hopus Pocus", "American IPA", "Old UI sample - safe static row", 0xE67526);
-    screen_recipes_create_recipe_row(list, "Summer Ale", "Blonde Ale", "Sample recipe placeholder", 0xD39C35);
-    screen_recipes_create_recipe_row(list, "Dark Starter", "Porter", "Sample recipe placeholder", 0x70442B);
+    recipe_count = recipe_catalog_count();
+    if (recipe_count > (sizeof(recipes->recipe_row_contexts) / sizeof(recipes->recipe_row_contexts[0])))
+    {
+        recipe_count = sizeof(recipes->recipe_row_contexts) / sizeof(recipes->recipe_row_contexts[0]);
+    }
+
+    for (recipe_index = 0U; recipe_index < recipe_count; ++recipe_index)
+    {
+        screen_recipes_create_recipe_row(list,
+                                         recipe_catalog_get_by_index(recipe_index),
+                                         &recipes->recipe_row_contexts[recipe_index],
+                                         action_handler,
+                                         user_data);
+    }
 
     notice = lv_label_create(container);
     lv_label_set_text(notice, "Recipe storage and brewing actions are not wired yet.");

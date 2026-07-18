@@ -18,6 +18,8 @@ typedef struct
 {
     /** Navigation action emitted when this button is clicked. */
     ui_action_t action;
+    /** Optional action value; unused for simple screen navigation. */
+    uint32_t value;
     /** Callback owned by the UI shell. */
     ui_action_handler_t handler;
     /** Opaque pointer passed back to the callback, normally the ui_t instance. */
