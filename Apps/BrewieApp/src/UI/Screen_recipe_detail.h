@@ -29,15 +29,15 @@ typedef struct
     /** Labels updated when the selected recipe changes. */
     lv_obj_t *name_label;
     lv_obj_t *style_label;
-    lv_obj_t *summary_label;
-    lv_obj_t *mash_label;
-    lv_obj_t *boil_label;
-    lv_obj_t *fermentation_label;
     /** Recipe currently shown, used to avoid unchanged label updates. */
     recipe_id_t shown_recipe_id;
     /** Event callback contexts for safe navigation. */
     screen_recipe_detail_button_context_t back_button_context;
     screen_recipe_detail_button_context_t menu_button_context;
+    screen_recipe_detail_button_context_t details_context;
+    screen_recipe_detail_button_context_t ingredients_context;
+    screen_recipe_detail_button_context_t brewing_context;
+    screen_recipe_detail_button_context_t fermentation_context;
 } screen_recipe_detail_t;
 
 void screen_recipe_detail_init(screen_recipe_detail_t *detail,

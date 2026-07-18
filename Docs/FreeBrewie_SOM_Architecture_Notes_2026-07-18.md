@@ -363,13 +363,26 @@ Must not own yet:
 
 ### `Screen_recipe_detail`
 Owns:
-- safe selected-recipe detail presentation
+- safe selected-recipe landing presentation
+- old-style section navigation rows for Details, Ingredients, Brewing, and Fermentation
 - inert Brew/Edit button presentation
 - detail-screen back/menu navigation callbacks
 
 Must not own yet:
 - editing forms
 - recipe save/delete behavior
+- brewing preflight or start behavior
+- direct hardware control
+
+### `Screen_recipe_section`
+Owns:
+- safe placeholder presentation for one selected recipe section
+- selected recipe/section labels and placeholder body text
+- back/menu navigation callbacks
+
+Must not own yet:
+- recipe editing forms
+- recipe persistence
 - brewing preflight or start behavior
 - direct hardware control
 

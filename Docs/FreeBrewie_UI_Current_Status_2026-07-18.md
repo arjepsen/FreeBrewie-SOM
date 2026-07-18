@@ -56,6 +56,8 @@ The following is currently proven on the real SOM target:
   screen using stable recipe IDs
 - the Recipes list is scrollable and recipe rows now show compact title/style information;
   longer descriptions stay on the detail screen
+- the selected recipe detail screen now has old-style section destinations for Details,
+  Ingredients, Brewing, and Fermentation, each routed to a safe placeholder screen
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
 - `Screen_status` is structured as a scrollable diagnostics list
@@ -252,8 +254,8 @@ Recommended next step:
 6. keep the status/debug screen available as a service/developer screen
 7. keep diagnostic values in a scrollable list, since the list will grow over time
 8. add safe placeholder destinations before implementing hardware-affecting workflows
-9. grow the safe recipe detail flow into old-style recipe sections such as details,
-   ingredients, brewing, and fermentation
+9. replace the safe recipe-section placeholders with real read-only section content before
+   adding editing/storage behavior
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:

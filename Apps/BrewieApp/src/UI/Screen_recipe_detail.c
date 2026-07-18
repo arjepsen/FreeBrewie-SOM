@@ -9,9 +9,10 @@ static lv_obj_t *screen_recipe_detail_create_nav_button(lv_obj_t *parent,
                                                         lv_align_t align,
                                                         screen_recipe_detail_button_context_t *context);
 static lv_obj_t *screen_recipe_detail_create_menu_button(lv_obj_t *parent, screen_recipe_detail_t *detail);
-static lv_obj_t *screen_recipe_detail_create_section(lv_obj_t *parent,
-                                                     const char *title,
-                                                     lv_obj_t **value_label);
+static lv_obj_t *screen_recipe_detail_create_section_button(lv_obj_t *parent,
+                                                            const char *title,
+                                                            const char *subtitle,
+                                                            screen_recipe_detail_button_context_t *context);
 static lv_obj_t *screen_recipe_detail_create_disabled_button(lv_obj_t *parent, const char *text);
 static void screen_recipe_detail_button_event_cb(lv_event_t *event);
 
@@ -112,38 +113,45 @@ static lv_obj_t *screen_recipe_detail_create_menu_button(lv_obj_t *parent, scree
     return button;
 }
 
-static lv_obj_t *screen_recipe_detail_create_section(lv_obj_t *parent,
-                                                     const char *title,
-                                                     lv_obj_t **value_label)
+static lv_obj_t *screen_recipe_detail_create_section_button(lv_obj_t *parent,
+                                                            const char *title,
+                                                            const char *subtitle,
+                                                            screen_recipe_detail_button_context_t *context)
 {
-    lv_obj_t *section;
+    lv_obj_t *button;
     lv_obj_t *title_label;
+    lv_obj_t *subtitle_label;
 
-    section = lv_obj_create(parent);
-    screen_recipe_detail_set_static(section);
-    lv_obj_set_width(section, lv_pct(100));
-    lv_obj_set_height(section, LV_SIZE_CONTENT);
-    lv_obj_set_style_bg_color(section, lv_color_hex(0x141414), 0);
-    lv_obj_set_style_bg_opa(section, LV_OPA_COVER, 0);
-    lv_obj_set_style_border_color(section, lv_color_hex(0x2C2B2B), 0);
-    lv_obj_set_style_border_width(section, 1, 0);
-    lv_obj_set_style_radius(section, 0, 0);
-    lv_obj_set_style_pad_all(section, 8, 0);
-    lv_obj_set_style_pad_row(section, 5, 0);
-    lv_obj_set_layout(section, LV_LAYOUT_FLEX);
-    lv_obj_set_flex_flow(section, LV_FLEX_FLOW_COLUMN);
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(100));
+    lv_obj_set_height(button, 58);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x141414), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
+    lv_obj_set_style_bg_opa(button, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(button, lv_color_hex(0x2C2B2B), 0);
+    lv_obj_set_style_border_width(button, 1, 0);
+    lv_obj_set_style_radius(button, 0, 0);
+    lv_obj_set_style_pad_all(button, 8, 0);
+    lv_obj_add_event_cb(button, screen_recipe_detail_button_event_cb, LV_EVENT_CLICKED, context);
 
-    title_label = lv_label_create(section);
+    title_label = lv_label_create(button);
     lv_label_set_text(title_label, title);
-    lv_obj_set_style_text_color(title_label, lv_color_hex(0xE67526), 0);
+    lv_label_set_long_mode(title_label, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(title_label, lv_pct(100));
+    lv_obj_set_style_text_color(title_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_set_style_text_font(title_label, &lv_font_montserrat_20, 0);
+    lv_obj_align(title_label, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    *value_label = lv_label_create(section);
-    lv_label_set_text(*value_label, "--");
-    lv_label_set_long_mode(*value_label, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(*value_label, lv_pct(100));
-    lv_obj_set_style_text_color(*value_label, lv_color_hex(0xD8D8D8), 0);
+    subtitle_label = lv_label_create(button);
+    lv_label_set_text(subtitle_label, subtitle);
+    lv_label_set_long_mode(subtitle_label, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(subtitle_label, lv_pct(100));
+    lv_obj_set_style_text_color(subtitle_label, lv_color_hex(0xE67526), 0);
+    lv_obj_align(subtitle_label, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
-    return section;
+    lv_obj_remove_flag(title_label, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(subtitle_label, LV_OBJ_FLAG_CLICKABLE);
+    return button;
 }
 
 static lv_obj_t *screen_recipe_detail_create_disabled_button(lv_obj_t *parent, const char *text)
@@ -198,6 +206,18 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     detail->menu_button_context.action = UI_ACTION_SHOW_MENU;
     detail->menu_button_context.handler = action_handler;
     detail->menu_button_context.user_data = user_data;
+    detail->details_context.action = UI_ACTION_SHOW_RECIPE_DETAILS_SECTION;
+    detail->details_context.handler = action_handler;
+    detail->details_context.user_data = user_data;
+    detail->ingredients_context.action = UI_ACTION_SHOW_RECIPE_INGREDIENTS_SECTION;
+    detail->ingredients_context.handler = action_handler;
+    detail->ingredients_context.user_data = user_data;
+    detail->brewing_context.action = UI_ACTION_SHOW_RECIPE_BREWING_SECTION;
+    detail->brewing_context.handler = action_handler;
+    detail->brewing_context.user_data = user_data;
+    detail->fermentation_context.action = UI_ACTION_SHOW_RECIPE_FERMENTATION_SECTION;
+    detail->fermentation_context.handler = action_handler;
+    detail->fermentation_context.user_data = user_data;
 
     detail->screen = lv_obj_create(NULL);
     screen_recipe_detail_set_static(detail->screen);
@@ -243,10 +263,22 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     lv_obj_set_width(detail->style_label, lv_pct(100));
     lv_obj_set_style_text_color(detail->style_label, lv_color_hex(0xE67526), 0);
 
-    screen_recipe_detail_create_section(container, "Summary", &detail->summary_label);
-    screen_recipe_detail_create_section(container, "Mash", &detail->mash_label);
-    screen_recipe_detail_create_section(container, "Boil", &detail->boil_label);
-    screen_recipe_detail_create_section(container, "Fermentation", &detail->fermentation_label);
+    screen_recipe_detail_create_section_button(container,
+                                               "Details",
+                                               "Style, notes, and metadata",
+                                               &detail->details_context);
+    screen_recipe_detail_create_section_button(container,
+                                               "Ingredients",
+                                               "Fermentables, hops, additions",
+                                               &detail->ingredients_context);
+    screen_recipe_detail_create_section_button(container,
+                                               "Brewing",
+                                               "Mash, boil, cooling setup",
+                                               &detail->brewing_context);
+    screen_recipe_detail_create_section_button(container,
+                                               "Fermentation",
+                                               "Fermentation plan",
+                                               &detail->fermentation_context);
 
     actions = lv_obj_create(container);
     screen_recipe_detail_set_static(actions);
@@ -272,9 +304,9 @@ void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const reci
 
     lv_label_set_text(detail->name_label, recipe->name);
     lv_label_set_text(detail->style_label, recipe->style);
-    lv_label_set_text(detail->summary_label, recipe->summary);
-    lv_label_set_text(detail->mash_label, recipe->mash);
-    lv_label_set_text(detail->boil_label, recipe->boil);
-    lv_label_set_text(detail->fermentation_label, recipe->fermentation);
+    detail->details_context.value = recipe->id;
+    detail->ingredients_context.value = recipe->id;
+    detail->brewing_context.value = recipe->id;
+    detail->fermentation_context.value = recipe->id;
     detail->shown_recipe_id = recipe->id;
 }
