@@ -48,13 +48,13 @@ static void ui_handle_action(ui_action_t action, void *user_data)
     {
         screen_id = UI_SCREEN_STATUS;
     }
-    else if (action == UI_ACTION_SHOW_MANUAL)
+    else if (action == UI_ACTION_SHOW_RECIPES)
     {
-        screen_id = UI_SCREEN_MANUAL;
+        screen_id = UI_SCREEN_RECIPES;
     }
-    else if (action == UI_ACTION_SHOW_CLEAN)
+    else if (action == UI_ACTION_SHOW_EXTRAS)
     {
-        screen_id = UI_SCREEN_CLEAN;
+        screen_id = UI_SCREEN_EXTRAS;
     }
     else if (action == UI_ACTION_SHOW_SETTINGS)
     {
@@ -104,10 +104,10 @@ static lv_obj_t *ui_create_menu_screen(ui_t *ui)
     lv_obj_set_height(spacer, 24);
 
     ui_create_menu_row(container, "HOME", UI_ACTION_SHOW_HOME, &ui->menu_home_context, ui);
-    ui_create_menu_row(container, "STATUS", UI_ACTION_SHOW_STATUS, &ui->menu_status_context, ui);
-    ui_create_menu_row(container, "CLEAN", UI_ACTION_SHOW_CLEAN, &ui->menu_clean_context, ui);
-    ui_create_menu_row(container, "MANUAL", UI_ACTION_SHOW_MANUAL, &ui->menu_manual_context, ui);
+    ui_create_menu_row(container, "RECIPES", UI_ACTION_SHOW_RECIPES, &ui->menu_recipes_context, ui);
+    ui_create_menu_row(container, "EXTRAS", UI_ACTION_SHOW_EXTRAS, &ui->menu_extras_context, ui);
     ui_create_menu_row(container, "SETTINGS", UI_ACTION_SHOW_SETTINGS, &ui->menu_settings_context, ui);
+    ui_create_menu_row(container, "STATUS", UI_ACTION_SHOW_STATUS, &ui->menu_status_context, ui);
 
     spacer = lv_obj_create(container);
     lv_obj_remove_style_all(spacer);
@@ -286,13 +286,13 @@ static void ui_show_screen(ui_t *ui, ui_screen_id_t screen_id)
     {
         screen = ui->status.screen;
     }
-    else if (screen_id == UI_SCREEN_MANUAL)
+    else if (screen_id == UI_SCREEN_RECIPES)
     {
-        screen = ui->manual_screen;
+        screen = ui->recipes_screen;
     }
-    else if (screen_id == UI_SCREEN_CLEAN)
+    else if (screen_id == UI_SCREEN_EXTRAS)
     {
-        screen = ui->clean_screen;
+        screen = ui->extras_screen;
     }
     else if (screen_id == UI_SCREEN_SETTINGS)
     {
@@ -321,21 +321,20 @@ void ui_init(ui_t *ui)
     screen_home_init(&ui->home, ui_handle_action, ui);
     screen_status_init(&ui->status, ui_handle_action, ui);
     ui->menu_screen = ui_create_menu_screen(ui);
-    ui->manual_screen = ui_create_placeholder_screen(ui,
-                                                     "Manual",
+    ui->recipes_screen = ui_create_placeholder_screen(ui,
+                                                      "Recipes",
+                                                      "Later",
+                                                      "Recipe browsing and recipe setup will be "
+                                                      "added after the Home/menu shell is stable. "
+                                                      "This destination is navigation-only for now.",
+                                                      &ui->recipes_back_context);
+    ui->extras_screen = ui_create_placeholder_screen(ui,
+                                                     "Extras",
                                                      "Locked",
-                                                     "Manual controls are not enabled yet. "
-                                                     "This screen will require app logic and "
-                                                     "MCU interlocks before it can move hardware.",
-                                                     &ui->manual_back_context);
-    ui->clean_screen = ui_create_placeholder_screen(ui,
-                                                    "Clean",
-                                                    "Later",
-                                                    "Clean workflows will be added after the "
-                                                    "navigation shell is proven. Short clean, "
-                                                    "full clean, drain, and unclogging are likely "
-                                                    "future destinations.",
-                                                    &ui->clean_back_context);
+                                                     "Clean, drain, unclogging, and manual-service "
+                                                     "flows belong here later. They must pass through "
+                                                     "app logic and MCU interlocks before touching hardware.",
+                                                     &ui->extras_back_context);
     ui->settings_screen = ui_create_placeholder_screen(ui,
                                                        "Settings",
                                                        "Later",

@@ -10,8 +10,8 @@ static lv_obj_t *screen_home_create_header(lv_obj_t *parent, screen_home_t *home
 static lv_obj_t *screen_home_create_menu_button(lv_obj_t *parent, screen_home_t *home);
 static lv_obj_t *screen_home_create_profile_row(lv_obj_t *parent);
 static lv_obj_t *screen_home_create_machine_row(lv_obj_t *parent);
-static lv_obj_t *screen_home_create_brew_button(lv_obj_t *parent);
-static void screen_home_menu_event_cb(lv_event_t *event);
+static lv_obj_t *screen_home_create_brew_button(lv_obj_t *parent, screen_home_t *home);
+static void screen_home_button_event_cb(lv_event_t *event);
 
 static void screen_home_set_static(lv_obj_t *object)
 {
@@ -75,7 +75,7 @@ static lv_obj_t *screen_home_create_menu_button(lv_obj_t *parent, screen_home_t 
     lv_obj_set_style_border_width(button, 0, 0);
     lv_obj_set_style_radius(button, 4, 0);
     lv_obj_set_style_pad_all(button, 0, 0);
-    lv_obj_add_event_cb(button, screen_home_menu_event_cb, LV_EVENT_CLICKED, home);
+    lv_obj_add_event_cb(button, screen_home_button_event_cb, LV_EVENT_CLICKED, &home->menu_button_context);
 
     for (offset_y = -7; offset_y <= 7; offset_y = (int8_t)(offset_y + 7))
     {
@@ -194,7 +194,7 @@ static lv_obj_t *screen_home_create_machine_row(lv_obj_t *parent)
     return row;
 }
 
-static lv_obj_t *screen_home_create_brew_button(lv_obj_t *parent)
+static lv_obj_t *screen_home_create_brew_button(lv_obj_t *parent, screen_home_t *home)
 {
     lv_obj_t *button;
     lv_obj_t *label;
@@ -205,27 +205,27 @@ static lv_obj_t *screen_home_create_brew_button(lv_obj_t *parent)
     lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
     lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_state(button, LV_STATE_DISABLED);
+    lv_obj_add_event_cb(button, screen_home_button_event_cb, LV_EVENT_CLICKED, &home->brew_button_context);
 
     label = lv_label_create(button);
-    lv_label_set_text(label, "LET'S BREW LATER");
+    lv_label_set_text(label, "LET'S BREW");
     lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_center(label);
 
     return button;
 }
 
-static void screen_home_menu_event_cb(lv_event_t *event)
+static void screen_home_button_event_cb(lv_event_t *event)
 {
-    screen_home_t *home;
+    screen_home_button_context_t *context;
 
-    home = lv_event_get_user_data(event);
-    if (home == NULL || home->menu_button_context.handler == NULL)
+    context = lv_event_get_user_data(event);
+    if (context == NULL || context->handler == NULL)
     {
         return;
     }
 
-    home->menu_button_context.handler(home->menu_button_context.action, home->menu_button_context.user_data);
+    context->handler(context->action, context->user_data);
 }
 
 void screen_home_init(screen_home_t *home, ui_action_handler_t action_handler, void *user_data)
@@ -242,6 +242,9 @@ void screen_home_init(screen_home_t *home, ui_action_handler_t action_handler, v
     home->menu_button_context.action = UI_ACTION_SHOW_MENU;
     home->menu_button_context.handler = action_handler;
     home->menu_button_context.user_data = user_data;
+    home->brew_button_context.action = UI_ACTION_SHOW_RECIPES;
+    home->brew_button_context.handler = action_handler;
+    home->brew_button_context.user_data = user_data;
 
     home->screen = lv_obj_create(NULL);
     screen_home_set_static(home->screen);
@@ -274,7 +277,7 @@ void screen_home_init(screen_home_t *home, ui_action_handler_t action_handler, v
     lv_obj_set_width(spacer, lv_pct(100));
     lv_obj_set_flex_grow(spacer, 1);
 
-    screen_home_create_brew_button(container);
+    screen_home_create_brew_button(container, home);
 }
 
 void screen_home_update(screen_home_t *home, const status_screen_view_model_t *view_model)

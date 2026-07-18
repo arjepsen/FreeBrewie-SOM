@@ -36,6 +36,8 @@ typedef struct
     char mcu_text[16];
     /** Event callback context for the hamburger/menu button. */
     screen_home_button_context_t menu_button_context;
+    /** Event callback context for the main Let's Brew button. */
+    screen_home_button_context_t brew_button_context;
 } screen_home_t;
 
 void screen_home_init(screen_home_t *home, ui_action_handler_t action_handler, void *user_data);

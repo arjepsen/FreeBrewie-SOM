@@ -1,6 +1,6 @@
 # FreeBrewie UI Current Status
-_Date: 2026-07-04_
-_Updated: 2026-07-04_
+_Date: 2026-07-18_
+_Updated: 2026-07-18_
 
 ## Purpose
 This document captures the current real status of the SOM-side UI bring-up.
@@ -40,6 +40,11 @@ The following is currently proven on the real SOM target:
 - a temporary status-screen button proves LVGL receives click events
 - normal heartbeat/status report logging has been reduced so the journal stays useful
 - Home/menu/status navigation works in the simulator
+- Home/menu/status navigation has now also been verified on the real SOM display
+- touch has been verified on the real SOM screen after the latest Home/menu cleanup
+- MCU RX reports continue increasing sequence numbers while the UI is running
+- target CPU use has been observed around 1.4-1.7% during the current Home/menu/status
+  baseline
 - `Screen_status` is structured as a scrollable diagnostics list
 - status text formatting is separated into `Logic/Status_view_model.*`
 - visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
@@ -52,13 +57,15 @@ We now have:
 - first visible portrait LVGL output on the real screen
 - first target touch integration proof
 - first product-shaped navigation shell
+- real target confirmation that the current UI shell, touch path, and comms path coexist
+  with low CPU use
 
 ---
 
 ## What is currently visible
 The normal UI direction now starts at Home, with Status available through the menu.
-The target still needs another hardware pass after the latest UI cleanup, but the simulator
-proves the Home/menu/status shell.
+The latest hardware pass confirms that the Home/menu/status shell works on the real SOM,
+not only in the simulator.
 
 Status is still not the final boot UX. It remains available to prove and inspect that:
 - LVGL is alive
@@ -66,7 +73,8 @@ Status is still not the final boot UX. It remains available to prove and inspect
 - the app can render visible objects while comms are also running
 - MCU/link values are still reaching the UI
 
-The status screen remains a high-contrast live diagnostics screen.
+The status screen remains a high-contrast live diagnostics screen. It is still reachable
+from the menu, but it is no longer the normal product landing screen.
 
 This is intentional. It should stay useful for development and service visibility, while
 Home becomes the normal user-facing screen.
@@ -143,7 +151,8 @@ The display bring-up was added beside the working comms path, not by mixing the 
 ---
 
 ## What is not yet finished
-The SOM-side UI is still early bring-up work.
+The SOM-side UI is still early bring-up work, but the baseline is now strong enough to grow
+the Home/menu shell in small steps.
 
 The following are **not** yet finished:
 
@@ -189,6 +198,10 @@ The safest currently proven baseline is:
 7. touch input reaches LVGL in portrait coordinates
 8. `brewie.service` starts `/opt/brewie/brewie_app` automatically
 9. simulator Home/menu/status navigation works after the latest cleanup
+10. real SOM Home/menu/status navigation works after the latest cleanup
+11. real SOM touch still works after the latest cleanup
+12. MCU RX reports keep increasing sequence numbers while the UI is running
+13. target CPU is roughly 1.4-1.7% in the current verified baseline
 
 This is the current anchor state.
 
@@ -217,17 +230,19 @@ Recommended next step:
 
 1. keep the comms path unchanged
 2. keep the rotated DRM display path unchanged
-3. keep using the current status/debug screen as the first real screen
+3. keep Home as the normal first screen
 4. keep touch/input owned by `Platform/`, not directly inside screen code
-5. move toward `Screen_home` and fuller UI behavior
+5. continue polishing `Screen_home` and the top-level menu
 6. keep the status/debug screen available as a service/developer screen
 7. keep diagnostic values in a scrollable list, since the list will grow over time
+8. add safe placeholder destinations before implementing hardware-affecting workflows
 
 So the next goal is **not** “build the whole UI”.
 The next goal is:
 - continue refining the first product-shaped home/navigation shell
 - keep the current live status/debug screen as a diagnostic destination
-- show real bring-up status through the existing architecture
+- keep Recipes, Extras, and Settings as safe navigation targets until their workflows are
+  designed and routed through app logic
 
 Naming/orientation note:
 - `Screen_status` is currently the live diagnostics screen, not finished product UI
