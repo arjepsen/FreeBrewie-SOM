@@ -67,7 +67,7 @@ The following is currently proven on the real SOM target:
   checklist toggles
 - Brewing Checklist `START` now opens a safe old-style Active Brewing scaffold with local
   Overall/Actions tabs, static process values, a lightweight drawn tank/action overview,
-  and inert Pause presentation; no MCU or hardware actions are emitted
+  and inert Pause/Stop presentation; no MCU or hardware actions are emitted
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
 - Manual/Cleaning now has a safe old-style scaffold in `Screen_manual`: Short Clean,

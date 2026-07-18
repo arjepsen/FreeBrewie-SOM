@@ -486,7 +486,7 @@ Owns:
 - local Overall/Actions tab switching
 - static process/progress/tank presentation using simple LVGL objects rather than bitmap
   assets
-- inert Pause button presentation
+- inert Pause/Stop process-control presentation
 
 Must not own:
 - active brewing process state

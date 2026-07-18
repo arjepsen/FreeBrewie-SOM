@@ -20,6 +20,9 @@ static lv_obj_t *screen_active_brewing_create_tank(lv_obj_t *parent,
                                                    const char *title,
                                                    const char *temperature_text,
                                                    bool filled);
+static lv_obj_t *screen_active_brewing_create_disabled_control_button(lv_obj_t *parent,
+                                                                      const char *text,
+                                                                      uint32_t color);
 static void screen_active_brewing_create_overall_page(lv_obj_t *parent);
 static void screen_active_brewing_create_actions_page(lv_obj_t *parent);
 static void screen_active_brewing_select_tab(screen_active_brewing_t *active_brewing,
@@ -202,13 +205,33 @@ static lv_obj_t *screen_active_brewing_create_tank(lv_obj_t *parent,
     return tank;
 }
 
+static lv_obj_t *screen_active_brewing_create_disabled_control_button(lv_obj_t *parent,
+                                                                      const char *text,
+                                                                      uint32_t color)
+{
+    lv_obj_t *button;
+    lv_obj_t *label;
+
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(50));
+    lv_obj_set_height(button, 48);
+    lv_obj_set_style_bg_color(button, lv_color_hex(color), 0);
+    lv_obj_set_style_radius(button, 5, 0);
+    lv_obj_add_state(button, LV_STATE_DISABLED);
+
+    label = lv_label_create(button);
+    lv_label_set_text(label, text);
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(label);
+    return button;
+}
+
 static void screen_active_brewing_create_overall_page(lv_obj_t *parent)
 {
     lv_obj_t *progress;
     lv_obj_t *label;
     lv_obj_t *sub_label;
-    lv_obj_t *pause_button;
-    lv_obj_t *pause_label;
+    lv_obj_t *controls;
 
     progress = lv_obj_create(parent);
     screen_active_brewing_set_static(progress);
@@ -240,18 +263,20 @@ static void screen_active_brewing_create_overall_page(lv_obj_t *parent)
     lv_obj_set_style_text_color(sub_label, lv_color_hex(0x8C8C8C), 0);
     lv_obj_align(sub_label, LV_ALIGN_TOP_MID, 0, 158);
 
-    pause_button = lv_button_create(parent);
-    lv_obj_set_width(pause_button, lv_pct(100));
-    lv_obj_set_height(pause_button, 48);
-    lv_obj_align(pause_button, LV_ALIGN_BOTTOM_MID, 0, 0);
-    lv_obj_set_style_bg_color(pause_button, lv_color_hex(0xF47B32), 0);
-    lv_obj_set_style_radius(pause_button, 5, 0);
-    lv_obj_add_state(pause_button, LV_STATE_DISABLED);
+    controls = lv_obj_create(parent);
+    screen_active_brewing_set_static(controls);
+    lv_obj_set_width(controls, lv_pct(100));
+    lv_obj_set_height(controls, 48);
+    lv_obj_align(controls, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_set_style_bg_opa(controls, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(controls, 0, 0);
+    lv_obj_set_style_pad_all(controls, 0, 0);
+    lv_obj_set_style_pad_column(controls, 8, 0);
+    lv_obj_set_layout(controls, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(controls, LV_FLEX_FLOW_ROW);
 
-    pause_label = lv_label_create(pause_button);
-    lv_label_set_text(pause_label, "PAUSE");
-    lv_obj_set_style_text_color(pause_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_center(pause_label);
+    screen_active_brewing_create_disabled_control_button(controls, "PAUSE", 0xF47B32);
+    screen_active_brewing_create_disabled_control_button(controls, "STOP", 0xB64131);
 }
 
 static void screen_active_brewing_create_actions_page(lv_obj_t *parent)
