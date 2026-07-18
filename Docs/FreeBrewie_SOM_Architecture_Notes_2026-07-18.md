@@ -280,6 +280,8 @@ Current file set:
 - `Screen_fault.h`
 - `Screen_home.c`
 - `Screen_home.h`
+- `Screen_manual.c`
+- `Screen_manual.h`
 - `Screen_menu.c`
 - `Screen_menu.h`
 - `Screen_recipes.c`
@@ -354,6 +356,24 @@ Must not own:
 - workflow state
 - machine-control decisions
 - hardware-affecting actions
+
+### `Screen_manual`
+Owns:
+- old-Brewie-inspired Manual/Cleaning scaffold
+- safe selectable rows for Short Clean, Sanitizing Clean, Full Clean, Drain After Brew,
+  Full Drain, and Unclogging
+- local selected-mode explanation labels
+
+Must not own:
+- active clean/drain workflow state
+- interlock decisions
+- MCU commands
+- direct hardware control
+
+Important current fact:
+`Screen_manual` is intentionally presentation-only. Selecting a row updates local
+explanation text. Later, starting a real clean, drain, or unclogging workflow must route
+through app-level logic and safety checks before becoming protocol traffic.
 
 ### `Screen_recipes`
 Owns:

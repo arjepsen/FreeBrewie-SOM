@@ -266,19 +266,13 @@ static void ui_show_screen(ui_t *ui,
     }
     else if (screen_id == UI_SCREEN_MANUAL)
     {
-        if (ui->manual_screen == NULL)
+        if (!ui->manual_created)
         {
-            ui->manual_screen = ui_create_placeholder_screen(ui,
-                                                             "Manual / Cleaning",
-                                                             "Locked",
-                                                             "Clean, drain, unclogging, and manual-service "
-                                                             "flows belong here later. They must pass through "
-                                                             "app logic and MCU interlocks before touching "
-                                                             "hardware.",
-                                                             &ui->manual_back_context);
+            screen_manual_init(&ui->manual, ui_handle_action, ui);
+            ui->manual_created = true;
         }
 
-        screen = ui->manual_screen;
+        screen = ui->manual.screen;
     }
     else if (screen_id == UI_SCREEN_SETTINGS)
     {

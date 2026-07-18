@@ -63,9 +63,12 @@ The following is currently proven on the real SOM target:
   views before editing/storage exists
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
+- Manual/Cleaning now has a safe old-style scaffold in `Screen_manual`: Short Clean,
+  Sanitizing Clean, Full Clean, Drain After Brew, Full Drain, and Unclogging rows can be
+  selected to show local explanations, but they do not emit MCU/hardware actions
 - the target LVGL heap is explicitly sized to 256 KB after the old-style navigation shell
   exposed that the default 64 KB heap was too small for the growing widget tree
-- Manual/Cleaning and Settings placeholder screens are lazy-created when opened instead
+- Manual/Cleaning and Settings screens are lazy-created when opened instead
   of during startup, keeping boot-time UI creation smaller and safer
 - `Screen_status` is structured as a scrollable diagnostics list
 - status text formatting is separated into `Logic/Status_view_model.*`
@@ -188,6 +191,7 @@ The following are **not** yet finished:
 - final real screen flow between startup / home / status / fault screens
 - binding real machine state to a fuller UI
 - real recipe storage and recipe selection/detail screens
+- real Manual/Cleaning confirmations, safety routing, and active clean/drain workflows
 - routing hardware-affecting user actions through `App_orchestrator`
 - polished redraw/update behavior
 - true animated boot/splash screen during SOM startup

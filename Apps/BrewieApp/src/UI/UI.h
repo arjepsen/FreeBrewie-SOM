@@ -13,6 +13,7 @@
 #include <stdbool.h>
 
 #include "Screen_home.h"
+#include "Screen_manual.h"
 #include "Screen_menu.h"
 #include "Screen_recipe_detail.h"
 #include "Screen_recipe_section.h"
@@ -42,8 +43,11 @@ struct ui_t
     screen_recipe_section_t recipe_section;
     /** Full-screen navigation menu. */
     screen_menu_t menu;
-    /** Placeholder screens used until real workflows are implemented. */
-    lv_obj_t *manual_screen;
+    /** Safe Manual/Cleaning scaffold, lazy-created on first use. */
+    screen_manual_t manual;
+    /** True after the Manual/Cleaning scaffold has been created. */
+    bool manual_created;
+    /** Placeholder screen used until real Settings workflows are implemented. */
     lv_obj_t *settings_screen;
     /** Screen currently loaded into LVGL. */
     ui_screen_id_t current_screen;
@@ -56,7 +60,6 @@ struct ui_t
     /** True when pending_screen should be applied during ui_update(). */
     bool has_pending_screen;
     /** Button callback contexts owned by this UI instance. */
-    ui_button_context_t manual_back_context;
     ui_button_context_t settings_back_context;
 };
 

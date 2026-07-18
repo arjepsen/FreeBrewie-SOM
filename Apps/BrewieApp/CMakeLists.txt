@@ -20,6 +20,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/UI/Screen_status.c
     src/UI/Screen_fault.c
     src/UI/Screen_home.c
+    src/UI/Screen_manual.c
     src/UI/Screen_menu.c
     src/UI/Screen_recipe_detail.c
     src/UI/Screen_recipe_section.c
