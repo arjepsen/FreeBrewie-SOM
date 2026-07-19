@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "Comms/Comms.h"
+#include "Logic/Brewing_process_view_model.h"
 #include "Logic/Status_view_model.h"
 #include "Platform/Platform.h"
 #include "UI/UI.h"
@@ -26,6 +27,8 @@ typedef struct
     comms_t comms;
     /** Diagnostic/status presentation model. This can move behind App_orchestrator later. */
     status_view_model_t status_view_model;
+    /** Read-only presentation model for the current Active Brewing scaffold. */
+    brewing_process_view_model_t brewing_process_view_model;
     /** LVGL screen objects and navigation state. */
     ui_t ui;
     /** Last time the human-readable UI labels were refreshed. */

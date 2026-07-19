@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+#include "Logic/Brewing_process_view_model.h"
 #include "Logic/Status_view_model.h"
 #include "Platform/Display.h"
 #include "Platform/Time_base.h"
@@ -13,6 +14,7 @@ int main()
     display_t display;
     ui_t ui;
     status_screen_view_model_t vm;
+    brewing_process_view_model_t brewing_process_vm;
     uint64_t now_ms;
     uint64_t last_ui_update_ms;
     uint64_t last_heartbeat_ms;
@@ -26,6 +28,7 @@ int main()
     ui_init(&ui);
 
     status_screen_view_model_init(&vm);
+    brewing_process_view_model_init(&brewing_process_vm);
     /*
      * The simulator does not talk to the MCU yet. Fill the view model with fixed values so
      * UI layout and navigation can be tested locally without serial hardware.
@@ -61,7 +64,8 @@ int main()
 
         if ((now_ms - last_ui_update_ms) >= SIM_UI_REFRESH_PERIOD_MS)
         {
-            ui_update(&ui, &vm);
+            brewing_process_view_model_update(&brewing_process_vm, &vm);
+            ui_update(&ui, &vm, &brewing_process_vm);
             last_ui_update_ms = now_ms;
         }
 

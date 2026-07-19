@@ -1,6 +1,6 @@
 # FreeBrewie UI Current Status
-_Date: 2026-07-18_
-_Updated: 2026-07-18_
+_Date: 2026-07-19_
+_Updated: 2026-07-19_
 
 ## Purpose
 This document captures the current real status of the SOM-side UI bring-up.
@@ -69,6 +69,9 @@ The following is currently proven on the real SOM target:
   Overall/Actions tabs, a lightweight drawn tank/action overview, inert Pause/Stop
   presentation, and read-only live MCU facts for current mash/boil temperatures and pump
   state; no MCU or hardware actions are emitted
+- Active Brewing Overall now includes a compact four-step process strip driven by
+  `Logic/Brewing_process_view_model`, giving the screen a stable stage/progress data shape
+  before real brewing workflow control exists
 - the top-level menu now lives in `Screen_menu` and exposes old-style core destinations:
   Home, Recipes, Manual/Cleaning, Settings, and Status
 - Manual/Cleaning now has a safe old-style scaffold in `Screen_manual`: Short Clean,
@@ -85,6 +88,8 @@ The following is currently proven on the real SOM target:
 - status text formatting is separated into `Logic/Status_view_model.*`
 - `Status_view_model` also exposes a compact raw machine snapshot so product-shaped
   screens can update specific widgets without parsing diagnostic text strings
+- `Brewing_process_view_model` now separates Active Brewing process presentation from LVGL
+  widget construction, while keeping Pause/Stop unavailable and emitting no hardware actions
 - visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
   LVGL
 

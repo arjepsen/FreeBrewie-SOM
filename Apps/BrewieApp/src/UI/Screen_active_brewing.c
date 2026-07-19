@@ -9,6 +9,11 @@ static void screen_active_brewing_set_static(lv_obj_t *object);
 static void screen_active_brewing_set_label_text(lv_obj_t *label, const char *text);
 static bool screen_active_brewing_machine_matches(const status_machine_snapshot_t *left,
                                                   const status_machine_snapshot_t *right);
+static bool screen_active_brewing_process_matches(const brewing_process_view_model_t *left,
+                                                  const brewing_process_view_model_t *right);
+static void screen_active_brewing_style_process_step(screen_active_brewing_t *active_brewing,
+                                                     brewing_process_stage_t stage,
+                                                     bool active);
 static void screen_active_brewing_format_temperature(char *buffer,
                                                      size_t buffer_size,
                                                      int16_t temperature_c_x10,
@@ -33,6 +38,12 @@ static lv_obj_t *screen_active_brewing_create_tank(lv_obj_t *parent,
 static lv_obj_t *screen_active_brewing_create_disabled_control_button(lv_obj_t *parent,
                                                                       const char *text,
                                                                       uint32_t color);
+static lv_obj_t *screen_active_brewing_create_process_step(lv_obj_t *parent,
+                                                           screen_active_brewing_t *active_brewing,
+                                                           const char *text,
+                                                           brewing_process_stage_t stage);
+static void screen_active_brewing_create_process_strip(screen_active_brewing_t *active_brewing,
+                                                       lv_obj_t *parent);
 static void screen_active_brewing_create_overall_page(screen_active_brewing_t *active_brewing,
                                                       lv_obj_t *parent);
 static void screen_active_brewing_create_actions_page(screen_active_brewing_t *active_brewing,
@@ -99,6 +110,48 @@ static bool screen_active_brewing_machine_matches(const status_machine_snapshot_
            left->boil_pump_running == right->boil_pump_running &&
            left->pressure_count == right->pressure_count &&
            left->fault_flags == right->fault_flags;
+}
+
+/****************************************************************************************
+ * @brief Compare the process presentation fields currently used by this screen.
+ ****************************************************************************************/
+static bool screen_active_brewing_process_matches(const brewing_process_view_model_t *left,
+                                                  const brewing_process_view_model_t *right)
+{
+    if (left == NULL || right == NULL)
+    {
+        return false;
+    }
+
+    return left->current_stage == right->current_stage &&
+           left->state_text == right->state_text &&
+           left->detail_text == right->detail_text &&
+           left->progress_percent == right->progress_percent &&
+           left->pause_enabled == right->pause_enabled &&
+           left->stop_enabled == right->stop_enabled;
+}
+
+/****************************************************************************************
+ * @brief Apply active/inactive colors to one process-strip stage.
+ ****************************************************************************************/
+static void screen_active_brewing_style_process_step(screen_active_brewing_t *active_brewing,
+                                                     brewing_process_stage_t stage,
+                                                     bool active)
+{
+    if (active_brewing == NULL || stage >= BREWING_PROCESS_STAGE_COUNT)
+    {
+        return;
+    }
+
+    lv_obj_set_style_bg_color(active_brewing->process_step_markers[stage],
+                              active ? lv_color_hex(0xF47B32) : lv_color_hex(0x343434),
+                              0);
+    lv_obj_set_style_border_color(active_brewing->process_step_markers[stage],
+                                  active ? lv_color_hex(0xF6B27D) : lv_color_hex(0x4B4741),
+                                  0);
+    lv_obj_set_style_text_color(active_brewing->process_step_labels[stage],
+                                active ? lv_color_hex(0xFFFFFF) : lv_color_hex(0x8C8C8C),
+                                0);
 }
 
 /****************************************************************************************
@@ -326,6 +379,79 @@ static lv_obj_t *screen_active_brewing_create_disabled_control_button(lv_obj_t *
     return button;
 }
 
+/****************************************************************************************
+ * @brief Create one compact visual brewing-stage marker.
+ *
+ * This is only a presentation scaffold today. Later it should be driven by real brewing
+ * process state, but the shape can stay: a small marker plus a short fixed label.
+ ****************************************************************************************/
+static lv_obj_t *screen_active_brewing_create_process_step(lv_obj_t *parent,
+                                                           screen_active_brewing_t *active_brewing,
+                                                           const char *text,
+                                                           brewing_process_stage_t stage)
+{
+    lv_obj_t *step;
+    lv_obj_t *marker;
+    lv_obj_t *label;
+
+    step = lv_obj_create(parent);
+    screen_active_brewing_set_static(step);
+    lv_obj_set_width(step, lv_pct(25));
+    lv_obj_set_height(step, 56);
+    lv_obj_set_style_bg_opa(step, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(step, 0, 0);
+    lv_obj_set_style_pad_all(step, 0, 0);
+
+    marker = lv_obj_create(step);
+    screen_active_brewing_set_static(marker);
+    lv_obj_set_size(marker, 18, 18);
+    lv_obj_set_style_radius(marker, 9, 0);
+    lv_obj_set_style_bg_color(marker, lv_color_hex(0x343434), 0);
+    lv_obj_set_style_bg_opa(marker, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(marker, lv_color_hex(0x4B4741), 0);
+    lv_obj_set_style_border_width(marker, 1, 0);
+    lv_obj_align(marker, LV_ALIGN_TOP_MID, 0, 0);
+
+    label = lv_label_create(step);
+    lv_label_set_text(label, text);
+    lv_obj_set_width(label, lv_pct(100));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_set_style_text_color(label, lv_color_hex(0x8C8C8C), 0);
+    lv_obj_align(label, LV_ALIGN_BOTTOM_MID, 0, 0);
+    active_brewing->process_step_markers[stage] = marker;
+    active_brewing->process_step_labels[stage] = label;
+    return step;
+}
+
+/****************************************************************************************
+ * @brief Create a small old-style process overview strip for the Overall tab.
+ ****************************************************************************************/
+static void screen_active_brewing_create_process_strip(screen_active_brewing_t *active_brewing,
+                                                       lv_obj_t *parent)
+{
+    lv_obj_t *strip;
+
+    strip = lv_obj_create(parent);
+    screen_active_brewing_set_static(strip);
+    lv_obj_set_width(strip, lv_pct(100));
+    lv_obj_set_height(strip, 62);
+    lv_obj_align(strip, LV_ALIGN_TOP_MID, 0, 190);
+    lv_obj_set_style_bg_color(strip, lv_color_hex(0x151515), 0);
+    lv_obj_set_style_bg_opa(strip, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(strip, lv_color_hex(0x343434), 0);
+    lv_obj_set_style_border_width(strip, 1, 0);
+    lv_obj_set_style_radius(strip, 4, 0);
+    lv_obj_set_style_pad_all(strip, 4, 0);
+    lv_obj_set_style_pad_column(strip, 0, 0);
+    lv_obj_set_layout(strip, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(strip, LV_FLEX_FLOW_ROW);
+
+    screen_active_brewing_create_process_step(strip, active_brewing, "Water", BREWING_PROCESS_STAGE_WATER);
+    screen_active_brewing_create_process_step(strip, active_brewing, "Mash", BREWING_PROCESS_STAGE_MASH);
+    screen_active_brewing_create_process_step(strip, active_brewing, "Boil", BREWING_PROCESS_STAGE_BOIL);
+    screen_active_brewing_create_process_step(strip, active_brewing, "Done", BREWING_PROCESS_STAGE_DONE);
+}
+
 static void screen_active_brewing_create_overall_page(screen_active_brewing_t *active_brewing,
                                                       lv_obj_t *parent)
 {
@@ -349,6 +475,7 @@ static void screen_active_brewing_create_overall_page(screen_active_brewing_t *a
     lv_obj_set_style_text_font(label, &lv_font_montserrat_20, 0);
     lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_center(label);
+    active_brewing->progress_value_label = label;
 
     label = lv_label_create(parent);
     lv_label_set_text(label, "Ready - 0%");
@@ -365,6 +492,8 @@ static void screen_active_brewing_create_overall_page(screen_active_brewing_t *a
     lv_obj_set_style_text_color(sub_label, lv_color_hex(0x8C8C8C), 0);
     lv_obj_align(sub_label, LV_ALIGN_TOP_MID, 0, 158);
     active_brewing->overall_detail_label = sub_label;
+
+    screen_active_brewing_create_process_strip(active_brewing, parent);
 
     controls = lv_obj_create(parent);
     screen_active_brewing_set_static(controls);
@@ -604,16 +733,45 @@ void screen_active_brewing_show_recipe(screen_active_brewing_t *active_brewing,
  * renders the latest machine facts that the logic layer already prepared for the UI.
  ****************************************************************************************/
 void screen_active_brewing_update(screen_active_brewing_t *active_brewing,
-                                  const status_screen_view_model_t *view_model)
+                                  const status_screen_view_model_t *status_view_model,
+                                  const brewing_process_view_model_t *process_view_model)
 {
     const status_machine_snapshot_t *machine;
+    brewing_process_stage_t stage;
 
-    if (active_brewing == NULL || view_model == NULL)
+    if (active_brewing == NULL || status_view_model == NULL || process_view_model == NULL)
     {
         return;
     }
 
-    machine = &view_model->machine;
+    if (!active_brewing->has_shown_process ||
+        !screen_active_brewing_process_matches(&active_brewing->shown_process, process_view_model))
+    {
+        snprintf(active_brewing->progress_value_text,
+                 sizeof(active_brewing->progress_value_text),
+                 "%u",
+                 (unsigned int)process_view_model->progress_percent);
+        screen_active_brewing_set_label_text(active_brewing->progress_value_label,
+                                             active_brewing->progress_value_text);
+        screen_active_brewing_set_label_text(active_brewing->overall_state_label,
+                                             process_view_model->state_text);
+        screen_active_brewing_set_label_text(active_brewing->overall_detail_label,
+                                             process_view_model->detail_text);
+
+        for (stage = BREWING_PROCESS_STAGE_WATER;
+             stage < BREWING_PROCESS_STAGE_COUNT;
+             stage = (brewing_process_stage_t)(stage + 1))
+        {
+            screen_active_brewing_style_process_step(active_brewing,
+                                                     stage,
+                                                     stage == process_view_model->current_stage);
+        }
+
+        active_brewing->shown_process = *process_view_model;
+        active_brewing->has_shown_process = true;
+    }
+
+    machine = &status_view_model->machine;
     if (active_brewing->has_shown_machine &&
         screen_active_brewing_machine_matches(&active_brewing->shown_machine, machine))
     {
@@ -622,21 +780,11 @@ void screen_active_brewing_update(screen_active_brewing_t *active_brewing,
 
     if (!machine->mcu_status_valid)
     {
-        screen_active_brewing_set_label_text(active_brewing->overall_state_label, "Waiting for MCU");
-        screen_active_brewing_set_label_text(active_brewing->overall_detail_label, "Live values unavailable");
         screen_active_brewing_set_label_text(active_brewing->mash_temperature_label, "--.- / -- C");
         screen_active_brewing_set_label_text(active_brewing->boil_temperature_label, "--.- / -- C");
     }
     else
     {
-        snprintf(active_brewing->overall_state_text,
-                 sizeof(active_brewing->overall_state_text),
-                 "MCU live");
-        snprintf(active_brewing->overall_detail_text,
-                 sizeof(active_brewing->overall_detail_text),
-                 "Mash pump %s  Boil pump %s",
-                 machine->mash_pump_running ? "on" : "off",
-                 machine->boil_pump_running ? "on" : "off");
         screen_active_brewing_format_temperature(active_brewing->mash_temperature_text,
                                                  sizeof(active_brewing->mash_temperature_text),
                                                  machine->mash_temp_c_x10,
@@ -648,10 +796,6 @@ void screen_active_brewing_update(screen_active_brewing_t *active_brewing,
                                                  machine->boil_target_c,
                                                  true);
 
-        screen_active_brewing_set_label_text(active_brewing->overall_state_label,
-                                             active_brewing->overall_state_text);
-        screen_active_brewing_set_label_text(active_brewing->overall_detail_label,
-                                             active_brewing->overall_detail_text);
         screen_active_brewing_set_label_text(active_brewing->mash_temperature_label,
                                              active_brewing->mash_temperature_text);
         screen_active_brewing_set_label_text(active_brewing->boil_temperature_label,

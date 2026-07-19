@@ -74,6 +74,8 @@ struct ui_t
 };
 
 void ui_init(ui_t *ui);
-void ui_update(ui_t *ui, const status_screen_view_model_t *view_model);
+void ui_update(ui_t *ui,
+               const status_screen_view_model_t *status_view_model,
+               const brewing_process_view_model_t *process_view_model);
 
 #endif

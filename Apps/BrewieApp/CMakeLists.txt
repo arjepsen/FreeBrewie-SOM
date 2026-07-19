@@ -5,6 +5,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Comms/Protocol.c
     src/Comms/Transport_serial.c
     src/Logic/App_orchestrator.c
+    src/Logic/Brewing_process_view_model.c
     src/Logic/Fault_logic.c
     src/Logic/Machine_state.c
     src/Logic/Machine_targets.c

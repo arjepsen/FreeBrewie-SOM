@@ -245,7 +245,9 @@ void ui_init(ui_t *ui)
     ui_show_screen(ui, UI_SCREEN_HOME, 0U, RECIPE_SECTION_DETAILS);
 }
 
-void ui_update(ui_t *ui, const status_screen_view_model_t *view_model)
+void ui_update(ui_t *ui,
+               const status_screen_view_model_t *status_view_model,
+               const brewing_process_view_model_t *process_view_model)
 {
     if (ui == NULL)
     {
@@ -258,10 +260,10 @@ void ui_update(ui_t *ui, const status_screen_view_model_t *view_model)
         ui_show_screen(ui, ui->pending_screen, ui->pending_value, ui->pending_recipe_section);
     }
 
-    screen_home_update(&ui->home, view_model);
-    screen_status_update(&ui->status, view_model);
+    screen_home_update(&ui->home, status_view_model);
+    screen_status_update(&ui->status, status_view_model);
     if (ui->current_screen == UI_SCREEN_ACTIVE_BREWING && ui->active_brewing_created)
     {
-        screen_active_brewing_update(&ui->active_brewing, view_model);
+        screen_active_brewing_update(&ui->active_brewing, status_view_model, process_view_model);
     }
 }

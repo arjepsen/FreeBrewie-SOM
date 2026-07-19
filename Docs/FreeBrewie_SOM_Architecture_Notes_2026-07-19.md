@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-07-18_
+_Date: 2026-07-19_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -7,7 +7,7 @@ This document defines the current target architecture for the Brewie SOM applica
 It is meant to keep file ownership, module boundaries, and subsystem responsibilities clear while the SOM app is still in early bring-up.
 
 It should be read together with:
-- `FreeBrewie_UI_Current_Status_2026-07-18.md`
+- `FreeBrewie_UI_Current_Status_2026-07-19.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
 - `Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
@@ -183,6 +183,8 @@ Own the SOM-side application logic and compact app state that sits above raw com
 Current file set:
 - `App_orchestrator.c`
 - `App_orchestrator.h`
+- `Brewing_process_view_model.c`
+- `Brewing_process_view_model.h`
 - `Fault_logic.c`
 - `Fault_logic.h`
 - `Machine_state.c`
@@ -212,6 +214,18 @@ just to make it active.
 
 The first real use of `App_orchestrator` should be a user request that needs to be checked
 against fault state, startup state, machine state, or workflow permissions.
+
+### `Brewing_process_view_model`
+Owns:
+- read-only Active Brewing presentation state
+- current displayed process stage
+- displayed progress percentage
+- displayed Pause/Stop availability flags
+
+Important current fact:
+`Brewing_process_view_model` is not real brewing workflow logic yet. It provides a small
+stable shape for the Active Brewing screen to render while the real process/orchestrator
+model is still being built.
 
 ### `Status_view_model`
 Owns:
@@ -488,6 +502,7 @@ Owns:
 - local Overall/Actions tab switching
 - read-only live mash/boil temperature and pump-state presentation from the logic-layer
   machine snapshot
+- compact visual process-stage strip driven by `Brewing_process_view_model`
 - process/progress/tank presentation using simple LVGL objects rather than bitmap assets
 - inert Pause/Stop process-control presentation
 
@@ -500,9 +515,9 @@ Must not own:
 
 Important current fact:
 `Screen_active_brewing` is intentionally UI-only. It now renders read-only facts from the
-logic-layer machine snapshot, but it is not the source of truth for real brewing. Later
-this screen should render full process state from app/process logic and emit user requests
-to `App_orchestrator`, not drive hardware directly.
+logic-layer machine snapshot and `Brewing_process_view_model`, but it is not the source of
+truth for real brewing. Later this screen should render full process state from
+app/process logic and emit user requests to `App_orchestrator`, not drive hardware directly.
 
 ### `Screen_fault`
 Owns:

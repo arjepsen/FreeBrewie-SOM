@@ -38,6 +38,7 @@ bool app_init(app_t *app)
     }
 
     status_view_model_init(&app->status_view_model);
+    brewing_process_view_model_init(&app->brewing_process_view_model);
 
     if (!comms_init(&app->comms, "/dev/ttyS1", 115200))
     {
@@ -80,7 +81,11 @@ void app_update(app_t *app)
         if ((now_ms - app->last_ui_update_ms) >= APP_UI_REFRESH_PERIOD_MS)
         {
             status_view_model_update(&app->status_view_model, comms_get_status(&app->comms));
-            ui_update(&app->ui, &app->status_view_model.values);
+            brewing_process_view_model_update(&app->brewing_process_view_model,
+                                              &app->status_view_model.values);
+            ui_update(&app->ui,
+                      &app->status_view_model.values,
+                      &app->brewing_process_view_model);
             app->last_ui_update_ms = now_ms;
         }
 
