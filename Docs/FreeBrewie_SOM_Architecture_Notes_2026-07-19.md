@@ -441,6 +441,7 @@ Must not own yet:
 ### `Screen_recipe_builder`
 Owns:
 - safe old-Brewie-inspired recipe data-entry scaffold
+- local non-persistent draft values
 - local selected-field explanation labels
 - field rows for Name, Style, Batch, Ingredients, Brewing, and Fermentation
 - disabled Save presentation

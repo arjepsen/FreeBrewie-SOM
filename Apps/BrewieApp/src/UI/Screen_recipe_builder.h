@@ -46,6 +46,22 @@ typedef struct
     struct screen_recipe_builder_t *builder;
 } screen_recipe_builder_field_context_t;
 
+typedef struct
+{
+    /** Draft recipe name shown in the non-persistent builder. */
+    const char *name;
+    /** Draft style shown in the non-persistent builder. */
+    const char *style;
+    /** Draft batch summary shown in the non-persistent builder. */
+    const char *batch;
+    /** Draft ingredients summary shown in the non-persistent builder. */
+    const char *ingredients;
+    /** Draft brewing summary shown in the non-persistent builder. */
+    const char *brewing;
+    /** Draft fermentation summary shown in the non-persistent builder. */
+    const char *fermentation;
+} screen_recipe_builder_draft_t;
+
 typedef struct screen_recipe_builder_t
 {
     /** Root LVGL screen object for Recipe Builder. */
@@ -60,6 +76,10 @@ typedef struct screen_recipe_builder_t
     screen_recipe_builder_nav_context_t menu_button_context;
     /** Event callback contexts for local field rows. */
     screen_recipe_builder_field_context_t field_contexts[SCREEN_RECIPE_BUILDER_FIELD_COUNT];
+    /** Row value labels showing current draft values. */
+    lv_obj_t *field_value_labels[SCREEN_RECIPE_BUILDER_FIELD_COUNT];
+    /** Local non-persistent draft values shown by this screen. */
+    screen_recipe_builder_draft_t draft;
     /** Currently selected local field. */
     screen_recipe_builder_field_id_t selected_field_id;
 } screen_recipe_builder_t;

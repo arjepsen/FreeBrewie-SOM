@@ -25,8 +25,13 @@ static lv_obj_t *screen_recipe_builder_create_menu_button(lv_obj_t *parent,
                                                           screen_recipe_builder_t *builder);
 static lv_obj_t *screen_recipe_builder_create_field_row(lv_obj_t *parent,
                                                         const screen_recipe_builder_field_info_t *field_info,
-                                                        screen_recipe_builder_field_context_t *context);
+                                                        screen_recipe_builder_field_context_t *context,
+                                                        lv_obj_t **value_label);
 static lv_obj_t *screen_recipe_builder_create_disabled_save_button(lv_obj_t *parent);
+static const char *screen_recipe_builder_get_draft_value(const screen_recipe_builder_t *builder,
+                                                         screen_recipe_builder_field_id_t field_id);
+static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *builder);
+static void screen_recipe_builder_refresh_field_values(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_select_field(screen_recipe_builder_t *builder,
                                                screen_recipe_builder_field_id_t field_id);
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event);
@@ -171,11 +176,11 @@ static lv_obj_t *screen_recipe_builder_create_menu_button(lv_obj_t *parent,
  ****************************************************************************************/
 static lv_obj_t *screen_recipe_builder_create_field_row(lv_obj_t *parent,
                                                         const screen_recipe_builder_field_info_t *field_info,
-                                                        screen_recipe_builder_field_context_t *context)
+                                                        screen_recipe_builder_field_context_t *context,
+                                                        lv_obj_t **value_label)
 {
     lv_obj_t *button;
     lv_obj_t *title_label;
-    lv_obj_t *subtitle_label;
 
     button = lv_button_create(parent);
     lv_obj_set_width(button, lv_pct(SCREEN_RECIPE_BUILDER_ROW_WIDTH_PCT));
@@ -198,15 +203,15 @@ static lv_obj_t *screen_recipe_builder_create_field_row(lv_obj_t *parent,
     lv_obj_set_style_text_font(title_label, &lv_font_montserrat_20, 0);
     lv_obj_align(title_label, LV_ALIGN_TOP_LEFT, 0, 0);
 
-    subtitle_label = lv_label_create(button);
-    lv_label_set_text(subtitle_label, field_info->subtitle);
-    lv_label_set_long_mode(subtitle_label, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(subtitle_label, lv_pct(100));
-    lv_obj_set_style_text_color(subtitle_label, lv_color_hex(0xE67526), 0);
-    lv_obj_align(subtitle_label, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    *value_label = lv_label_create(button);
+    lv_label_set_text(*value_label, field_info->subtitle);
+    lv_label_set_long_mode(*value_label, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(*value_label, lv_pct(100));
+    lv_obj_set_style_text_color(*value_label, lv_color_hex(0xE67526), 0);
+    lv_obj_align(*value_label, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
     lv_obj_remove_flag(title_label, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_remove_flag(subtitle_label, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(*value_label, LV_OBJ_FLAG_CLICKABLE);
     return button;
 }
 
@@ -227,6 +232,86 @@ static lv_obj_t *screen_recipe_builder_create_disabled_save_button(lv_obj_t *par
     lv_obj_set_style_text_color(label, lv_color_hex(0xC8C8C8), 0);
     lv_obj_center(label);
     return button;
+}
+
+static const char *screen_recipe_builder_get_draft_value(const screen_recipe_builder_t *builder,
+                                                         screen_recipe_builder_field_id_t field_id)
+{
+    if (builder == NULL)
+    {
+        return "--";
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_NAME)
+    {
+        return builder->draft.name;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_STYLE)
+    {
+        return builder->draft.style;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_BATCH)
+    {
+        return builder->draft.batch;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_INGREDIENTS)
+    {
+        return builder->draft.ingredients;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_BREWING)
+    {
+        return builder->draft.brewing;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_FERMENTATION)
+    {
+        return builder->draft.fermentation;
+    }
+
+    return "--";
+}
+
+/****************************************************************************************
+ * @brief Fill local draft values used only by the Recipe Builder scaffold.
+ ****************************************************************************************/
+static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *builder)
+{
+    if (builder == NULL)
+    {
+        return;
+    }
+
+    builder->draft.name = "New Recipe";
+    builder->draft.style = "Select style";
+    builder->draft.batch = "20 L";
+    builder->draft.ingredients = "No ingredients yet";
+    builder->draft.brewing = "No steps yet";
+    builder->draft.fermentation = "No plan yet";
+}
+
+/****************************************************************************************
+ * @brief Push current draft values into the fixed field rows.
+ ****************************************************************************************/
+static void screen_recipe_builder_refresh_field_values(screen_recipe_builder_t *builder)
+{
+    screen_recipe_builder_field_id_t field_id;
+
+    if (builder == NULL)
+    {
+        return;
+    }
+
+    for (field_id = SCREEN_RECIPE_BUILDER_FIELD_NAME;
+         field_id < SCREEN_RECIPE_BUILDER_FIELD_COUNT;
+         field_id = (screen_recipe_builder_field_id_t)(field_id + 1))
+    {
+        lv_label_set_text(builder->field_value_labels[field_id],
+                          screen_recipe_builder_get_draft_value(builder, field_id));
+    }
 }
 
 static void screen_recipe_builder_select_field(screen_recipe_builder_t *builder,
@@ -286,6 +371,7 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     }
 
     memset(builder, 0, sizeof(*builder));
+    screen_recipe_builder_fill_default_draft(builder);
     builder->back_button_context.action = UI_ACTION_SHOW_RECIPES;
     builder->back_button_context.handler = action_handler;
     builder->back_button_context.user_data = user_data;
@@ -347,9 +433,11 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
         builder->field_contexts[field_index].builder = builder;
         screen_recipe_builder_create_field_row(list,
                                                &screen_recipe_builder_fields[field_index],
-                                               &builder->field_contexts[field_index]);
+                                               &builder->field_contexts[field_index],
+                                               &builder->field_value_labels[field_index]);
     }
 
     screen_recipe_builder_create_disabled_save_button(container);
+    screen_recipe_builder_refresh_field_values(builder);
     screen_recipe_builder_select_field(builder, SCREEN_RECIPE_BUILDER_FIELD_NAME);
 }
