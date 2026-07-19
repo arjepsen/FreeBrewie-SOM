@@ -443,6 +443,7 @@ Owns:
 - safe old-Brewie-inspired recipe data-entry scaffold
 - local non-persistent draft values
 - local selected-field explanation labels
+- local-only editor preview dialog through `UI_dialog`
 - field rows for Name, Style, Batch, Ingredients, Brewing, and Fermentation
 - disabled Save presentation
 
@@ -554,7 +555,14 @@ Owns:
 
 ### `UI_dialog`
 Owns:
-- reusable dialog/popup behavior
+- reusable lightweight modal dialog/popup behavior
+- modal overlay/panel widgets and simple show/hide behavior
+
+Must not own:
+- workflow decisions
+- persistence
+- hardware actions
+- screen navigation
 
 ### `UI_scroll`
 Owns:

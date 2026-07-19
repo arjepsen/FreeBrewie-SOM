@@ -59,6 +59,8 @@ The following is currently proven on the real SOM target:
 - the Recipes `CREATE RECIPE` button now opens a safe Recipe Builder scaffold with local
   draft values and field selection only; no text entry, recipe storage, save/delete, or
   hardware actions are wired yet
+- Recipe Builder field rows now open a reusable local-only dialog preview showing the
+  current draft value; the dialog closes with OK and does not edit or save
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar

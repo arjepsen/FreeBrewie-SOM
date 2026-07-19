@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "UI_types.h"
+#include "UI_dialog.h"
 #include "lvgl.h"
 
 typedef enum
@@ -80,6 +81,10 @@ typedef struct screen_recipe_builder_t
     lv_obj_t *field_value_labels[SCREEN_RECIPE_BUILDER_FIELD_COUNT];
     /** Local non-persistent draft values shown by this screen. */
     screen_recipe_builder_draft_t draft;
+    /** Local-only field editor preview dialog. */
+    ui_dialog_t editor_dialog;
+    /** Backing storage for the editor preview body text. */
+    char editor_dialog_body[192];
     /** Currently selected local field. */
     screen_recipe_builder_field_id_t selected_field_id;
 } screen_recipe_builder_t;

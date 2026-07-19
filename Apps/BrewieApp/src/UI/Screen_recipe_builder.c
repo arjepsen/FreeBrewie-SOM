@@ -1,5 +1,6 @@
 #include "Screen_recipe_builder.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "UI_scroll.h"
@@ -34,6 +35,8 @@ static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *bu
 static void screen_recipe_builder_refresh_field_values(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_select_field(screen_recipe_builder_t *builder,
                                                screen_recipe_builder_field_id_t field_id);
+static void screen_recipe_builder_show_editor_preview(screen_recipe_builder_t *builder,
+                                                      screen_recipe_builder_field_id_t field_id);
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event);
 static void screen_recipe_builder_field_event_cb(lv_event_t *event);
 
@@ -330,6 +333,32 @@ static void screen_recipe_builder_select_field(screen_recipe_builder_t *builder,
     builder->selected_field_id = field_id;
 }
 
+/****************************************************************************************
+ * @brief Show a local-only editor preview for the selected field.
+ *
+ * This is the first shape of a future editor. It deliberately does not mutate draft data,
+ * save recipes, or open a keyboard yet.
+ ****************************************************************************************/
+static void screen_recipe_builder_show_editor_preview(screen_recipe_builder_t *builder,
+                                                      screen_recipe_builder_field_id_t field_id)
+{
+    const screen_recipe_builder_field_info_t *field_info;
+    const char *draft_value;
+
+    if (builder == NULL || field_id >= SCREEN_RECIPE_BUILDER_FIELD_COUNT)
+    {
+        return;
+    }
+
+    field_info = &screen_recipe_builder_fields[field_id];
+    draft_value = screen_recipe_builder_get_draft_value(builder, field_id);
+    snprintf(builder->editor_dialog_body,
+             sizeof(builder->editor_dialog_body),
+             "Current value:\n%s\n\nEditing will be added later with validation and storage.",
+             draft_value);
+    ui_dialog_show(&builder->editor_dialog, field_info->title, builder->editor_dialog_body);
+}
+
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event)
 {
     screen_recipe_builder_nav_context_t *context;
@@ -354,6 +383,7 @@ static void screen_recipe_builder_field_event_cb(lv_event_t *event)
     }
 
     screen_recipe_builder_select_field(context->builder, context->field_id);
+    screen_recipe_builder_show_editor_preview(context->builder, context->field_id);
 }
 
 void screen_recipe_builder_init(screen_recipe_builder_t *builder,
@@ -395,6 +425,7 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
 
     screen_recipe_builder_create_header(container, builder);
+    ui_dialog_init(&builder->editor_dialog, builder->screen, "OK");
 
     intro = lv_label_create(container);
     lv_label_set_text(intro, "Recipe fields");
