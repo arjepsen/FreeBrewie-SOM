@@ -2,7 +2,10 @@
 
 #include <string.h>
 
+#include "UI_scroll.h"
+
 #define SCREEN_SETTINGS_PAD 8
+#define SCREEN_SETTINGS_ROW_WIDTH_PCT 98
 
 typedef struct
 {
@@ -139,7 +142,7 @@ static lv_obj_t *screen_settings_create_category_row(lv_obj_t *parent,
     lv_obj_t *subtitle_label;
 
     button = lv_button_create(parent);
-    lv_obj_set_width(button, lv_pct(95));
+    lv_obj_set_width(button, lv_pct(SCREEN_SETTINGS_ROW_WIDTH_PCT));
     lv_obj_set_height(button, 58);
     lv_obj_set_style_align(button, LV_ALIGN_LEFT_MID, 0);
     lv_obj_set_style_bg_color(button, lv_color_hex(0x282828), 0);
@@ -273,7 +276,7 @@ void screen_settings_init(screen_settings_t *settings, ui_action_handler_t actio
     lv_obj_set_style_border_width(list, 0, 0);
     lv_obj_set_style_pad_all(list, 0, 0);
     lv_obj_set_style_pad_row(list, 8, 0);
-    lv_obj_set_scrollbar_mode(list, LV_SCROLLBAR_MODE_AUTO);
+    ui_scroll_apply_gutter(list);
     lv_obj_set_layout(list, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
 

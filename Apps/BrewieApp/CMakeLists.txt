@@ -32,6 +32,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/UI/Screen_settings.c
     src/UI/UI.c
     src/UI/UI_dialog.c
+    src/UI/UI_scroll.c
     src/UI/UI_status_bar.c
     src/UI/UI_theme.c
 )

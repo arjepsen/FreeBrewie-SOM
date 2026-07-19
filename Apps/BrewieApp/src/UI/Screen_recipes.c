@@ -3,8 +3,10 @@
 #include <string.h>
 
 #include "Logic/Recipe_catalog.h"
+#include "UI_scroll.h"
 
 #define SCREEN_RECIPES_PAD 8
+#define SCREEN_RECIPES_ROW_WIDTH_PCT 98
 
 static void screen_recipes_set_static(lv_obj_t *object);
 static lv_obj_t *screen_recipes_create_header(lv_obj_t *parent, screen_recipes_t *recipes);
@@ -186,7 +188,7 @@ static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
     context->user_data = user_data;
 
     row = lv_button_create(parent);
-    lv_obj_set_width(row, lv_pct(95));
+    lv_obj_set_width(row, lv_pct(SCREEN_RECIPES_ROW_WIDTH_PCT));
     lv_obj_set_height(row, 64);
     lv_obj_set_style_align(row, LV_ALIGN_LEFT_MID, 0);
     lv_obj_set_style_bg_color(row, lv_color_hex(0x282828), 0);
@@ -328,9 +330,8 @@ void screen_recipes_init(screen_recipes_t *recipes, ui_action_handler_t action_h
     lv_obj_set_style_bg_opa(list, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(list, 0, 0);
     lv_obj_set_style_pad_all(list, 0, 0);
-    lv_obj_set_style_pad_right(list, 6, 0);
     lv_obj_set_style_pad_row(list, 8, 0);
-    lv_obj_set_scrollbar_mode(list, LV_SCROLLBAR_MODE_AUTO);
+    ui_scroll_apply_gutter(list);
     lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_layout(list, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);

@@ -2,6 +2,10 @@
 
 #include <string.h>
 
+#include "UI_scroll.h"
+
+#define SCREEN_RECIPE_DETAIL_SECTION_WIDTH_PCT 97
+
 static void screen_recipe_detail_set_static(lv_obj_t *object);
 static lv_obj_t *screen_recipe_detail_create_header(lv_obj_t *parent, screen_recipe_detail_t *detail);
 static lv_obj_t *screen_recipe_detail_create_nav_button(lv_obj_t *parent,
@@ -15,7 +19,6 @@ static lv_obj_t *screen_recipe_detail_create_section_button(lv_obj_t *parent,
                                                             screen_recipe_detail_button_context_t *context);
 static lv_obj_t *screen_recipe_detail_create_brew_button(lv_obj_t *parent,
                                                          screen_recipe_detail_button_context_t *context);
-static lv_obj_t *screen_recipe_detail_create_disabled_button(lv_obj_t *parent, const char *text);
 static void screen_recipe_detail_button_event_cb(lv_event_t *event);
 
 static void screen_recipe_detail_set_static(lv_obj_t *object)
@@ -125,7 +128,7 @@ static lv_obj_t *screen_recipe_detail_create_section_button(lv_obj_t *parent,
     lv_obj_t *subtitle_label;
 
     button = lv_button_create(parent);
-    lv_obj_set_width(button, lv_pct(100));
+    lv_obj_set_width(button, lv_pct(SCREEN_RECIPE_DETAIL_SECTION_WIDTH_PCT));
     lv_obj_set_height(button, 58);
     lv_obj_set_style_bg_color(button, lv_color_hex(0x141414), 0);
     lv_obj_set_style_bg_color(button, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
@@ -177,25 +180,6 @@ static lv_obj_t *screen_recipe_detail_create_brew_button(lv_obj_t *parent,
     return button;
 }
 
-static lv_obj_t *screen_recipe_detail_create_disabled_button(lv_obj_t *parent, const char *text)
-{
-    lv_obj_t *button;
-    lv_obj_t *label;
-
-    button = lv_button_create(parent);
-    lv_obj_set_width(button, lv_pct(100));
-    lv_obj_set_height(button, 44);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
-    lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_state(button, LV_STATE_DISABLED);
-
-    label = lv_label_create(button);
-    lv_label_set_text(label, text);
-    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_center(label);
-    return button;
-}
-
 static void screen_recipe_detail_button_event_cb(lv_event_t *event)
 {
     screen_recipe_detail_button_context_t *context;
@@ -215,6 +199,7 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
 {
     lv_obj_t *container;
     lv_obj_t *hero;
+    lv_obj_t *section_list;
     lv_obj_t *actions;
 
     if (detail == NULL)
@@ -289,19 +274,31 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     lv_obj_set_width(detail->style_label, lv_pct(100));
     lv_obj_set_style_text_color(detail->style_label, lv_color_hex(0xE67526), 0);
 
-    screen_recipe_detail_create_section_button(container,
+    section_list = lv_obj_create(container);
+    lv_obj_set_width(section_list, lv_pct(100));
+    lv_obj_set_flex_grow(section_list, 1);
+    lv_obj_set_style_bg_color(section_list, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(section_list, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(section_list, 0, 0);
+    lv_obj_set_style_pad_all(section_list, 0, 0);
+    lv_obj_set_style_pad_row(section_list, 8, 0);
+    ui_scroll_apply_gutter(section_list);
+    lv_obj_set_layout(section_list, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(section_list, LV_FLEX_FLOW_COLUMN);
+
+    screen_recipe_detail_create_section_button(section_list,
                                                "Details",
                                                "Style, notes, and metadata",
                                                &detail->details_context);
-    screen_recipe_detail_create_section_button(container,
+    screen_recipe_detail_create_section_button(section_list,
                                                "Ingredients",
                                                "Fermentables, hops, additions",
                                                &detail->ingredients_context);
-    screen_recipe_detail_create_section_button(container,
+    screen_recipe_detail_create_section_button(section_list,
                                                "Brewing",
                                                "Mash, boil, cooling setup",
                                                &detail->brewing_context);
-    screen_recipe_detail_create_section_button(container,
+    screen_recipe_detail_create_section_button(section_list,
                                                "Fermentation",
                                                "Fermentation plan",
                                                &detail->fermentation_context);
@@ -318,7 +315,6 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     lv_obj_set_flex_flow(actions, LV_FLEX_FLOW_COLUMN);
 
     screen_recipe_detail_create_brew_button(actions, &detail->brew_context);
-    screen_recipe_detail_create_disabled_button(actions, "EDIT LATER");
 }
 
 void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const recipe_t *recipe)

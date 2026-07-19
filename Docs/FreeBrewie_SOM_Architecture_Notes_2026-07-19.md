@@ -316,6 +316,8 @@ Current file set:
 - `UI.h`
 - `UI_dialog.c`
 - `UI_dialog.h`
+- `UI_scroll.c`
+- `UI_scroll.h`
 - `UI_status_bar.c`
 - `UI_status_bar.h`
 - `UI_theme.c`
@@ -529,6 +531,15 @@ Owns:
 ### `UI_dialog`
 Owns:
 - reusable dialog/popup behavior
+
+### `UI_scroll`
+Owns:
+- shared scrollbar gutter styling for scrollable LVGL containers
+
+Important current fact:
+LVGL draws scrollbars over the scrollable object. On the portrait display, full-width rows
+need a small content gutter so the scrollbar does not visually overlap row rectangles or
+text.
 
 ### `UI_status_bar`
 Owns:

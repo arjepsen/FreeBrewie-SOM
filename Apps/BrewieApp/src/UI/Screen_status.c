@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "Platform/Logging.h"
+#include "UI_scroll.h"
 
 /*
  * The status screen is a bring-up/debug screen, not the final brewing UI. It is still
@@ -248,7 +249,7 @@ void screen_status_init(screen_status_t *status, ui_action_handler_t action_hand
      * better than hiding fields when a temporary debug value becomes too long.
      */
     lv_obj_set_scroll_dir(container, LV_DIR_VER);
-    lv_obj_set_scrollbar_mode(container, LV_SCROLLBAR_MODE_AUTO);
+    ui_scroll_apply_gutter(container);
     lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(container, screen_status_touch_event_cb, LV_EVENT_PRESSED, status);
     lv_obj_add_event_cb(container, screen_status_touch_event_cb, LV_EVENT_RELEASED, status);

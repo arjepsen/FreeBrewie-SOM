@@ -2,6 +2,8 @@
 
 #include <string.h>
 
+#include "UI_scroll.h"
+
 static void screen_recipe_section_set_static(lv_obj_t *object);
 static lv_obj_t *screen_recipe_section_create_header(lv_obj_t *parent, screen_recipe_section_t *section);
 static lv_obj_t *screen_recipe_section_create_nav_button(lv_obj_t *parent,
@@ -297,7 +299,7 @@ void screen_recipe_section_init(screen_recipe_section_t *section,
     lv_obj_set_style_border_width(body_list, 0, 0);
     lv_obj_set_style_pad_all(body_list, 0, 0);
     lv_obj_set_style_pad_row(body_list, 8, 0);
-    lv_obj_set_scrollbar_mode(body_list, LV_SCROLLBAR_MODE_AUTO);
+    ui_scroll_apply_gutter(body_list);
     lv_obj_set_layout(body_list, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(body_list, LV_FLEX_FLOW_COLUMN);
 

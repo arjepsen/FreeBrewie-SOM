@@ -6,7 +6,7 @@
  * @brief Top-level LVGL UI shell and navigation owner.
  *
  * Responsibility: initialize screens and apply UI navigation.
- * Owns: screen instances, menu/placeholder targets, and deferred screen changes.
+ * Owns: screen instances, menu targets, and deferred screen changes.
  * Does not own: comms, protocol parsing, or machine safety decisions.
  ****************************************************************************************/
 
@@ -37,7 +37,7 @@ struct ui_t
     screen_recipes_t recipes;
     /** Safe selected-recipe detail screen. */
     screen_recipe_detail_t recipe_detail;
-    /** Safe selected-recipe section placeholder screen. */
+    /** Safe selected-recipe section screen. */
     screen_recipe_section_t recipe_section;
     /** Safe brew setup scaffold, lazy-created on first use. */
     screen_brew_setup_t brew_setup;

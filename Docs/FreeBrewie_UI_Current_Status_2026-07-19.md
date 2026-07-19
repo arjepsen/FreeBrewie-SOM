@@ -57,7 +57,9 @@ The following is currently proven on the real SOM target:
 - the Recipes list is scrollable and recipe rows now show compact title/style information;
   longer descriptions stay on the detail screen
 - the selected recipe detail screen now has old-style section destinations for Details,
-  Ingredients, Brewing, and Fermentation, each routed to a safe placeholder screen
+  Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
+- recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar
+  gutter for the section list, avoiding hidden actions below the main call-to-action
 - recipe section screens now show structured read-only rows backed by richer sample recipe
   fields, so Details, Ingredients, Brewing, and Fermentation are closer to the old UI flow
   before editing/storage exists
@@ -92,6 +94,8 @@ The following is currently proven on the real SOM target:
   widget construction, while keeping Pause/Stop unavailable and emitting no hardware actions
 - visible label updates are dirty-checked so unchanged text is not repeatedly pushed into
   LVGL
+- scrollable UI containers now use the shared `UI_scroll` gutter helper so scrollbars do
+  not visually overlap full-width rows
 
 So the project is no longer only at “headless serial baseline”.
 We now have:

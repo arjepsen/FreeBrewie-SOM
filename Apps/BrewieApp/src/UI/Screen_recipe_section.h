@@ -3,10 +3,10 @@
 
 /****************************************************************************************
  * @file Screen_recipe_section.h
- * @brief Safe placeholder screen for one recipe section.
+ * @brief Safe read-only screen for one recipe section.
  *
- * Responsibility: show a selected recipe section destination such as Details,
- * Ingredients, Brewing, or Fermentation.
+ * Responsibility: show selected recipe Details, Ingredients, Brewing, or Fermentation
+ * data without editing or hardware side effects.
  * Owns: Recipe-section LVGL objects and back/menu callbacks.
  * Must not own: recipe editing, saving, brewing start logic, or MCU commands.
  ****************************************************************************************/
