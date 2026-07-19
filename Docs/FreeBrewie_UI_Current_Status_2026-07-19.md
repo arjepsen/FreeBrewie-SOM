@@ -58,9 +58,9 @@ The following is currently proven on the real SOM target:
   longer descriptions stay on the detail screen
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe placeholder screen
-- recipe section screens now show structured read-only rows instead of one paragraph, so
-  they are ready to grow into old-style Details, Ingredients, Brewing, and Fermentation
-  views before editing/storage exists
+- recipe section screens now show structured read-only rows backed by richer sample recipe
+  fields, so Details, Ingredients, Brewing, and Fermentation are closer to the old UI flow
+  before editing/storage exists
 - the selected recipe `BREW` button now opens a safe old-style Brew Setup scaffold with
   local Automatic Water Inlet and Automatic Cooling toggles
 - Brew Setup `START` now opens a safe old-style Brewing Checklist scaffold with local

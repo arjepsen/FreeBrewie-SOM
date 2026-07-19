@@ -15,7 +15,7 @@
 #include "UI_types.h"
 #include "lvgl.h"
 
-#define SCREEN_RECIPE_SECTION_MAX_ROWS 6U
+#define SCREEN_RECIPE_SECTION_MAX_ROWS 8U
 
 typedef enum
 {

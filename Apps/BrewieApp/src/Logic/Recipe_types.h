@@ -21,9 +21,21 @@ typedef struct
     const char *name;
     const char *style;
     const char *summary;
+    const char *batch_size;
+    const char *abv;
+    const char *ibu;
+    const char *og;
+    const char *fermentables;
+    const char *hops;
+    const char *additions;
+    const char *yeast;
     const char *mash;
     const char *boil;
+    const char *cooling;
+    const char *water;
     const char *fermentation;
+    const char *fermentation_temperature;
+    const char *fermentation_duration;
     uint32_t accent_color;
 } recipe_t;
 

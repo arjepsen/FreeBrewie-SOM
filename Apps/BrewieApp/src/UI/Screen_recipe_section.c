@@ -184,10 +184,10 @@ static uint32_t screen_recipe_section_fill_rows(screen_recipe_section_t *section
 
     if (section_id == RECIPE_SECTION_INGREDIENTS)
     {
-        screen_recipe_section_set_row(section, 0U, "Fermentables", "Placeholder malt bill");
-        screen_recipe_section_set_row(section, 1U, "Hops", "Placeholder hop schedule");
-        screen_recipe_section_set_row(section, 2U, "Additions", "Placeholder additions");
-        screen_recipe_section_set_row(section, 3U, "Yeast", "Placeholder yeast choice");
+        screen_recipe_section_set_row(section, 0U, "Fermentables", recipe->fermentables);
+        screen_recipe_section_set_row(section, 1U, "Hops", recipe->hops);
+        screen_recipe_section_set_row(section, 2U, "Additions", recipe->additions);
+        screen_recipe_section_set_row(section, 3U, "Yeast", recipe->yeast);
         return 4U;
     }
 
@@ -195,24 +195,26 @@ static uint32_t screen_recipe_section_fill_rows(screen_recipe_section_t *section
     {
         screen_recipe_section_set_row(section, 0U, "Mash", recipe->mash);
         screen_recipe_section_set_row(section, 1U, "Boil", recipe->boil);
-        screen_recipe_section_set_row(section, 2U, "Cooling", "Cooling setup placeholder");
-        screen_recipe_section_set_row(section, 3U, "Water", "Water setup placeholder");
+        screen_recipe_section_set_row(section, 2U, "Cooling", recipe->cooling);
+        screen_recipe_section_set_row(section, 3U, "Water", recipe->water);
         return 4U;
     }
 
     if (section_id == RECIPE_SECTION_FERMENTATION)
     {
         screen_recipe_section_set_row(section, 0U, "Primary", recipe->fermentation);
-        screen_recipe_section_set_row(section, 1U, "Temperature", "Temperature placeholder");
-        screen_recipe_section_set_row(section, 2U, "Duration", "Duration placeholder");
+        screen_recipe_section_set_row(section, 1U, "Temperature", recipe->fermentation_temperature);
+        screen_recipe_section_set_row(section, 2U, "Duration", recipe->fermentation_duration);
         return 3U;
     }
 
     screen_recipe_section_set_row(section, 0U, "Style", recipe->style);
     screen_recipe_section_set_row(section, 1U, "Summary", recipe->summary);
-    screen_recipe_section_set_row(section, 2U, "Batch size", "Batch size placeholder");
-    screen_recipe_section_set_row(section, 3U, "Notes", "Recipe notes placeholder");
-    return 4U;
+    screen_recipe_section_set_row(section, 2U, "Batch size", recipe->batch_size);
+    screen_recipe_section_set_row(section, 3U, "ABV", recipe->abv);
+    screen_recipe_section_set_row(section, 4U, "IBU", recipe->ibu);
+    screen_recipe_section_set_row(section, 5U, "Original gravity", recipe->og);
+    return 6U;
 }
 
 static void screen_recipe_section_set_row(screen_recipe_section_t *section,

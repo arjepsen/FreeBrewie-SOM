@@ -242,6 +242,7 @@ toward raw values and screen-specific dirty widget updates.
 ### `Recipe_types`
 Owns:
 - plain recipe-domain data types and stable recipe IDs
+- current read-only recipe metadata fields rendered by the recipe screens
 
 This is intentionally not tied to LVGL. The embedded UI, future recipe storage, and future
 web/API interface should be able to share these plain recipe data shapes.
@@ -250,6 +251,7 @@ web/API interface should be able to share these plain recipe data shapes.
 Owns:
 - the current read-only static recipe list
 - lookup by index and recipe ID
+- realistic sample recipe fields for Details, Ingredients, Brewing, and Fermentation screens
 
 This is a temporary catalog until real persistence exists, but it establishes the right
 boundary: recipe data comes from `Logic/`, while screens only render it and emit user
@@ -447,7 +449,7 @@ Must not own yet:
 ### `Screen_recipe_section`
 Owns:
 - safe read-only presentation for one selected recipe section
-- selected recipe/section labels and fixed reusable row widgets
+- selected recipe/section labels and fixed reusable row widgets backed by `Recipe_types`
 - back/menu navigation callbacks
 
 Must not own yet:
