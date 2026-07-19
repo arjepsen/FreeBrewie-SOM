@@ -18,6 +18,7 @@
 #include "Screen_home.h"
 #include "Screen_manual.h"
 #include "Screen_menu.h"
+#include "Screen_recipe_builder.h"
 #include "Screen_recipe_detail.h"
 #include "Screen_recipe_section.h"
 #include "Screen_recipes.h"
@@ -35,6 +36,10 @@ struct ui_t
     screen_status_t status;
     /** Safe first recipe chooser scaffold. */
     screen_recipes_t recipes;
+    /** Safe recipe-builder scaffold, lazy-created on first use. */
+    screen_recipe_builder_t recipe_builder;
+    /** True after the recipe-builder scaffold has been created. */
+    bool recipe_builder_created;
     /** Safe selected-recipe detail screen. */
     screen_recipe_detail_t recipe_detail;
     /** Safe selected-recipe section screen. */

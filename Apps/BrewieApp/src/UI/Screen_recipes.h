@@ -34,6 +34,8 @@ typedef struct
     screen_recipes_button_context_t back_button_context;
     /** Event callback context for opening the top-level menu. */
     screen_recipes_button_context_t menu_button_context;
+    /** Event callback context for opening the safe recipe-builder scaffold. */
+    screen_recipes_button_context_t create_button_context;
     /** Event callback contexts for recipe rows. */
     screen_recipes_button_context_t recipe_row_contexts[8];
 } screen_recipes_t;

@@ -45,6 +45,10 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
     {
         screen_id = UI_SCREEN_RECIPE_DETAIL;
     }
+    else if (action == UI_ACTION_SHOW_RECIPE_BUILDER)
+    {
+        screen_id = UI_SCREEN_RECIPE_BUILDER;
+    }
     else if (action == UI_ACTION_SHOW_RECIPE_DETAILS_SECTION)
     {
         screen_id = UI_SCREEN_RECIPE_SECTION;
@@ -134,6 +138,16 @@ static void ui_show_screen(ui_t *ui,
 
         screen_recipe_detail_show_recipe(&ui->recipe_detail, recipe);
         screen = ui->recipe_detail.screen;
+    }
+    else if (screen_id == UI_SCREEN_RECIPE_BUILDER)
+    {
+        if (!ui->recipe_builder_created)
+        {
+            screen_recipe_builder_init(&ui->recipe_builder, ui_handle_action, ui);
+            ui->recipe_builder_created = true;
+        }
+
+        screen = ui->recipe_builder.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_SECTION)
     {

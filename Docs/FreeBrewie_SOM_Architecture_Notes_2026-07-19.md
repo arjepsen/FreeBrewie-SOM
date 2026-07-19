@@ -308,6 +308,8 @@ Current file set:
 - `Screen_manual.h`
 - `Screen_menu.c`
 - `Screen_menu.h`
+- `Screen_recipe_builder.c`
+- `Screen_recipe_builder.h`
 - `Screen_recipes.c`
 - `Screen_recipes.h`
 - `Screen_settings.c`
@@ -328,7 +330,7 @@ Owns:
 - top-level UI init/update
 - selecting which screens/components are active
 - keeping the UI layer together
-- owning button callback contexts for placeholder navigation
+- owning button callback contexts for UI navigation
 - deferring navigation requested from LVGL event callbacks until normal `ui_update()`
 - lazy-creating optional placeholder screens that are not needed at startup
 
@@ -428,6 +430,7 @@ Owns:
 - old-Brewie-inspired recipe-list presentation
 - Recipes screen back/menu navigation callbacks
 - recipe-row navigation requests using stable recipe IDs
+- create-recipe navigation request to the safe Recipe Builder scaffold
 
 Must not own yet:
 - recipe persistence
@@ -435,11 +438,31 @@ Must not own yet:
 - brewing start logic
 - direct hardware control
 
+### `Screen_recipe_builder`
+Owns:
+- safe old-Brewie-inspired recipe data-entry scaffold
+- local selected-field explanation labels
+- field rows for Name, Style, Batch, Ingredients, Brewing, and Fermentation
+- disabled Save presentation
+
+Must not own yet:
+- text entry overlays
+- recipe persistence
+- recipe validation
+- save/delete behavior
+- brewing start logic
+- direct hardware control
+
+Important current fact:
+`Screen_recipe_builder` is intentionally presentation-only. It shows the shape of recipe
+editing/data entry while real recipe storage, input handling, and validation are still
+absent.
+
 ### `Screen_recipe_detail`
 Owns:
 - safe selected-recipe landing presentation
 - old-style section navigation rows for Details, Ingredients, Brewing, and Fermentation
-- inert Brew/Edit button presentation
+- Brew button navigation to the safe Brew Setup scaffold
 - detail-screen back/menu navigation callbacks
 
 Must not own yet:

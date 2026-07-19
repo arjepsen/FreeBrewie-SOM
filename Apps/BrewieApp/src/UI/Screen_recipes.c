@@ -18,7 +18,8 @@ static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
                                                   screen_recipes_button_context_t *context,
                                                   ui_action_handler_t action_handler,
                                                   void *user_data);
-static lv_obj_t *screen_recipes_create_create_button(lv_obj_t *parent);
+static lv_obj_t *screen_recipes_create_create_button(lv_obj_t *parent,
+                                                     screen_recipes_button_context_t *context);
 static void screen_recipes_button_event_cb(lv_event_t *event);
 
 static void screen_recipes_set_static(lv_obj_t *object)
@@ -247,7 +248,8 @@ static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
     return row;
 }
 
-static lv_obj_t *screen_recipes_create_create_button(lv_obj_t *parent)
+static lv_obj_t *screen_recipes_create_create_button(lv_obj_t *parent,
+                                                     screen_recipes_button_context_t *context)
 {
     lv_obj_t *button;
     lv_obj_t *label;
@@ -258,10 +260,10 @@ static lv_obj_t *screen_recipes_create_create_button(lv_obj_t *parent)
     lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
     lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_state(button, LV_STATE_DISABLED);
+    lv_obj_add_event_cb(button, screen_recipes_button_event_cb, LV_EVENT_CLICKED, context);
 
     label = lv_label_create(button);
-    lv_label_set_text(label, "CREATE RECIPE LATER");
+    lv_label_set_text(label, "CREATE RECIPE");
     lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_center(label);
 
@@ -302,6 +304,9 @@ void screen_recipes_init(screen_recipes_t *recipes, ui_action_handler_t action_h
     recipes->menu_button_context.action = UI_ACTION_SHOW_MENU;
     recipes->menu_button_context.handler = action_handler;
     recipes->menu_button_context.user_data = user_data;
+    recipes->create_button_context.action = UI_ACTION_SHOW_RECIPE_BUILDER;
+    recipes->create_button_context.handler = action_handler;
+    recipes->create_button_context.user_data = user_data;
 
     recipes->screen = lv_obj_create(NULL);
     screen_recipes_set_static(recipes->screen);
@@ -363,5 +368,5 @@ void screen_recipes_init(screen_recipes_t *recipes, ui_action_handler_t action_h
     lv_obj_set_width(spacer, lv_pct(100));
     lv_obj_set_height(spacer, 0);
 
-    screen_recipes_create_create_button(container);
+    screen_recipes_create_create_button(container, &recipes->create_button_context);
 }
