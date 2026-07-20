@@ -1,7 +1,14 @@
 #include "UI_dialog.h"
 
 static void ui_dialog_set_static(lv_obj_t *object);
-static void ui_dialog_hide_event_cb(lv_event_t *event);
+static lv_obj_t *ui_dialog_create_button(lv_obj_t *parent,
+                                         const char *text,
+                                         lv_color_t normal_color,
+                                         lv_color_t pressed_color,
+                                         lv_event_cb_t event_cb,
+                                         ui_dialog_t *dialog);
+static void ui_dialog_primary_event_cb(lv_event_t *event);
+static void ui_dialog_secondary_event_cb(lv_event_t *event);
 
 /****************************************************************************************
  * @brief Make a dialog sub-object static and non-scrollable.
@@ -17,27 +24,86 @@ static void ui_dialog_set_static(lv_obj_t *object)
     lv_obj_set_scrollbar_mode(object, LV_SCROLLBAR_MODE_OFF);
 }
 
-static void ui_dialog_hide_event_cb(lv_event_t *event)
+/****************************************************************************************
+ * @brief Create one fixed-height dialog action button.
+ ****************************************************************************************/
+static lv_obj_t *ui_dialog_create_button(lv_obj_t *parent,
+                                         const char *text,
+                                         lv_color_t normal_color,
+                                         lv_color_t pressed_color,
+                                         lv_event_cb_t event_cb,
+                                         ui_dialog_t *dialog)
+{
+    lv_obj_t *button;
+    lv_obj_t *button_label;
+
+    button = lv_button_create(parent);
+    lv_obj_set_flex_grow(button, 1);
+    lv_obj_set_height(button, 42);
+    lv_obj_set_style_bg_color(button, normal_color, 0);
+    lv_obj_set_style_bg_color(button, pressed_color, LV_STATE_PRESSED);
+    lv_obj_set_style_radius(button, 5, 0);
+    lv_obj_add_event_cb(button, event_cb, LV_EVENT_CLICKED, dialog);
+
+    button_label = lv_label_create(button);
+    lv_label_set_text(button_label, text != NULL ? text : "OK");
+    lv_obj_set_style_text_color(button_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(button_label);
+    return button;
+}
+
+/****************************************************************************************
+ * @brief Run the optional primary action, then close the dialog.
+ ****************************************************************************************/
+static void ui_dialog_primary_event_cb(lv_event_t *event)
 {
     ui_dialog_t *dialog;
 
     dialog = lv_event_get_user_data(event);
+    if (dialog != NULL && dialog->primary_handler != NULL)
+    {
+        dialog->primary_handler(dialog->primary_user_data);
+    }
+
+    ui_dialog_hide(dialog);
+}
+
+/****************************************************************************************
+ * @brief Run the optional secondary action, then close the dialog.
+ ****************************************************************************************/
+static void ui_dialog_secondary_event_cb(lv_event_t *event)
+{
+    ui_dialog_t *dialog;
+
+    dialog = lv_event_get_user_data(event);
+    if (dialog != NULL && dialog->secondary_handler != NULL)
+    {
+        dialog->secondary_handler(dialog->secondary_user_data);
+    }
+
     ui_dialog_hide(dialog);
 }
 
 /****************************************************************************************
  * @brief Create a hidden reusable modal dialog under parent.
  ****************************************************************************************/
-void ui_dialog_init(ui_dialog_t *dialog, lv_obj_t *parent, const char *button_text)
+void ui_dialog_init(ui_dialog_t *dialog,
+                    lv_obj_t *parent,
+                    const char *primary_text,
+                    const char *secondary_text)
 {
     lv_obj_t *panel;
-    lv_obj_t *button;
-    lv_obj_t *button_label;
+    lv_obj_t *button_row;
 
     if (dialog == NULL || parent == NULL)
     {
         return;
     }
+
+    dialog->primary_handler = NULL;
+    dialog->primary_user_data = NULL;
+    dialog->secondary_handler = NULL;
+    dialog->secondary_user_data = NULL;
 
     dialog->overlay = lv_obj_create(parent);
     ui_dialog_set_static(dialog->overlay);
@@ -77,18 +143,61 @@ void ui_dialog_init(ui_dialog_t *dialog, lv_obj_t *parent, const char *button_te
     lv_obj_set_width(dialog->body_label, lv_pct(100));
     lv_obj_set_style_text_color(dialog->body_label, lv_color_hex(0xC8C8C8), 0);
 
-    button = lv_button_create(panel);
-    lv_obj_set_width(button, lv_pct(100));
-    lv_obj_set_height(button, 42);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0xF47B32), 0);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
-    lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_event_cb(button, ui_dialog_hide_event_cb, LV_EVENT_CLICKED, dialog);
+    button_row = lv_obj_create(panel);
+    ui_dialog_set_static(button_row);
+    lv_obj_set_width(button_row, lv_pct(100));
+    lv_obj_set_height(button_row, 42);
+    lv_obj_set_style_bg_opa(button_row, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(button_row, 0, 0);
+    lv_obj_set_style_pad_all(button_row, 0, 0);
+    lv_obj_set_style_pad_column(button_row, 8, 0);
+    lv_obj_set_layout(button_row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(button_row, LV_FLEX_FLOW_ROW);
 
-    button_label = lv_label_create(button);
-    lv_label_set_text(button_label, button_text != NULL ? button_text : "OK");
-    lv_obj_set_style_text_color(button_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_center(button_label);
+    ui_dialog_create_button(button_row,
+                            primary_text,
+                            lv_color_hex(0x4B4741),
+                            lv_color_hex(0x343434),
+                            ui_dialog_primary_event_cb,
+                            dialog);
+    ui_dialog_create_button(button_row,
+                            secondary_text,
+                            lv_color_hex(0xF47B32),
+                            lv_color_hex(0xC85F22),
+                            ui_dialog_secondary_event_cb,
+                            dialog);
+}
+
+/****************************************************************************************
+ * @brief Set the optional action called by the left/primary dialog button.
+ ****************************************************************************************/
+void ui_dialog_set_primary_action(ui_dialog_t *dialog,
+                                  ui_dialog_action_handler_t handler,
+                                  void *user_data)
+{
+    if (dialog == NULL)
+    {
+        return;
+    }
+
+    dialog->primary_handler = handler;
+    dialog->primary_user_data = user_data;
+}
+
+/****************************************************************************************
+ * @brief Set the optional action called by the right/secondary dialog button.
+ ****************************************************************************************/
+void ui_dialog_set_secondary_action(ui_dialog_t *dialog,
+                                    ui_dialog_action_handler_t handler,
+                                    void *user_data)
+{
+    if (dialog == NULL)
+    {
+        return;
+    }
+
+    dialog->secondary_handler = handler;
+    dialog->secondary_user_data = user_data;
 }
 
 /****************************************************************************************

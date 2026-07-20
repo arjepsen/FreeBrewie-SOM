@@ -7,12 +7,14 @@
 
 #define SCREEN_RECIPE_BUILDER_PAD 8
 #define SCREEN_RECIPE_BUILDER_ROW_WIDTH_PCT 98
+#define SCREEN_RECIPE_BUILDER_ROW_VALUE_HEIGHT 18
 
 typedef struct
 {
     const char *title;
     const char *subtitle;
     const char *body;
+    const char *sample_value;
 } screen_recipe_builder_field_info_t;
 
 static void screen_recipe_builder_set_static(lv_obj_t *object);
@@ -31,12 +33,16 @@ static lv_obj_t *screen_recipe_builder_create_field_row(lv_obj_t *parent,
 static lv_obj_t *screen_recipe_builder_create_disabled_save_button(lv_obj_t *parent);
 static const char *screen_recipe_builder_get_draft_value(const screen_recipe_builder_t *builder,
                                                          screen_recipe_builder_field_id_t field_id);
+static void screen_recipe_builder_set_draft_value(screen_recipe_builder_t *builder,
+                                                  screen_recipe_builder_field_id_t field_id,
+                                                  const char *value);
 static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_refresh_field_values(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_select_field(screen_recipe_builder_t *builder,
                                                screen_recipe_builder_field_id_t field_id);
 static void screen_recipe_builder_show_editor_preview(screen_recipe_builder_t *builder,
                                                       screen_recipe_builder_field_id_t field_id);
+static void screen_recipe_builder_use_sample(void *user_data);
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event);
 static void screen_recipe_builder_field_event_cb(lv_event_t *event);
 
@@ -46,28 +52,34 @@ static const screen_recipe_builder_field_info_t
             "Name",
             "Recipe title",
             "Later this will open a text entry overlay. For now this screen only shows the "
-            "shape of the recipe editing flow."},
+            "shape of the recipe editing flow.",
+            "Demo Pale Ale"},
         [SCREEN_RECIPE_BUILDER_FIELD_STYLE] = {
             "Style",
             "Beer type",
-            "Later this can become a style picker shared by the embedded UI and web UI."},
+            "Later this can become a style picker shared by the embedded UI and web UI.",
+            "American Pale Ale"},
         [SCREEN_RECIPE_BUILDER_FIELD_BATCH] = {
             "Batch",
             "Volume and targets",
-            "Later this will edit batch size, strength, bitterness, and gravity metadata."},
+            "Later this will edit batch size, strength, bitterness, and gravity metadata.",
+            "20 L / 5.2%"},
         [SCREEN_RECIPE_BUILDER_FIELD_INGREDIENTS] = {
             "Ingredients",
             "Malt, hops, yeast",
-            "Later this will open structured ingredient lists instead of free text."},
+            "Later this will open structured ingredient lists instead of free text.",
+            "Pale malt, Cascade, clean ale yeast"},
         [SCREEN_RECIPE_BUILDER_FIELD_BREWING] = {
             "Brewing",
             "Mash and boil steps",
-            "Later this will edit brewing steps that can be validated before a brew starts."},
+            "Later this will edit brewing steps that can be validated before a brew starts.",
+            "Mash 66 C / boil 60 min"},
         [SCREEN_RECIPE_BUILDER_FIELD_FERMENTATION] = {
             "Fermentation",
             "Temperature and duration",
             "Later this will store fermentation guidance without giving the SOM hardware "
-            "control over fermentation equipment."}};
+            "control over fermentation equipment.",
+            "19 C for 12 days"}};
 
 /****************************************************************************************
  * @brief Make an object static so it cannot become a tiny scroll target.
@@ -210,6 +222,7 @@ static lv_obj_t *screen_recipe_builder_create_field_row(lv_obj_t *parent,
     lv_label_set_text(*value_label, field_info->subtitle);
     lv_label_set_long_mode(*value_label, LV_LABEL_LONG_DOT);
     lv_obj_set_width(*value_label, lv_pct(100));
+    lv_obj_set_height(*value_label, SCREEN_RECIPE_BUILDER_ROW_VALUE_HEIGHT);
     lv_obj_set_style_text_color(*value_label, lv_color_hex(0xE67526), 0);
     lv_obj_align(*value_label, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
@@ -276,6 +289,58 @@ static const char *screen_recipe_builder_get_draft_value(const screen_recipe_bui
     }
 
     return "--";
+}
+
+/****************************************************************************************
+ * @brief Replace one local draft pointer with another static/local text value.
+ *
+ * The Recipe Builder currently edits only RAM-backed scaffold values. Keeping this helper
+ * as the single write point makes it easy to replace the pointer fields with validated
+ * fixed buffers or real recipe storage later, without changing the row/dialog code.
+ ****************************************************************************************/
+static void screen_recipe_builder_set_draft_value(screen_recipe_builder_t *builder,
+                                                  screen_recipe_builder_field_id_t field_id,
+                                                  const char *value)
+{
+    if (builder == NULL || value == NULL)
+    {
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_NAME)
+    {
+        builder->draft.name = value;
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_STYLE)
+    {
+        builder->draft.style = value;
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_BATCH)
+    {
+        builder->draft.batch = value;
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_INGREDIENTS)
+    {
+        builder->draft.ingredients = value;
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_BREWING)
+    {
+        builder->draft.brewing = value;
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_FERMENTATION)
+    {
+        builder->draft.fermentation = value;
+    }
 }
 
 /****************************************************************************************
@@ -352,11 +417,34 @@ static void screen_recipe_builder_show_editor_preview(screen_recipe_builder_t *b
 
     field_info = &screen_recipe_builder_fields[field_id];
     draft_value = screen_recipe_builder_get_draft_value(builder, field_id);
+    builder->editing_field_id = field_id;
     snprintf(builder->editor_dialog_body,
              sizeof(builder->editor_dialog_body),
-             "Current value:\n%s\n\nEditing will be added later with validation and storage.",
+             "Current value:\n%s\n\nUse Sample changes only this local draft. Save is still disabled.",
              draft_value);
     ui_dialog_show(&builder->editor_dialog, field_info->title, builder->editor_dialog_body);
+}
+
+/****************************************************************************************
+ * @brief Apply the selected field's static sample value to the local draft only.
+ ****************************************************************************************/
+static void screen_recipe_builder_use_sample(void *user_data)
+{
+    screen_recipe_builder_t *builder;
+    screen_recipe_builder_field_id_t field_id;
+
+    builder = user_data;
+    if (builder == NULL || builder->editing_field_id >= SCREEN_RECIPE_BUILDER_FIELD_COUNT)
+    {
+        return;
+    }
+
+    field_id = builder->editing_field_id;
+    screen_recipe_builder_set_draft_value(builder,
+                                          field_id,
+                                          screen_recipe_builder_fields[field_id].sample_value);
+    screen_recipe_builder_refresh_field_values(builder);
+    screen_recipe_builder_select_field(builder, field_id);
 }
 
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event)
@@ -425,7 +513,10 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
 
     screen_recipe_builder_create_header(container, builder);
-    ui_dialog_init(&builder->editor_dialog, builder->screen, "OK");
+    ui_dialog_init(&builder->editor_dialog, builder->screen, "Cancel", "Use Sample");
+    ui_dialog_set_secondary_action(&builder->editor_dialog,
+                                   screen_recipe_builder_use_sample,
+                                   builder);
 
     intro = lv_label_create(container);
     lv_label_set_text(intro, "Recipe fields");

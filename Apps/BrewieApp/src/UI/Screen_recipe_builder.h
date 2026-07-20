@@ -87,6 +87,8 @@ typedef struct screen_recipe_builder_t
     char editor_dialog_body[192];
     /** Currently selected local field. */
     screen_recipe_builder_field_id_t selected_field_id;
+    /** Field affected by the editor dialog's local-only action button. */
+    screen_recipe_builder_field_id_t editing_field_id;
 } screen_recipe_builder_t;
 
 void screen_recipe_builder_init(screen_recipe_builder_t *builder,

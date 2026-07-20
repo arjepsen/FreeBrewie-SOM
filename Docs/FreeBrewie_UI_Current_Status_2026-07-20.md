@@ -1,6 +1,6 @@
 # FreeBrewie UI Current Status
-_Date: 2026-07-19_
-_Updated: 2026-07-19_
+_Date: 2026-07-20_
+_Updated: 2026-07-20_
 
 ## Purpose
 This document captures the current real status of the SOM-side UI bring-up.
@@ -59,8 +59,9 @@ The following is currently proven on the real SOM target:
 - the Recipes `CREATE RECIPE` button now opens a safe Recipe Builder scaffold with local
   draft values and field selection only; no text entry, recipe storage, save/delete, or
   hardware actions are wired yet
-- Recipe Builder field rows now open a reusable local-only dialog preview showing the
-  current draft value; the dialog closes with OK and does not edit or save
+- Recipe Builder field rows now open a reusable local-only dialog showing the current draft
+  value; `Use Sample` changes only the in-memory draft label for that field, while `Cancel`
+  leaves it unchanged
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar

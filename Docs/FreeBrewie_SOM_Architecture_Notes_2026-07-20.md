@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-07-19_
+_Date: 2026-07-20_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -7,7 +7,7 @@ This document defines the current target architecture for the Brewie SOM applica
 It is meant to keep file ownership, module boundaries, and subsystem responsibilities clear while the SOM app is still in early bring-up.
 
 It should be read together with:
-- `FreeBrewie_UI_Current_Status_2026-07-19.md`
+- `FreeBrewie_UI_Current_Status_2026-07-20.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
 - `Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
@@ -443,7 +443,7 @@ Owns:
 - safe old-Brewie-inspired recipe data-entry scaffold
 - local non-persistent draft values
 - local selected-field explanation labels
-- local-only editor preview dialog through `UI_dialog`
+- local-only field editor dialog through `UI_dialog`
 - field rows for Name, Style, Batch, Ingredients, Brewing, and Fermentation
 - disabled Save presentation
 
@@ -456,7 +456,8 @@ Must not own yet:
 - direct hardware control
 
 Important current fact:
-`Screen_recipe_builder` is intentionally presentation-only. It shows the shape of recipe
+`Screen_recipe_builder` is intentionally presentation-only. Its current `Use Sample`
+dialog action mutates only RAM-backed draft labels. It shows the shape of recipe
 editing/data entry while real recipe storage, input handling, and validation are still
 absent.
 
