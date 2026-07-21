@@ -49,6 +49,14 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
     {
         screen_id = UI_SCREEN_RECIPE_BUILDER;
     }
+    else if (action == UI_ACTION_SHOW_RECIPE_DRAFT_DETAILS)
+    {
+        screen_id = UI_SCREEN_RECIPE_DRAFT_DETAILS;
+    }
+    else if (action == UI_ACTION_SHOW_RECIPE_DRAFT_MENU)
+    {
+        screen_id = UI_SCREEN_RECIPE_DRAFT_MENU;
+    }
     else if (action == UI_ACTION_SHOW_RECIPE_DETAILS_SECTION)
     {
         screen_id = UI_SCREEN_RECIPE_SECTION;
@@ -148,6 +156,40 @@ static void ui_show_screen(ui_t *ui,
         }
 
         screen = ui->recipe_builder.screen;
+    }
+    else if (screen_id == UI_SCREEN_RECIPE_DRAFT_DETAILS)
+    {
+        if (!ui->recipe_builder_created)
+        {
+            return;
+        }
+
+        if (!ui->recipe_draft_details_created)
+        {
+            screen_recipe_draft_details_init(&ui->recipe_draft_details, ui_handle_action, ui);
+            ui->recipe_draft_details_created = true;
+        }
+
+        screen_recipe_draft_details_show(&ui->recipe_draft_details,
+                                         screen_recipe_builder_get_draft_name(&ui->recipe_builder));
+        screen = ui->recipe_draft_details.screen;
+    }
+    else if (screen_id == UI_SCREEN_RECIPE_DRAFT_MENU)
+    {
+        if (!ui->recipe_builder_created)
+        {
+            return;
+        }
+
+        if (!ui->recipe_draft_menu_created)
+        {
+            screen_recipe_draft_menu_init(&ui->recipe_draft_menu, ui_handle_action, ui);
+            ui->recipe_draft_menu_created = true;
+        }
+
+        screen_recipe_draft_menu_show(&ui->recipe_draft_menu,
+                                      screen_recipe_builder_get_draft_name(&ui->recipe_builder));
+        screen = ui->recipe_draft_menu.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_SECTION)
     {

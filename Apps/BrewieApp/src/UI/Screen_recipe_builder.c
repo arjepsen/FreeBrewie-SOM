@@ -21,6 +21,7 @@ static lv_obj_t *screen_recipe_builder_create_bottom_button(lv_obj_t *parent,
                                                             bool enabled,
                                                             screen_recipe_builder_nav_context_t *context);
 static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *builder);
+static void screen_recipe_builder_set_done_enabled(screen_recipe_builder_t *builder, bool enabled);
 static void screen_recipe_builder_refresh_name(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_show_name_dialog(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_use_sample_name(void *user_data);
@@ -157,12 +158,9 @@ static lv_obj_t *screen_recipe_builder_create_bottom_button(lv_obj_t *parent,
     lv_obj_set_style_bg_color(button, enabled ? lv_color_hex(0xF47B32) : lv_color_hex(0x4B4741), 0);
     lv_obj_set_style_bg_color(button, enabled ? lv_color_hex(0xC85F22) : lv_color_hex(0x343434), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 5, 0);
+    lv_obj_add_event_cb(button, screen_recipe_builder_nav_event_cb, LV_EVENT_CLICKED, context);
 
-    if (enabled)
-    {
-        lv_obj_add_event_cb(button, screen_recipe_builder_nav_event_cb, LV_EVENT_CLICKED, context);
-    }
-    else
+    if (!enabled)
     {
         lv_obj_add_state(button, LV_STATE_DISABLED);
     }
@@ -185,6 +183,33 @@ static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *bu
     }
 
     builder->draft.name = "Tap to name";
+}
+
+/****************************************************************************************
+ * @brief Enable or disable the local DONE button and keep its color state obvious.
+ ****************************************************************************************/
+static void screen_recipe_builder_set_done_enabled(screen_recipe_builder_t *builder, bool enabled)
+{
+    if (builder == NULL || builder->done_button == NULL)
+    {
+        return;
+    }
+
+    if (enabled)
+    {
+        lv_obj_remove_state(builder->done_button, LV_STATE_DISABLED);
+    }
+    else
+    {
+        lv_obj_add_state(builder->done_button, LV_STATE_DISABLED);
+    }
+
+    lv_obj_set_style_bg_color(builder->done_button,
+                              enabled ? lv_color_hex(0xF47B32) : lv_color_hex(0x4B4741),
+                              0);
+    lv_obj_set_style_bg_color(builder->done_button,
+                              enabled ? lv_color_hex(0xC85F22) : lv_color_hex(0x343434),
+                              LV_STATE_PRESSED);
 }
 
 /****************************************************************************************
@@ -232,6 +257,7 @@ static void screen_recipe_builder_use_sample_name(void *user_data)
 
     builder->draft.name = "Demo Pale Ale";
     screen_recipe_builder_refresh_name(builder);
+    screen_recipe_builder_set_done_enabled(builder, true);
 }
 
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event)
@@ -280,7 +306,7 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     builder->back_button_context.action = UI_ACTION_SHOW_RECIPES;
     builder->back_button_context.handler = action_handler;
     builder->back_button_context.user_data = user_data;
-    builder->done_button_context.action = UI_ACTION_SHOW_RECIPES;
+    builder->done_button_context.action = UI_ACTION_SHOW_RECIPE_DRAFT_MENU;
     builder->done_button_context.handler = action_handler;
     builder->done_button_context.user_data = user_data;
     builder->name_context.builder = builder;
@@ -342,11 +368,22 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
                                                LV_ALIGN_BOTTOM_LEFT,
                                                true,
                                                &builder->back_button_context);
-    screen_recipe_builder_create_bottom_button(bottom_area,
-                                               "DONE",
-                                               LV_ALIGN_BOTTOM_RIGHT,
-                                               false,
-                                               &builder->done_button_context);
+    builder->done_button =
+        screen_recipe_builder_create_bottom_button(bottom_area,
+                                                   "DONE",
+                                                   LV_ALIGN_BOTTOM_RIGHT,
+                                                   false,
+                                                   &builder->done_button_context);
 
     screen_recipe_builder_refresh_name(builder);
+}
+
+const char *screen_recipe_builder_get_draft_name(const screen_recipe_builder_t *builder)
+{
+    if (builder == NULL || builder->draft.name == NULL)
+    {
+        return "";
+    }
+
+    return builder->draft.name;
 }

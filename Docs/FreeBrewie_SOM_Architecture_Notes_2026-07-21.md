@@ -310,6 +310,10 @@ Current file set:
 - `Screen_menu.h`
 - `Screen_recipe_builder.c`
 - `Screen_recipe_builder.h`
+- `Screen_recipe_draft_details.c`
+- `Screen_recipe_draft_details.h`
+- `Screen_recipe_draft_menu.c`
+- `Screen_recipe_draft_menu.h`
 - `Screen_recipes.c`
 - `Screen_recipes.h`
 - `Screen_settings.c`
@@ -456,10 +460,49 @@ Must not own yet:
 
 Important current fact:
 `Screen_recipe_builder` is intentionally presentation-only. It now follows the old UI
-create-recipe shape more closely: create starts by naming the recipe, and the later recipe
-menu/section editing flow should be separate. The current `Use Sample` action mutates only
-the RAM-backed draft name while real recipe storage, keyboard input, and validation are
-still absent.
+create-recipe shape more closely: create starts by naming the recipe, then the local
+`DONE` path opens a separate draft recipe menu. The current `Use Sample` action mutates
+only the RAM-backed draft name while real recipe storage, keyboard input, and validation
+are still absent.
+
+### `Screen_recipe_draft_menu`
+Owns:
+- safe old-Brewie-inspired menu for a newly named local draft recipe
+- local display of the draft recipe name
+- old-style section buttons for Details, Ingredients, Brewing, and Fermentation
+- local-only section explanation dialog
+- disabled `BREW LATER` presentation
+
+Must not own yet:
+- recipe persistence
+- recipe validation
+- real section editing forms
+- brewing preflight or start behavior
+- direct hardware control
+
+Important current fact:
+`Screen_recipe_draft_menu` is intentionally local-only. It is the next visual/navigation
+step after naming a recipe, but it does not insert a recipe into `Recipe_catalog`, save a
+file, or route any brewing action.
+
+### `Screen_recipe_draft_details`
+Owns:
+- safe old-Brewie-inspired read-only Details section for a local draft recipe
+- display of the draft recipe name
+- `BEER STYLE` and `CALCULATED VALUES` panels
+- disabled `MODIFY LATER` presentation
+
+Must not own yet:
+- BJCP/style database selection
+- calculated recipe values
+- recipe persistence
+- validation
+- brewing preflight or hardware actions
+
+Important current fact:
+`Screen_recipe_draft_details` mirrors the old Details view shape before implementing the
+old Details edit form. Its values are intentionally inert placeholders until local recipe
+storage and style selection are designed.
 
 ### `Screen_recipe_detail`
 Owns:

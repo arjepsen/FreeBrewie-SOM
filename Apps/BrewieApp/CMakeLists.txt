@@ -28,6 +28,8 @@ set(BREWIE_APP_COMMON_SOURCES
     src/UI/Screen_menu.c
     src/UI/Screen_recipe_builder.c
     src/UI/Screen_recipe_detail.c
+    src/UI/Screen_recipe_draft_details.c
+    src/UI/Screen_recipe_draft_menu.c
     src/UI/Screen_recipe_section.c
     src/UI/Screen_recipes.c
     src/UI/Screen_settings.c

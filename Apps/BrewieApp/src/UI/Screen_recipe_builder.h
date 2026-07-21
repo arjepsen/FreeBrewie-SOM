@@ -46,6 +46,8 @@ typedef struct screen_recipe_builder_t
     lv_obj_t *screen;
     /** Label showing the current local draft name. */
     lv_obj_t *name_value_label;
+    /** DONE button, enabled after the local name no longer shows the placeholder. */
+    lv_obj_t *done_button;
     /** Event callback context for returning to Recipes. */
     screen_recipe_builder_nav_context_t back_button_context;
     /** Event callback context for the disabled future Done button. */
@@ -63,5 +65,6 @@ typedef struct screen_recipe_builder_t
 void screen_recipe_builder_init(screen_recipe_builder_t *builder,
                                 ui_action_handler_t action_handler,
                                 void *user_data);
+const char *screen_recipe_builder_get_draft_name(const screen_recipe_builder_t *builder);
 
 #endif

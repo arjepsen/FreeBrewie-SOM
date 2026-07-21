@@ -20,6 +20,8 @@
 #include "Screen_menu.h"
 #include "Screen_recipe_builder.h"
 #include "Screen_recipe_detail.h"
+#include "Screen_recipe_draft_details.h"
+#include "Screen_recipe_draft_menu.h"
 #include "Screen_recipe_section.h"
 #include "Screen_recipes.h"
 #include "Screen_settings.h"
@@ -40,6 +42,14 @@ struct ui_t
     screen_recipe_builder_t recipe_builder;
     /** True after the recipe-builder scaffold has been created. */
     bool recipe_builder_created;
+    /** Safe local-only draft recipe menu, lazy-created after naming a recipe. */
+    screen_recipe_draft_menu_t recipe_draft_menu;
+    /** True after the local-only draft recipe menu has been created. */
+    bool recipe_draft_menu_created;
+    /** Safe local-only draft Details screen, lazy-created from the draft recipe menu. */
+    screen_recipe_draft_details_t recipe_draft_details;
+    /** True after the local-only draft Details screen has been created. */
+    bool recipe_draft_details_created;
     /** Safe selected-recipe detail screen. */
     screen_recipe_detail_t recipe_detail;
     /** Safe selected-recipe section screen. */
