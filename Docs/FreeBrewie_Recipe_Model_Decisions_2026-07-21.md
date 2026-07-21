@@ -63,6 +63,8 @@ External references checked while writing this:
 - BeerJSON object schema: https://beerjson.github.io/beerjson/beer.json.html
 - Brewfather recipe API/docs: https://docs.brewfather.app/api
 - Brewfather recipe designer guide: https://docs.brewfather.app/getting-started/creating-a-new-recipe
+- Brewfather BeerXML import from BeerSmith: https://docs.brewfather.app/getting-started/import-recipes
+- BeerSmith import/export docs: https://beersmith.com/help2/importing_and_exporting_files.htm
 - CraftBeerPi 4 mash profile docs: https://openbrewing.gitbook.io/craftbeerpi4_support/readme/craftbeerpi-4-server/mash-profile
 - Breww recipe file docs: https://breww.com/docs/breww-recipe-file-import-export/
 
@@ -73,12 +75,39 @@ Useful ideas from those systems:
 - keep calculated values separate from user-entered values
 - make import/export formats versioned
 - allow recipe creation to start simple, then fill sections over time
+- treat BeerXML as the first likely interchange path for BeerSmith, Brewfather, and other
+  brewing tools
+- treat the Brewfather API as a future sync/integration path, not only as a file import path
 
 Ideas to treat carefully:
 - general brewing formats can be too broad for an appliance
 - XML-style wrapper structures are not ideal for lean embedded runtime data
 - cloud/API recipe objects may include fields FreeBrewie does not need on-device
 - process-stage models are useful, but the MCU protocol should stay compact and hardware-focused
+- BeerSmith's native `.bsmx` format exists, but BeerXML is the better first compatibility
+  target because it is the intended interchange format between many brewing programs
+
+---
+
+## Compatibility direction
+FreeBrewie should use a native internal model first, then map that model to external formats
+and services.
+
+Compatibility goals:
+- BeerXML import/export for BeerSmith, Brewfather, Brewer's Friend, Brewtarget, and similar
+  tools
+- BeerJSON awareness so the model does not fight a more modern structured recipe format
+- Brewfather API compatibility later, likely for recipe sync, batch/brew-session data, and
+  measured-value updates
+
+The internal model should not become "BeerXML in C" or "Brewfather JSON in C".
+
+Instead:
+- keep FreeBrewie structs clean and appliance-focused
+- keep units explicit and consistent internally
+- preserve enough fields to round-trip common recipes later
+- keep importer/exporter/API mapping code separate from UI and brewing runtime logic
+- document any external fields FreeBrewie ignores or cannot represent
 
 ---
 
@@ -124,8 +153,9 @@ The draft should not own:
 - MCU commands
 - active brewing runtime state
 
-The next code step should move the temporary recipe-builder name out of
-`Screen_recipe_builder` and into a `Logic/Recipe_draft` module.
+Current implementation:
+`Logic/Recipe_draft` owns the temporary recipe-builder name. The module is intentionally
+small for now, but it is the right place to add bounded draft fields as the builder grows.
 
 ### 3. Recipe catalog
 The catalog is a list/index of saved or built-in recipes.
@@ -266,17 +296,17 @@ These should be answered before full storage is implemented:
 
 ---
 
-## Next implementation step
+## Current implementation step
 Do not implement filesystem recipe storage yet.
 
-Next code step:
-- add `Logic/Recipe_draft.c/.h`
-- move the temporary draft name out of `Screen_recipe_builder`
-- make Recipe Builder, draft menu, draft Details, and draft Ingredients read from the draft model
-- keep the draft in memory only
-- keep all MCU output disabled
+Implemented first:
+- added `Logic/Recipe_draft.c/.h`
+- moved the temporary draft name out of `Screen_recipe_builder`
+- made Recipe Builder, draft menu, draft Details, and draft Ingredients read from the draft model
+- kept the draft in memory only
+- kept all MCU output disabled
 
-After that:
+Next code steps:
 - add real draft fields section by section
 - add validation
 - then design storage with versioning

@@ -12,6 +12,7 @@
 
 #include <stdbool.h>
 
+#include "Logic/Recipe_draft.h"
 #include "Screen_active_brewing.h"
 #include "Screen_brew_checklist.h"
 #include "Screen_brew_setup.h"
@@ -39,6 +40,8 @@ struct ui_t
     screen_status_t status;
     /** Safe first recipe chooser scaffold. */
     screen_recipes_t recipes;
+    /** RAM-only draft recipe currently edited by the recipe-builder flow. */
+    recipe_draft_t recipe_draft;
     /** Safe recipe-builder scaffold, lazy-created on first use. */
     screen_recipe_builder_t recipe_builder;
     /** True after the recipe-builder scaffold has been created. */

@@ -6,12 +6,13 @@
  * @brief Safe old-Brewie-inspired recipe builder scaffold.
  *
  * Responsibility: show the first non-persistent recipe data-entry shape.
- * Owns: Recipe-builder LVGL objects, local selected-field state, and back/menu callbacks.
+ * Owns: Recipe-builder LVGL objects, selected-field state, and back/menu callbacks.
  * Must not own: recipe storage, keyboard/input persistence, brewing start logic, or MCU commands.
  ****************************************************************************************/
 
 #include <stdint.h>
 
+#include "Logic/Recipe_draft.h"
 #include "UI_types.h"
 #include "UI_dialog.h"
 #include "lvgl.h"
@@ -34,12 +35,6 @@ typedef struct
     struct screen_recipe_builder_t *builder;
 } screen_recipe_builder_name_context_t;
 
-typedef struct
-{
-    /** Draft recipe name shown in the non-persistent builder. */
-    const char *name;
-} screen_recipe_builder_draft_t;
-
 typedef struct screen_recipe_builder_t
 {
     /** Root LVGL screen object for Recipe Builder. */
@@ -54,8 +49,8 @@ typedef struct screen_recipe_builder_t
     screen_recipe_builder_nav_context_t done_button_context;
     /** Event callback context for the local draft-name row. */
     screen_recipe_builder_name_context_t name_context;
-    /** Local non-persistent draft values shown by this screen. */
-    screen_recipe_builder_draft_t draft;
+    /** Logic-owned in-memory draft shown and edited by this screen. */
+    recipe_draft_t *draft;
     /** Local-only draft-name dialog. */
     ui_dialog_t editor_dialog;
     /** Backing storage for the editor preview body text. */
@@ -63,8 +58,9 @@ typedef struct screen_recipe_builder_t
 } screen_recipe_builder_t;
 
 void screen_recipe_builder_init(screen_recipe_builder_t *builder,
+                                recipe_draft_t *draft,
                                 ui_action_handler_t action_handler,
                                 void *user_data);
-const char *screen_recipe_builder_get_draft_name(const screen_recipe_builder_t *builder);
+void screen_recipe_builder_show(screen_recipe_builder_t *builder);
 
 #endif

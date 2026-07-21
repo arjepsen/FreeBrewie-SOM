@@ -20,7 +20,6 @@ static lv_obj_t *screen_recipe_builder_create_bottom_button(lv_obj_t *parent,
                                                             lv_align_t align,
                                                             bool enabled,
                                                             screen_recipe_builder_nav_context_t *context);
-static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_set_done_enabled(screen_recipe_builder_t *builder, bool enabled);
 static void screen_recipe_builder_refresh_name(screen_recipe_builder_t *builder);
 static void screen_recipe_builder_show_name_dialog(screen_recipe_builder_t *builder);
@@ -173,19 +172,6 @@ static lv_obj_t *screen_recipe_builder_create_bottom_button(lv_obj_t *parent,
 }
 
 /****************************************************************************************
- * @brief Fill the current non-persistent draft with old-flow initial values.
- ****************************************************************************************/
-static void screen_recipe_builder_fill_default_draft(screen_recipe_builder_t *builder)
-{
-    if (builder == NULL)
-    {
-        return;
-    }
-
-    builder->draft.name = "Tap to name";
-}
-
-/****************************************************************************************
  * @brief Enable or disable the local DONE button and keep its color state obvious.
  ****************************************************************************************/
 static void screen_recipe_builder_set_done_enabled(screen_recipe_builder_t *builder, bool enabled)
@@ -222,7 +208,8 @@ static void screen_recipe_builder_refresh_name(screen_recipe_builder_t *builder)
         return;
     }
 
-    lv_label_set_text(builder->name_value_label, builder->draft.name);
+    lv_label_set_text(builder->name_value_label, recipe_draft_get_name(builder->draft));
+    screen_recipe_builder_set_done_enabled(builder, recipe_draft_has_name(builder->draft));
 }
 
 /****************************************************************************************
@@ -238,7 +225,7 @@ static void screen_recipe_builder_show_name_dialog(screen_recipe_builder_t *buil
     snprintf(builder->editor_dialog_body,
              sizeof(builder->editor_dialog_body),
              "Current name:\n%s\n\nUse Sample changes only this local draft. A real keyboard comes later.",
-             builder->draft.name);
+             recipe_draft_get_name(builder->draft));
     ui_dialog_show(&builder->editor_dialog, "Name your recipe", builder->editor_dialog_body);
 }
 
@@ -255,9 +242,8 @@ static void screen_recipe_builder_use_sample_name(void *user_data)
         return;
     }
 
-    builder->draft.name = "Demo Pale Ale";
+    recipe_draft_set_name(builder->draft, "Demo Pale Ale");
     screen_recipe_builder_refresh_name(builder);
-    screen_recipe_builder_set_done_enabled(builder, true);
 }
 
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event)
@@ -287,6 +273,7 @@ static void screen_recipe_builder_name_event_cb(lv_event_t *event)
 }
 
 void screen_recipe_builder_init(screen_recipe_builder_t *builder,
+                                recipe_draft_t *draft,
                                 ui_action_handler_t action_handler,
                                 void *user_data)
 {
@@ -302,7 +289,7 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     }
 
     memset(builder, 0, sizeof(*builder));
-    screen_recipe_builder_fill_default_draft(builder);
+    builder->draft = draft;
     builder->back_button_context.action = UI_ACTION_SHOW_RECIPES;
     builder->back_button_context.handler = action_handler;
     builder->back_button_context.user_data = user_data;
@@ -378,12 +365,15 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     screen_recipe_builder_refresh_name(builder);
 }
 
-const char *screen_recipe_builder_get_draft_name(const screen_recipe_builder_t *builder)
+/****************************************************************************************
+ * @brief Refresh visible builder widgets from the logic-owned draft before showing it.
+ ****************************************************************************************/
+void screen_recipe_builder_show(screen_recipe_builder_t *builder)
 {
-    if (builder == NULL || builder->draft.name == NULL)
+    if (builder == NULL)
     {
-        return "";
+        return;
     }
 
-    return builder->draft.name;
+    screen_recipe_builder_refresh_name(builder);
 }

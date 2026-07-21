@@ -194,6 +194,8 @@ Current file set:
 - `Machine_targets.h`
 - `Recipe_catalog.c`
 - `Recipe_catalog.h`
+- `Recipe_draft.c`
+- `Recipe_draft.h`
 - `Recipe_types.h`
 - `Startup_logic.c`
 - `Startup_logic.h`
@@ -261,6 +263,18 @@ Owns:
 This is a temporary catalog until real persistence exists, but it establishes the right
 boundary: recipe data comes from `Logic/`, while screens only render it and emit user
 actions.
+
+### `Recipe_draft`
+Owns:
+- the current in-memory unsaved recipe draft edited by the Recipe Builder flow
+- draft dirty/completion flags
+- bounded future draft field ownership
+
+Current fact:
+`Recipe_draft` only owns the temporary draft recipe name, but it establishes the correct
+boundary before storage, keyboard input, BeerXML/BeerJSON mapping, or Brewfather API sync is
+added. Recipe Builder and draft screens should render/edit this model instead of owning
+recipe values themselves.
 
 ### `Fault_logic`
 Owns:

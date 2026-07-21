@@ -59,9 +59,10 @@ The following is currently proven on the real SOM target:
 - the Recipes `CREATE RECIPE` button now opens a safe old-style first-step Recipe Builder
   screen: `Creating Recipe`, `FIRST STEP`, `Name your recipe`, and bottom `CANCEL`/`DONE`
   actions
-- Recipe Builder currently edits only a local draft recipe name; `Use Sample` changes only
-  the in-memory draft label, `CANCEL` returns to Recipes, and `DONE` opens a local-only
-  draft recipe menu once the sample name has been applied
+- Recipe Builder currently edits only a local draft recipe name owned by
+  `Logic/Recipe_draft`; `Use Sample` changes only the in-memory draft model, `CANCEL`
+  returns to Recipes, and `DONE` opens a local-only draft recipe menu once the sample name
+  has been applied
 - the local-only draft recipe menu shows the draft name with old-style section buttons for
   Details, Ingredients, Brewing, and Fermentation; section taps show local explanations
   only, and `BREW LATER` remains disabled

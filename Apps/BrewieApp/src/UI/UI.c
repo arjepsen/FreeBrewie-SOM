@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "Logic/Recipe_catalog.h"
+#include "Logic/Recipe_draft.h"
 #include "UI_theme.h"
 
 static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data);
@@ -155,10 +156,11 @@ static void ui_show_screen(ui_t *ui,
     {
         if (!ui->recipe_builder_created)
         {
-            screen_recipe_builder_init(&ui->recipe_builder, ui_handle_action, ui);
+            screen_recipe_builder_init(&ui->recipe_builder, &ui->recipe_draft, ui_handle_action, ui);
             ui->recipe_builder_created = true;
         }
 
+        screen_recipe_builder_show(&ui->recipe_builder);
         screen = ui->recipe_builder.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_DRAFT_DETAILS)
@@ -175,7 +177,7 @@ static void ui_show_screen(ui_t *ui,
         }
 
         screen_recipe_draft_details_show(&ui->recipe_draft_details,
-                                         screen_recipe_builder_get_draft_name(&ui->recipe_builder));
+                                         recipe_draft_get_name(&ui->recipe_draft));
         screen = ui->recipe_draft_details.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_DRAFT_INGREDIENTS)
@@ -192,7 +194,7 @@ static void ui_show_screen(ui_t *ui,
         }
 
         screen_recipe_draft_ingredients_show(&ui->recipe_draft_ingredients,
-                                             screen_recipe_builder_get_draft_name(&ui->recipe_builder));
+                                             recipe_draft_get_name(&ui->recipe_draft));
         screen = ui->recipe_draft_ingredients.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_DRAFT_MENU)
@@ -209,7 +211,7 @@ static void ui_show_screen(ui_t *ui,
         }
 
         screen_recipe_draft_menu_show(&ui->recipe_draft_menu,
-                                      screen_recipe_builder_get_draft_name(&ui->recipe_builder));
+                                      recipe_draft_get_name(&ui->recipe_draft));
         screen = ui->recipe_draft_menu.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_SECTION)
@@ -312,6 +314,7 @@ void ui_init(ui_t *ui)
     }
 
     memset(ui, 0, sizeof(*ui));
+    recipe_draft_init(&ui->recipe_draft);
     ui_theme_init();
     screen_home_init(&ui->home, ui_handle_action, ui);
     screen_recipes_init(&ui->recipes, ui_handle_action, ui);
