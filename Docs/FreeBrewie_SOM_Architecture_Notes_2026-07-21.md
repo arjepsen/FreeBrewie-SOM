@@ -316,8 +316,6 @@ Current file set:
 - `Screen_settings.h`
 - `UI.c`
 - `UI.h`
-- `UI_choice_dialog.c`
-- `UI_choice_dialog.h`
 - `UI_dialog.c`
 - `UI_dialog.h`
 - `UI_scroll.c`
@@ -442,39 +440,26 @@ Must not own yet:
 
 ### `Screen_recipe_builder`
 Owns:
-- safe old-Brewie-inspired recipe data-entry scaffold
-- local non-persistent draft values
-- local selected-field explanation labels
-- local-only field editor dialog through `UI_dialog`
-- local-only fixed-choice picker dialog through `UI_choice_dialog`
-- field rows for Name, Style, Batch, Ingredients, Brewing, and Fermentation
-- disabled Save presentation
+- safe old-Brewie-inspired first create-recipe step
+- local non-persistent draft recipe name
+- local-only draft-name dialog through `UI_dialog`
+- bottom Cancel/Done presentation
 
 Must not own yet:
 - text entry overlays
 - recipe persistence
 - recipe validation
 - save/delete behavior
+- section editing for details, ingredients, brewing, or fermentation
 - brewing start logic
 - direct hardware control
 
 Important current fact:
-`Screen_recipe_builder` is intentionally presentation-only. Its current `Use Sample`
-dialog action and Style/Batch/Ingredients pickers mutate only RAM-backed draft labels. It
-shows the shape of recipe editing/data entry while real recipe storage, input handling,
-and validation are still absent.
-
-### `UI_choice_dialog`
-Owns:
-- reusable local fixed-choice modal presentation
-- fixed row widgets reused between show calls
-- choice-index callbacks back to the owning screen
-
-Must not own:
-- validation
-- persistence
-- navigation
-- hardware-affecting actions
+`Screen_recipe_builder` is intentionally presentation-only. It now follows the old UI
+create-recipe shape more closely: create starts by naming the recipe, and the later recipe
+menu/section editing flow should be separate. The current `Use Sample` action mutates only
+the RAM-backed draft name while real recipe storage, keyboard input, and validation are
+still absent.
 
 ### `Screen_recipe_detail`
 Owns:

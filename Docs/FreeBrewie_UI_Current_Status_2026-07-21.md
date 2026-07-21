@@ -56,15 +56,12 @@ The following is currently proven on the real SOM target:
   screen using stable recipe IDs
 - the Recipes list is scrollable and recipe rows now show compact title/style information;
   longer descriptions stay on the detail screen
-- the Recipes `CREATE RECIPE` button now opens a safe Recipe Builder scaffold with local
-  draft values and field selection only; no text entry, recipe storage, save/delete, or
-  hardware actions are wired yet
-- Recipe Builder field rows now open a reusable local-only dialog showing the current draft
-  value; `Use Sample` changes only the in-memory draft label for that field, while `Cancel`
-  leaves it unchanged
-- Recipe Builder `Style`, `Batch`, and `Ingredients` now open a reusable fixed-choice
-  picker, updating only the in-memory draft labels and still performing no save,
-  validation, or hardware action
+- the Recipes `CREATE RECIPE` button now opens a safe old-style first-step Recipe Builder
+  screen: `Creating Recipe`, `FIRST STEP`, `Name your recipe`, and bottom `CANCEL`/`DONE`
+  actions
+- Recipe Builder currently edits only a local draft recipe name; `Use Sample` changes only
+  the in-memory draft label, `CANCEL` returns to Recipes, and `DONE` remains disabled until
+  recipe storage/menu routing is designed
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar
