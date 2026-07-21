@@ -349,6 +349,8 @@ Current file set:
 - `UI_scroll.h`
 - `UI_status_bar.c`
 - `UI_status_bar.h`
+- `UI_text_editor.c`
+- `UI_text_editor.h`
 - `UI_theme.c`
 - `UI_theme.h`
 
@@ -484,9 +486,9 @@ Must not own yet:
 Important current fact:
 `Screen_recipe_builder` is intentionally presentation-only. It now follows the old UI
 create-recipe shape more closely: create starts by naming the recipe, then the local
-`DONE` path opens a separate draft recipe menu. The current `Use Sample` action mutates
-only the RAM-backed draft model while real recipe storage, keyboard input, and validation
-are still absent.
+`DONE` path opens a separate draft recipe menu. The Name row now uses `UI_text_editor` to
+commit bounded text into `Logic/Recipe_draft`, while real recipe storage and validation are
+still absent.
 
 ### `Screen_recipe_draft_menu`
 Owns:
@@ -562,6 +564,24 @@ Important current fact:
 `Screen_recipe_draft_ingredients` mirrors the old Ingredients view shape before
 implementing the old Fermentables/Hops edit forms. Its values render from `Logic/Recipe_draft`
 and remain local-only.
+
+### `UI_text_editor`
+Owns:
+- reusable bounded text-entry modal
+- textarea and on-screen keyboard widgets
+- OK/Cancel callbacks
+
+Must not own:
+- recipe values
+- search/filter state
+- validation
+- persistence
+- hardware actions
+
+Important current fact:
+`UI_text_editor` is UI infrastructure. It commits text through a caller callback; the model
+or screen that opened it decides what to do with that text. The first user is Recipe Builder,
+which stores the recipe name in `Logic/Recipe_draft`.
 
 ### `Screen_recipe_detail`
 Owns:

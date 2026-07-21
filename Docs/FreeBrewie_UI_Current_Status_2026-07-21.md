@@ -60,9 +60,9 @@ The following is currently proven on the real SOM target:
   screen: `Creating Recipe`, `FIRST STEP`, `Name your recipe`, and bottom `CANCEL`/`DONE`
   actions
 - Recipe Builder currently edits only a local draft recipe name owned by
-  `Logic/Recipe_draft`; `Use Sample` changes only the in-memory draft model, `CANCEL`
-  returns to Recipes, and `DONE` opens a local-only draft recipe menu once the sample name
-  has been applied
+  `Logic/Recipe_draft`; tapping the Name row now opens a reusable bounded text editor with
+  an on-screen keyboard, `CANCEL` returns to Recipes, and `DONE` opens a local-only draft
+  recipe menu once a name has been entered
 - the local-only draft recipe menu shows the draft name with old-style section buttons for
   Details, Ingredients, Brewing, and Fermentation; implemented section taps open local-only
   screens, not storage or hardware actions, and `BREW LATER` remains disabled
@@ -117,6 +117,8 @@ The following is currently proven on the real SOM target:
   LVGL
 - scrollable UI containers now use the shared `UI_scroll` gutter helper so scrollbars do
   not visually overlap full-width rows
+- `UI_text_editor` now provides the first reusable bounded text-entry modal, currently used
+  by Recipe Builder and intended later for search/filter fields and other short text edits
 
 So the project is no longer only at “headless serial baseline”.
 We now have:

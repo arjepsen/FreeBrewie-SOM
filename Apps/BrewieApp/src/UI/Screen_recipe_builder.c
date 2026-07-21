@@ -1,6 +1,5 @@
 #include "Screen_recipe_builder.h"
 
-#include <stdio.h>
 #include <string.h>
 
 #define SCREEN_RECIPE_BUILDER_PAD 8
@@ -22,8 +21,8 @@ static lv_obj_t *screen_recipe_builder_create_bottom_button(lv_obj_t *parent,
                                                             screen_recipe_builder_nav_context_t *context);
 static void screen_recipe_builder_set_done_enabled(screen_recipe_builder_t *builder, bool enabled);
 static void screen_recipe_builder_refresh_name(screen_recipe_builder_t *builder);
-static void screen_recipe_builder_show_name_dialog(screen_recipe_builder_t *builder);
-static void screen_recipe_builder_use_sample_name(void *user_data);
+static void screen_recipe_builder_show_name_editor(screen_recipe_builder_t *builder);
+static void screen_recipe_builder_commit_name(const char *text, void *user_data);
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event);
 static void screen_recipe_builder_name_event_cb(lv_event_t *event);
 
@@ -212,27 +211,24 @@ static void screen_recipe_builder_refresh_name(screen_recipe_builder_t *builder)
     screen_recipe_builder_set_done_enabled(builder, recipe_draft_has_name(builder->draft));
 }
 
-/****************************************************************************************
- * @brief Show the temporary local name helper until a real keyboard exists.
- ****************************************************************************************/
-static void screen_recipe_builder_show_name_dialog(screen_recipe_builder_t *builder)
+static void screen_recipe_builder_show_name_editor(screen_recipe_builder_t *builder)
 {
     if (builder == NULL)
     {
         return;
     }
 
-    snprintf(builder->editor_dialog_body,
-             sizeof(builder->editor_dialog_body),
-             "Current name:\n%s\n\nUse Sample changes only this local draft. A real keyboard comes later.",
-             recipe_draft_get_name(builder->draft));
-    ui_dialog_show(&builder->editor_dialog, "Name your recipe", builder->editor_dialog_body);
+    ui_text_editor_show(&builder->name_editor,
+                        "Name your recipe",
+                        recipe_draft_has_name(builder->draft) ? recipe_draft_get_name(builder->draft) : "",
+                        screen_recipe_builder_commit_name,
+                        builder);
 }
 
 /****************************************************************************************
- * @brief Apply a temporary sample name to the local draft only.
+ * @brief Commit edited text into the logic-owned recipe draft.
  ****************************************************************************************/
-static void screen_recipe_builder_use_sample_name(void *user_data)
+static void screen_recipe_builder_commit_name(const char *text, void *user_data)
 {
     screen_recipe_builder_t *builder;
 
@@ -242,7 +238,7 @@ static void screen_recipe_builder_use_sample_name(void *user_data)
         return;
     }
 
-    recipe_draft_apply_sample(builder->draft);
+    recipe_draft_set_name(builder->draft, text);
     screen_recipe_builder_refresh_name(builder);
 }
 
@@ -269,7 +265,7 @@ static void screen_recipe_builder_name_event_cb(lv_event_t *event)
         return;
     }
 
-    screen_recipe_builder_show_name_dialog(context->builder);
+    screen_recipe_builder_show_name_editor(context->builder);
 }
 
 void screen_recipe_builder_init(screen_recipe_builder_t *builder,
@@ -314,10 +310,7 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     lv_obj_set_flex_flow(container, LV_FLEX_FLOW_COLUMN);
 
     screen_recipe_builder_create_header(container);
-    ui_dialog_init(&builder->editor_dialog, builder->screen, "Cancel", "Use Sample");
-    ui_dialog_set_secondary_action(&builder->editor_dialog,
-                                   screen_recipe_builder_use_sample_name,
-                                   builder);
+    ui_text_editor_init(&builder->name_editor, builder->screen);
 
     primary_header = lv_label_create(container);
     lv_label_set_text(primary_header, "FIRST STEP");

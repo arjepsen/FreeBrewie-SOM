@@ -15,6 +15,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define RECIPE_DRAFT_NAME_MAX_LENGTH 40U
 #define RECIPE_DRAFT_MAX_FERMENTABLES 8U
 #define RECIPE_DRAFT_MAX_HOPS 8U
 #define RECIPE_DRAFT_MAX_MASH_STEPS 6U
@@ -101,8 +102,8 @@ typedef struct
 
 typedef struct
 {
-    /** Current draft recipe name. Points to stable string storage in this first scaffold. */
-    const char *name;
+    /** Current draft recipe name stored in bounded draft-owned RAM. */
+    char name[RECIPE_DRAFT_NAME_MAX_LENGTH];
     /** True once the user has entered or selected a real name instead of the placeholder. */
     bool has_name;
     /** Beer style fields shown by the draft Details screen. */

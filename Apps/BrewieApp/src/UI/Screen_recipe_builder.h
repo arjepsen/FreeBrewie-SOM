@@ -14,7 +14,7 @@
 
 #include "Logic/Recipe_draft.h"
 #include "UI_types.h"
-#include "UI_dialog.h"
+#include "UI_text_editor.h"
 #include "lvgl.h"
 
 typedef struct
@@ -51,10 +51,8 @@ typedef struct screen_recipe_builder_t
     screen_recipe_builder_name_context_t name_context;
     /** Logic-owned in-memory draft shown and edited by this screen. */
     recipe_draft_t *draft;
-    /** Local-only draft-name dialog. */
-    ui_dialog_t editor_dialog;
-    /** Backing storage for the editor preview body text. */
-    char editor_dialog_body[192];
+    /** Reusable bounded text editor used for the draft recipe name. */
+    ui_text_editor_t name_editor;
 } screen_recipe_builder_t;
 
 void screen_recipe_builder_init(screen_recipe_builder_t *builder,
