@@ -242,7 +242,7 @@ static void screen_recipe_builder_use_sample_name(void *user_data)
         return;
     }
 
-    recipe_draft_set_name(builder->draft, "Demo Pale Ale");
+    recipe_draft_apply_sample(builder->draft);
     screen_recipe_builder_refresh_name(builder);
 }
 

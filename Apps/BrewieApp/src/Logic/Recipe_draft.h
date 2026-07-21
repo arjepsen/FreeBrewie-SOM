@@ -13,6 +13,37 @@
  ****************************************************************************************/
 
 #include <stdbool.h>
+#include <stdint.h>
+
+typedef struct
+{
+    /** Display name of the selected beer style, or placeholder text when none is selected. */
+    const char *style_name;
+    /** BJCP or style-guide number text. Kept as text because external systems vary here. */
+    const char *style_number;
+    /** Style category text. */
+    const char *style_category;
+    /** Style type text, for example Ale or Lager. */
+    const char *style_type;
+} recipe_draft_style_t;
+
+typedef struct
+{
+    /** Expected brewhouse efficiency in whole percent. */
+    uint8_t efficiency_percent;
+    /** Batch size in deciliters, so 200 means 20.0 L without floating point. */
+    uint16_t batch_size_dl;
+    /** Estimated alcohol in tenths of a percent, so 52 means 5.2%. */
+    uint16_t estimated_abv_tenths;
+    /** Estimated color in whole SRM for now. */
+    uint16_t estimated_srm;
+    /** Estimated bitterness in whole IBU. */
+    uint16_t estimated_ibu;
+    /** Estimated original gravity as gravity points, so 1050 means 1.050. */
+    uint16_t estimated_og_points;
+    /** Estimated final gravity as gravity points, so 1011 means 1.011. */
+    uint16_t estimated_fg_points;
+} recipe_draft_calculated_t;
 
 typedef struct
 {
@@ -20,6 +51,10 @@ typedef struct
     const char *name;
     /** True once the user has entered or selected a real name instead of the placeholder. */
     bool has_name;
+    /** Beer style fields shown by the draft Details screen. */
+    recipe_draft_style_t style;
+    /** Calculated or placeholder values shown by the draft Details screen. */
+    recipe_draft_calculated_t calculated;
     /** True when draft data has changed since it was created or reset. */
     bool dirty;
 } recipe_draft_t;
@@ -27,6 +62,7 @@ typedef struct
 void recipe_draft_init(recipe_draft_t *draft);
 void recipe_draft_reset(recipe_draft_t *draft);
 void recipe_draft_set_name(recipe_draft_t *draft, const char *name);
+void recipe_draft_apply_sample(recipe_draft_t *draft);
 const char *recipe_draft_get_name(const recipe_draft_t *draft);
 bool recipe_draft_has_name(const recipe_draft_t *draft);
 bool recipe_draft_is_dirty(const recipe_draft_t *draft);

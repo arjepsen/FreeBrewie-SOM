@@ -1,5 +1,6 @@
 #include "Screen_recipe_draft_details.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "UI_scroll.h"
@@ -15,8 +16,25 @@ static lv_obj_t *screen_recipe_draft_details_create_nav_button(
 static lv_obj_t *screen_recipe_draft_details_create_panel(lv_obj_t *parent, const char *caption);
 static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
                                                          const char *label_text,
-                                                         const char *value_text);
+                                                         const char *value_text,
+                                                         lv_obj_t **value_label);
 static lv_obj_t *screen_recipe_draft_details_create_disabled_modify_button(lv_obj_t *parent);
+static void screen_recipe_draft_details_format_percent(char *buffer,
+                                                       size_t buffer_size,
+                                                       uint16_t value);
+static void screen_recipe_draft_details_format_liters(char *buffer,
+                                                      size_t buffer_size,
+                                                      uint16_t value_dl);
+static void screen_recipe_draft_details_format_abv(char *buffer,
+                                                   size_t buffer_size,
+                                                   uint16_t value_tenths);
+static void screen_recipe_draft_details_format_whole(char *buffer,
+                                                     size_t buffer_size,
+                                                     uint16_t value);
+static void screen_recipe_draft_details_format_gravity(char *buffer,
+                                                       size_t buffer_size,
+                                                       uint16_t value_points);
+static void screen_recipe_draft_details_set_text_if_changed(lv_obj_t *label, const char *text);
 static void screen_recipe_draft_details_nav_event_cb(lv_event_t *event);
 
 /****************************************************************************************
@@ -120,7 +138,8 @@ static lv_obj_t *screen_recipe_draft_details_create_panel(lv_obj_t *parent, cons
  ****************************************************************************************/
 static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
                                                          const char *label_text,
-                                                         const char *value_text)
+                                                         const char *value_text,
+                                                         lv_obj_t **value_label)
 {
     lv_obj_t *row;
     lv_obj_t *label;
@@ -141,15 +160,15 @@ static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
     lv_obj_set_style_text_color(label, lv_color_hex(0xC8C8C8), 0);
     lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
 
-    value = lv_label_create(row);
-    lv_label_set_text(value, value_text);
-    lv_label_set_long_mode(value, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(value, lv_pct(48));
-    lv_obj_set_style_text_color(value, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(value, LV_ALIGN_RIGHT_MID, 0, 0);
+    *value_label = lv_label_create(row);
+    lv_label_set_text(*value_label, value_text);
+    lv_label_set_long_mode(*value_label, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(*value_label, lv_pct(48));
+    lv_obj_set_style_text_color(*value_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_align(*value_label, LV_ALIGN_RIGHT_MID, 0, 0);
 
     lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_remove_flag(value, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_remove_flag(*value_label, LV_OBJ_FLAG_CLICKABLE);
 }
 
 static lv_obj_t *screen_recipe_draft_details_create_disabled_modify_button(lv_obj_t *parent)
@@ -169,6 +188,108 @@ static lv_obj_t *screen_recipe_draft_details_create_disabled_modify_button(lv_ob
     lv_obj_set_style_text_color(label, lv_color_hex(0xC8C8C8), 0);
     lv_obj_center(label);
     return button;
+}
+
+/****************************************************************************************
+ * @brief Format a whole percent, using -- when the model still has a placeholder value.
+ ****************************************************************************************/
+static void screen_recipe_draft_details_format_percent(char *buffer,
+                                                       size_t buffer_size,
+                                                       uint16_t value)
+{
+    if (value == 0U)
+    {
+        snprintf(buffer, buffer_size, "--");
+        return;
+    }
+
+    snprintf(buffer, buffer_size, "%u%%", (unsigned int)value);
+}
+
+/****************************************************************************************
+ * @brief Format deciliters as liters with one decimal place.
+ ****************************************************************************************/
+static void screen_recipe_draft_details_format_liters(char *buffer,
+                                                      size_t buffer_size,
+                                                      uint16_t value_dl)
+{
+    if (value_dl == 0U)
+    {
+        snprintf(buffer, buffer_size, "--");
+        return;
+    }
+
+    snprintf(buffer,
+             buffer_size,
+             "%u.%u L",
+             (unsigned int)(value_dl / 10U),
+             (unsigned int)(value_dl % 10U));
+}
+
+/****************************************************************************************
+ * @brief Format tenths of a percent as an ABV value.
+ ****************************************************************************************/
+static void screen_recipe_draft_details_format_abv(char *buffer,
+                                                   size_t buffer_size,
+                                                   uint16_t value_tenths)
+{
+    if (value_tenths == 0U)
+    {
+        snprintf(buffer, buffer_size, "--");
+        return;
+    }
+
+    snprintf(buffer,
+             buffer_size,
+             "%u.%u%%",
+             (unsigned int)(value_tenths / 10U),
+             (unsigned int)(value_tenths % 10U));
+}
+
+/****************************************************************************************
+ * @brief Format a whole-number calculated value.
+ ****************************************************************************************/
+static void screen_recipe_draft_details_format_whole(char *buffer,
+                                                     size_t buffer_size,
+                                                     uint16_t value)
+{
+    if (value == 0U)
+    {
+        snprintf(buffer, buffer_size, "--");
+        return;
+    }
+
+    snprintf(buffer, buffer_size, "%u", (unsigned int)value);
+}
+
+/****************************************************************************************
+ * @brief Format gravity points as 1.xxx.
+ ****************************************************************************************/
+static void screen_recipe_draft_details_format_gravity(char *buffer,
+                                                       size_t buffer_size,
+                                                       uint16_t value_points)
+{
+    if (value_points == 0U)
+    {
+        snprintf(buffer, buffer_size, "--");
+        return;
+    }
+
+    snprintf(buffer, buffer_size, "%u.%03u", (unsigned int)(value_points / 1000U),
+             (unsigned int)(value_points % 1000U));
+}
+
+/****************************************************************************************
+ * @brief Avoid writing unchanged label text into LVGL.
+ ****************************************************************************************/
+static void screen_recipe_draft_details_set_text_if_changed(lv_obj_t *label, const char *text)
+{
+    if (label == NULL || text == NULL || strcmp(lv_label_get_text(label), text) == 0)
+    {
+        return;
+    }
+
+    lv_label_set_text(label, text);
 }
 
 static void screen_recipe_draft_details_nav_event_cb(lv_event_t *event)
@@ -241,34 +362,99 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
     lv_obj_set_flex_flow(body, LV_FLEX_FLOW_COLUMN);
 
     style_panel = screen_recipe_draft_details_create_panel(body, "BEER STYLE");
-    screen_recipe_draft_details_create_value_row(style_panel, "Style", "No selected style");
-    screen_recipe_draft_details_create_value_row(style_panel, "BJCP number", "--");
-    screen_recipe_draft_details_create_value_row(style_panel, "Category", "--");
-    screen_recipe_draft_details_create_value_row(style_panel, "Type", "--");
+    screen_recipe_draft_details_create_value_row(style_panel,
+                                                 "Style",
+                                                 "--",
+                                                 &details->style_name_label);
+    screen_recipe_draft_details_create_value_row(style_panel,
+                                                 "BJCP number",
+                                                 "--",
+                                                 &details->style_number_label);
+    screen_recipe_draft_details_create_value_row(style_panel,
+                                                 "Category",
+                                                 "--",
+                                                 &details->style_category_label);
+    screen_recipe_draft_details_create_value_row(style_panel,
+                                                 "Type",
+                                                 "--",
+                                                 &details->style_type_label);
 
     calculated_panel = screen_recipe_draft_details_create_panel(body, "CALCULATED VALUES");
-    screen_recipe_draft_details_create_value_row(calculated_panel, "Efficiency", "--");
-    screen_recipe_draft_details_create_value_row(calculated_panel, "Batch size", "--");
-    screen_recipe_draft_details_create_value_row(calculated_panel, "ABV", "--");
-    screen_recipe_draft_details_create_value_row(calculated_panel, "SRM", "--");
-    screen_recipe_draft_details_create_value_row(calculated_panel, "IBU", "--");
-    screen_recipe_draft_details_create_value_row(calculated_panel, "OG", "--");
-    screen_recipe_draft_details_create_value_row(calculated_panel, "FG", "--");
+    screen_recipe_draft_details_create_value_row(calculated_panel,
+                                                 "Efficiency",
+                                                 "--",
+                                                 &details->efficiency_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel,
+                                                 "Batch size",
+                                                 "--",
+                                                 &details->batch_size_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "ABV", "--", &details->abv_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "SRM", "--", &details->srm_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "IBU", "--", &details->ibu_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "OG", "--", &details->og_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "FG", "--", &details->fg_label);
 
     screen_recipe_draft_details_create_disabled_modify_button(container);
 }
 
 /****************************************************************************************
- * @brief Show a RAM-only draft name without reading or saving a real recipe.
+ * @brief Show RAM-only draft details without reading or saving a real recipe.
  ****************************************************************************************/
 void screen_recipe_draft_details_show(screen_recipe_draft_details_t *details,
-                                      const char *draft_name)
+                                      const recipe_draft_t *draft)
 {
-    if (details == NULL || draft_name == NULL || details->shown_name == draft_name)
+    char value_text[16];
+    const char *draft_name;
+
+    if (details == NULL || draft == NULL)
     {
         return;
     }
 
-    lv_label_set_text(details->name_label, draft_name);
-    details->shown_name = draft_name;
+    draft_name = recipe_draft_get_name(draft);
+    if (details->shown_name != draft_name)
+    {
+        screen_recipe_draft_details_set_text_if_changed(details->name_label, draft_name);
+        details->shown_name = draft_name;
+    }
+
+    screen_recipe_draft_details_set_text_if_changed(details->style_name_label, draft->style.style_name);
+    screen_recipe_draft_details_set_text_if_changed(details->style_number_label, draft->style.style_number);
+    screen_recipe_draft_details_set_text_if_changed(details->style_category_label, draft->style.style_category);
+    screen_recipe_draft_details_set_text_if_changed(details->style_type_label, draft->style.style_type);
+
+    screen_recipe_draft_details_format_percent(value_text,
+                                               sizeof(value_text),
+                                               draft->calculated.efficiency_percent);
+    screen_recipe_draft_details_set_text_if_changed(details->efficiency_label, value_text);
+
+    screen_recipe_draft_details_format_liters(value_text,
+                                              sizeof(value_text),
+                                              draft->calculated.batch_size_dl);
+    screen_recipe_draft_details_set_text_if_changed(details->batch_size_label, value_text);
+
+    screen_recipe_draft_details_format_abv(value_text,
+                                           sizeof(value_text),
+                                           draft->calculated.estimated_abv_tenths);
+    screen_recipe_draft_details_set_text_if_changed(details->abv_label, value_text);
+
+    screen_recipe_draft_details_format_whole(value_text,
+                                             sizeof(value_text),
+                                             draft->calculated.estimated_srm);
+    screen_recipe_draft_details_set_text_if_changed(details->srm_label, value_text);
+
+    screen_recipe_draft_details_format_whole(value_text,
+                                             sizeof(value_text),
+                                             draft->calculated.estimated_ibu);
+    screen_recipe_draft_details_set_text_if_changed(details->ibu_label, value_text);
+
+    screen_recipe_draft_details_format_gravity(value_text,
+                                               sizeof(value_text),
+                                               draft->calculated.estimated_og_points);
+    screen_recipe_draft_details_set_text_if_changed(details->og_label, value_text);
+
+    screen_recipe_draft_details_format_gravity(value_text,
+                                               sizeof(value_text),
+                                               draft->calculated.estimated_fg_points);
+    screen_recipe_draft_details_set_text_if_changed(details->fg_label, value_text);
 }

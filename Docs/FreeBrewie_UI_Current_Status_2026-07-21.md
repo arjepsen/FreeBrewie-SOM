@@ -68,7 +68,8 @@ The following is currently proven on the real SOM target:
   only, and `BREW LATER` remains disabled
 - the draft recipe `DETAILS` button now opens a real local-only Details screen shaped after
   the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a disabled `MODIFY LATER`
-  action
+  action; the visible values now read from `Logic/Recipe_draft` instead of hardcoded screen
+  placeholders
 - the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
   disabled `MODIFY LATER` action

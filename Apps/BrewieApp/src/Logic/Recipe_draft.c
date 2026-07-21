@@ -3,8 +3,11 @@
 #include <stddef.h>
 
 #define RECIPE_DRAFT_PLACEHOLDER_NAME "Tap to name"
+#define RECIPE_DRAFT_PLACEHOLDER_TEXT "--"
+#define RECIPE_DRAFT_NO_STYLE_TEXT "No selected style"
 
 static const char *recipe_draft_clean_name(const char *name);
+static void recipe_draft_clear_details(recipe_draft_t *draft);
 
 /****************************************************************************************
  * @brief Return either a usable name pointer or the draft placeholder.
@@ -22,6 +25,27 @@ static const char *recipe_draft_clean_name(const char *name)
     }
 
     return name;
+}
+
+/****************************************************************************************
+ * @brief Clear detail fields to stable placeholders.
+ *
+ * Keeping placeholders in the draft model lets every UI surface show the same current
+ * draft state without each screen inventing its own fallback text.
+ ****************************************************************************************/
+static void recipe_draft_clear_details(recipe_draft_t *draft)
+{
+    draft->style.style_name = RECIPE_DRAFT_NO_STYLE_TEXT;
+    draft->style.style_number = RECIPE_DRAFT_PLACEHOLDER_TEXT;
+    draft->style.style_category = RECIPE_DRAFT_PLACEHOLDER_TEXT;
+    draft->style.style_type = RECIPE_DRAFT_PLACEHOLDER_TEXT;
+    draft->calculated.efficiency_percent = 0U;
+    draft->calculated.batch_size_dl = 0U;
+    draft->calculated.estimated_abv_tenths = 0U;
+    draft->calculated.estimated_srm = 0U;
+    draft->calculated.estimated_ibu = 0U;
+    draft->calculated.estimated_og_points = 0U;
+    draft->calculated.estimated_fg_points = 0U;
 }
 
 /****************************************************************************************
@@ -44,6 +68,7 @@ void recipe_draft_reset(recipe_draft_t *draft)
 
     draft->name = RECIPE_DRAFT_PLACEHOLDER_NAME;
     draft->has_name = false;
+    recipe_draft_clear_details(draft);
     draft->dirty = false;
 }
 
@@ -63,6 +88,35 @@ void recipe_draft_set_name(recipe_draft_t *draft, const char *name)
 
     draft->name = recipe_draft_clean_name(name);
     draft->has_name = (draft->name != RECIPE_DRAFT_PLACEHOLDER_NAME);
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Fill the RAM-only draft with a small sample recipe profile.
+ *
+ * This is temporary UI scaffolding. It gives the draft Details screen real model-owned
+ * values to render before keyboard input, style selection, calculation, and storage exist.
+ ****************************************************************************************/
+void recipe_draft_apply_sample(recipe_draft_t *draft)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->name = "Demo Pale Ale";
+    draft->has_name = true;
+    draft->style.style_name = "American Pale Ale";
+    draft->style.style_number = "18B";
+    draft->style.style_category = "Pale American Ale";
+    draft->style.style_type = "Ale";
+    draft->calculated.efficiency_percent = 70U;
+    draft->calculated.batch_size_dl = 200U;
+    draft->calculated.estimated_abv_tenths = 52U;
+    draft->calculated.estimated_srm = 7U;
+    draft->calculated.estimated_ibu = 38U;
+    draft->calculated.estimated_og_points = 1050U;
+    draft->calculated.estimated_fg_points = 1011U;
     draft->dirty = true;
 }
 

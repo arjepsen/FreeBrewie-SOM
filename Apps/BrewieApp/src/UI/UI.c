@@ -176,8 +176,7 @@ static void ui_show_screen(ui_t *ui,
             ui->recipe_draft_details_created = true;
         }
 
-        screen_recipe_draft_details_show(&ui->recipe_draft_details,
-                                         recipe_draft_get_name(&ui->recipe_draft));
+        screen_recipe_draft_details_show(&ui->recipe_draft_details, &ui->recipe_draft);
         screen = ui->recipe_draft_details.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_DRAFT_INGREDIENTS)
