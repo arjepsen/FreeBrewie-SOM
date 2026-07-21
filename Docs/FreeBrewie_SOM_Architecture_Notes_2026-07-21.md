@@ -312,6 +312,8 @@ Current file set:
 - `Screen_recipe_builder.h`
 - `Screen_recipe_draft_details.c`
 - `Screen_recipe_draft_details.h`
+- `Screen_recipe_draft_ingredients.c`
+- `Screen_recipe_draft_ingredients.h`
 - `Screen_recipe_draft_menu.c`
 - `Screen_recipe_draft_menu.h`
 - `Screen_recipes.c`
@@ -503,6 +505,26 @@ Important current fact:
 `Screen_recipe_draft_details` mirrors the old Details view shape before implementing the
 old Details edit form. Its values are intentionally inert placeholders until local recipe
 storage and style selection are designed.
+
+### `Screen_recipe_draft_ingredients`
+Owns:
+- safe old-Brewie-inspired read-only Ingredients section for a local draft recipe
+- display of the draft recipe name
+- local Fermentables/Hops tab selection
+- placeholder fermentable bag and hop cage rows
+- disabled `MODIFY LATER` presentation
+
+Must not own yet:
+- fermentable/hop editing forms
+- unit conversion
+- recipe persistence
+- validation
+- brewing preflight or hardware actions
+
+Important current fact:
+`Screen_recipe_draft_ingredients` mirrors the old Ingredients view shape before
+implementing the old Fermentables/Hops edit forms. Its values are intentionally inert
+placeholders until local recipe storage and ingredient editing are designed.
 
 ### `Screen_recipe_detail`
 Owns:

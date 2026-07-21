@@ -68,6 +68,9 @@ The following is currently proven on the real SOM target:
 - the draft recipe `DETAILS` button now opens a real local-only Details screen shaped after
   the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a disabled `MODIFY LATER`
   action
+- the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
+  shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
+  disabled `MODIFY LATER` action
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar

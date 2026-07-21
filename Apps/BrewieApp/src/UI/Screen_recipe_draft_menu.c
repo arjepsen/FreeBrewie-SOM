@@ -334,6 +334,13 @@ void screen_recipe_draft_menu_init(screen_recipe_draft_menu_t *draft_menu,
             draft_menu->section_contexts[section_index].handler = action_handler;
             draft_menu->section_contexts[section_index].user_data = user_data;
         }
+        else if (section_index == 1U)
+        {
+            draft_menu->section_contexts[section_index].action =
+                UI_ACTION_SHOW_RECIPE_DRAFT_INGREDIENTS;
+            draft_menu->section_contexts[section_index].handler = action_handler;
+            draft_menu->section_contexts[section_index].user_data = user_data;
+        }
         screen_recipe_draft_menu_create_section_button(
             section_grid,
             screen_recipe_draft_menu_section_titles[section_index],

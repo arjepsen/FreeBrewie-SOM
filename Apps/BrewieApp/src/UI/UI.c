@@ -53,6 +53,10 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
     {
         screen_id = UI_SCREEN_RECIPE_DRAFT_DETAILS;
     }
+    else if (action == UI_ACTION_SHOW_RECIPE_DRAFT_INGREDIENTS)
+    {
+        screen_id = UI_SCREEN_RECIPE_DRAFT_INGREDIENTS;
+    }
     else if (action == UI_ACTION_SHOW_RECIPE_DRAFT_MENU)
     {
         screen_id = UI_SCREEN_RECIPE_DRAFT_MENU;
@@ -173,6 +177,23 @@ static void ui_show_screen(ui_t *ui,
         screen_recipe_draft_details_show(&ui->recipe_draft_details,
                                          screen_recipe_builder_get_draft_name(&ui->recipe_builder));
         screen = ui->recipe_draft_details.screen;
+    }
+    else if (screen_id == UI_SCREEN_RECIPE_DRAFT_INGREDIENTS)
+    {
+        if (!ui->recipe_builder_created)
+        {
+            return;
+        }
+
+        if (!ui->recipe_draft_ingredients_created)
+        {
+            screen_recipe_draft_ingredients_init(&ui->recipe_draft_ingredients, ui_handle_action, ui);
+            ui->recipe_draft_ingredients_created = true;
+        }
+
+        screen_recipe_draft_ingredients_show(&ui->recipe_draft_ingredients,
+                                             screen_recipe_builder_get_draft_name(&ui->recipe_builder));
+        screen = ui->recipe_draft_ingredients.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_DRAFT_MENU)
     {

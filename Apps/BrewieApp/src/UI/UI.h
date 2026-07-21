@@ -21,6 +21,7 @@
 #include "Screen_recipe_builder.h"
 #include "Screen_recipe_detail.h"
 #include "Screen_recipe_draft_details.h"
+#include "Screen_recipe_draft_ingredients.h"
 #include "Screen_recipe_draft_menu.h"
 #include "Screen_recipe_section.h"
 #include "Screen_recipes.h"
@@ -50,6 +51,10 @@ struct ui_t
     screen_recipe_draft_details_t recipe_draft_details;
     /** True after the local-only draft Details screen has been created. */
     bool recipe_draft_details_created;
+    /** Safe local-only draft Ingredients screen, lazy-created from the draft recipe menu. */
+    screen_recipe_draft_ingredients_t recipe_draft_ingredients;
+    /** True after the local-only draft Ingredients screen has been created. */
+    bool recipe_draft_ingredients_created;
     /** Safe selected-recipe detail screen. */
     screen_recipe_detail_t recipe_detail;
     /** Safe selected-recipe section screen. */
