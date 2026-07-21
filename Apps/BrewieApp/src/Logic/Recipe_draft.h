@@ -17,6 +17,7 @@
 
 #define RECIPE_DRAFT_MAX_FERMENTABLES 8U
 #define RECIPE_DRAFT_MAX_HOPS 8U
+#define RECIPE_DRAFT_MAX_MASH_STEPS 6U
 
 typedef struct
 {
@@ -35,6 +36,38 @@ typedef struct
     /** Boil time in minutes before flameout/end of boil. */
     uint16_t boil_time_min;
 } recipe_draft_hop_t;
+
+typedef struct
+{
+    /** Target mash step temperature in degrees C. */
+    uint8_t temperature_c;
+    /** Step hold time in minutes. */
+    uint16_t time_min;
+} recipe_draft_mash_step_t;
+
+typedef struct
+{
+    /** Mash-in water amount in deciliters. */
+    uint16_t mash_in_water_dl;
+    /** Mash-in target temperature in degrees C. */
+    uint8_t mash_in_temperature_c;
+    /** Number of active mash steps in mash_steps[]. */
+    uint8_t mash_step_count;
+    /** Ordered mash steps. */
+    recipe_draft_mash_step_t mash_steps[RECIPE_DRAFT_MAX_MASH_STEPS];
+    /** Sparge water amount in deciliters. */
+    uint16_t sparge_water_dl;
+    /** Sparge water temperature in degrees C. */
+    uint8_t sparge_temperature_c;
+    /** Sparge duration in minutes. */
+    uint16_t sparge_time_min;
+    /** Total boil time in minutes. */
+    uint16_t boil_time_min;
+    /** Delayed hopping time in minutes. */
+    uint16_t delayed_hopping_min;
+    /** Cooling target temperature in degrees C. */
+    uint8_t cooling_target_c;
+} recipe_draft_brewing_t;
 
 typedef struct
 {
@@ -84,6 +117,8 @@ typedef struct
     uint8_t hop_count;
     /** RAM-only hop additions shown by the draft Ingredients screen. */
     recipe_draft_hop_t hops[RECIPE_DRAFT_MAX_HOPS];
+    /** RAM-only brewing process values shown by the draft Brewing screen. */
+    recipe_draft_brewing_t brewing;
     /** True when draft data has changed since it was created or reset. */
     bool dirty;
 } recipe_draft_t;

@@ -50,6 +50,10 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
     {
         screen_id = UI_SCREEN_RECIPE_BUILDER;
     }
+    else if (action == UI_ACTION_SHOW_RECIPE_DRAFT_BREWING)
+    {
+        screen_id = UI_SCREEN_RECIPE_DRAFT_BREWING;
+    }
     else if (action == UI_ACTION_SHOW_RECIPE_DRAFT_DETAILS)
     {
         screen_id = UI_SCREEN_RECIPE_DRAFT_DETAILS;
@@ -162,6 +166,22 @@ static void ui_show_screen(ui_t *ui,
 
         screen_recipe_builder_show(&ui->recipe_builder);
         screen = ui->recipe_builder.screen;
+    }
+    else if (screen_id == UI_SCREEN_RECIPE_DRAFT_BREWING)
+    {
+        if (!ui->recipe_builder_created)
+        {
+            return;
+        }
+
+        if (!ui->recipe_draft_brewing_created)
+        {
+            screen_recipe_draft_brewing_init(&ui->recipe_draft_brewing, ui_handle_action, ui);
+            ui->recipe_draft_brewing_created = true;
+        }
+
+        screen_recipe_draft_brewing_show(&ui->recipe_draft_brewing, &ui->recipe_draft);
+        screen = ui->recipe_draft_brewing.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_DRAFT_DETAILS)
     {

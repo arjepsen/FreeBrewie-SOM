@@ -64,8 +64,8 @@ The following is currently proven on the real SOM target:
   returns to Recipes, and `DONE` opens a local-only draft recipe menu once the sample name
   has been applied
 - the local-only draft recipe menu shows the draft name with old-style section buttons for
-  Details, Ingredients, Brewing, and Fermentation; section taps show local explanations
-  only, and `BREW LATER` remains disabled
+  Details, Ingredients, Brewing, and Fermentation; implemented section taps open local-only
+  screens, not storage or hardware actions, and `BREW LATER` remains disabled
 - the draft recipe `DETAILS` button now opens a real local-only Details screen shaped after
   the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a disabled `MODIFY LATER`
   action; the visible values now read from `Logic/Recipe_draft` instead of hardcoded screen
@@ -74,6 +74,9 @@ The following is currently proven on the real SOM target:
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
   disabled `MODIFY LATER` action; Fermentables and Hops now render from fixed RAM-only
   arrays in `Logic/Recipe_draft`
+- the draft recipe `BREWING` button now opens a real local-only Brewing screen shaped
+  after the old UI, with Water, Mash, Boil, and Cooling rows rendered from RAM-only
+  brewing-process values in `Logic/Recipe_draft`
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar

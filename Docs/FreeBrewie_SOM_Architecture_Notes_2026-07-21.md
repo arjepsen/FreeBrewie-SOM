@@ -329,6 +329,8 @@ Current file set:
 - `Screen_menu.h`
 - `Screen_recipe_builder.c`
 - `Screen_recipe_builder.h`
+- `Screen_recipe_draft_brewing.c`
+- `Screen_recipe_draft_brewing.h`
 - `Screen_recipe_draft_details.c`
 - `Screen_recipe_draft_details.h`
 - `Screen_recipe_draft_ingredients.c`
@@ -483,7 +485,7 @@ Important current fact:
 `Screen_recipe_builder` is intentionally presentation-only. It now follows the old UI
 create-recipe shape more closely: create starts by naming the recipe, then the local
 `DONE` path opens a separate draft recipe menu. The current `Use Sample` action mutates
-only the RAM-backed draft name while real recipe storage, keyboard input, and validation
+only the RAM-backed draft model while real recipe storage, keyboard input, and validation
 are still absent.
 
 ### `Screen_recipe_draft_menu`
@@ -491,7 +493,7 @@ Owns:
 - safe old-Brewie-inspired menu for a newly named local draft recipe
 - local display of the draft recipe name
 - old-style section buttons for Details, Ingredients, Brewing, and Fermentation
-- local-only section explanation dialog
+- local-only section explanation dialog for sections that do not have screens yet
 - disabled `BREW LATER` presentation
 
 Must not own yet:
@@ -505,6 +507,23 @@ Important current fact:
 `Screen_recipe_draft_menu` is intentionally local-only. It is the next visual/navigation
 step after naming a recipe, but it does not insert a recipe into `Recipe_catalog`, save a
 file, or route any brewing action.
+
+### `Screen_recipe_draft_brewing`
+Owns:
+- safe old-Brewie-inspired read-only Brewing section for a local draft recipe
+- display of the draft recipe name
+- local Water, Mash, Boil, and Cooling panels
+- disabled `MODIFY LATER` presentation
+
+Must not own yet:
+- mash/water/boil/cooling editing forms
+- brewing validation
+- recipe persistence
+- brewing preflight or hardware actions
+
+Important current fact:
+`Screen_recipe_draft_brewing` mirrors the old Brewing view shape before implementing the
+old edit forms. Its values render from `Logic/Recipe_draft` and remain local-only.
 
 ### `Screen_recipe_draft_details`
 Owns:
@@ -522,15 +541,14 @@ Must not own yet:
 
 Important current fact:
 `Screen_recipe_draft_details` mirrors the old Details view shape before implementing the
-old Details edit form. Its values are intentionally inert placeholders until local recipe
-storage and style selection are designed.
+old Details edit form. Its values render from `Logic/Recipe_draft` and remain local-only.
 
 ### `Screen_recipe_draft_ingredients`
 Owns:
 - safe old-Brewie-inspired read-only Ingredients section for a local draft recipe
 - display of the draft recipe name
 - local Fermentables/Hops tab selection
-- placeholder fermentable bag and hop cage rows
+- fermentable bag and hop cage rows rendered from `Logic/Recipe_draft`
 - disabled `MODIFY LATER` presentation
 
 Must not own yet:
@@ -542,8 +560,8 @@ Must not own yet:
 
 Important current fact:
 `Screen_recipe_draft_ingredients` mirrors the old Ingredients view shape before
-implementing the old Fermentables/Hops edit forms. Its values are intentionally inert
-placeholders until local recipe storage and ingredient editing are designed.
+implementing the old Fermentables/Hops edit forms. Its values render from `Logic/Recipe_draft`
+and remain local-only.
 
 ### `Screen_recipe_detail`
 Owns:

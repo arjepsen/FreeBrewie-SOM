@@ -9,6 +9,7 @@
 static const char *recipe_draft_clean_name(const char *name);
 static void recipe_draft_clear_details(recipe_draft_t *draft);
 static void recipe_draft_clear_ingredients(recipe_draft_t *draft);
+static void recipe_draft_clear_brewing(recipe_draft_t *draft);
 
 /****************************************************************************************
  * @brief Return either a usable name pointer or the draft placeholder.
@@ -76,6 +77,33 @@ static void recipe_draft_clear_ingredients(recipe_draft_t *draft)
 }
 
 /****************************************************************************************
+ * @brief Clear brewing-process fields to zero placeholders.
+ *
+ * Zero means "not set yet" in this draft scaffold. UI screens format zero as "--" so the
+ * model can stay numeric and easy to map to BeerXML/BeerJSON/Brewfather concepts later.
+ ****************************************************************************************/
+static void recipe_draft_clear_brewing(recipe_draft_t *draft)
+{
+    uint8_t index;
+
+    draft->brewing.mash_in_water_dl = 0U;
+    draft->brewing.mash_in_temperature_c = 0U;
+    draft->brewing.mash_step_count = 0U;
+    draft->brewing.sparge_water_dl = 0U;
+    draft->brewing.sparge_temperature_c = 0U;
+    draft->brewing.sparge_time_min = 0U;
+    draft->brewing.boil_time_min = 0U;
+    draft->brewing.delayed_hopping_min = 0U;
+    draft->brewing.cooling_target_c = 0U;
+
+    for (index = 0U; index < RECIPE_DRAFT_MAX_MASH_STEPS; ++index)
+    {
+        draft->brewing.mash_steps[index].temperature_c = 0U;
+        draft->brewing.mash_steps[index].time_min = 0U;
+    }
+}
+
+/****************************************************************************************
  * @brief Initialize a RAM-only recipe draft.
  ****************************************************************************************/
 void recipe_draft_init(recipe_draft_t *draft)
@@ -97,6 +125,7 @@ void recipe_draft_reset(recipe_draft_t *draft)
     draft->has_name = false;
     recipe_draft_clear_details(draft);
     recipe_draft_clear_ingredients(draft);
+    recipe_draft_clear_brewing(draft);
     draft->dirty = false;
 }
 
@@ -162,6 +191,19 @@ void recipe_draft_apply_sample(recipe_draft_t *draft)
     draft->hops[2].name = "Citra";
     draft->hops[2].amount_g = 25U;
     draft->hops[2].boil_time_min = 5U;
+    draft->brewing.mash_in_water_dl = 150U;
+    draft->brewing.mash_in_temperature_c = 67U;
+    draft->brewing.mash_step_count = 2U;
+    draft->brewing.mash_steps[0].temperature_c = 66U;
+    draft->brewing.mash_steps[0].time_min = 60U;
+    draft->brewing.mash_steps[1].temperature_c = 72U;
+    draft->brewing.mash_steps[1].time_min = 10U;
+    draft->brewing.sparge_water_dl = 120U;
+    draft->brewing.sparge_temperature_c = 78U;
+    draft->brewing.sparge_time_min = 20U;
+    draft->brewing.boil_time_min = 60U;
+    draft->brewing.delayed_hopping_min = 10U;
+    draft->brewing.cooling_target_c = 20U;
     draft->dirty = true;
 }
 
