@@ -43,8 +43,32 @@ static void screen_recipe_builder_select_field(screen_recipe_builder_t *builder,
 static void screen_recipe_builder_show_editor_preview(screen_recipe_builder_t *builder,
                                                       screen_recipe_builder_field_id_t field_id);
 static void screen_recipe_builder_use_sample(void *user_data);
+static void screen_recipe_builder_show_choice_editor(screen_recipe_builder_t *builder,
+                                                     screen_recipe_builder_field_id_t field_id);
+static void screen_recipe_builder_choice_selected(uint8_t choice_index, void *user_data);
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event);
 static void screen_recipe_builder_field_event_cb(lv_event_t *event);
+
+static const char *const screen_recipe_builder_style_choices[] = {
+    "Pale Ale",
+    "IPA",
+    "Wheat",
+    "Stout",
+    "Lager",
+    "Porter",
+    "Pilsner",
+    "Saison",
+    "Amber Ale",
+    "Brown Ale"};
+
+static const char *const screen_recipe_builder_batch_choices[] = {
+    "5 L",
+    "10 L",
+    "15 L",
+    "20 L",
+    "25 L",
+    "30 L",
+    "40 L"};
 
 static const screen_recipe_builder_field_info_t
     screen_recipe_builder_fields[SCREEN_RECIPE_BUILDER_FIELD_COUNT] = {
@@ -447,6 +471,79 @@ static void screen_recipe_builder_use_sample(void *user_data)
     screen_recipe_builder_select_field(builder, field_id);
 }
 
+/****************************************************************************************
+ * @brief Open a local picker for fields that have a short fixed set of choices.
+ ****************************************************************************************/
+static void screen_recipe_builder_show_choice_editor(screen_recipe_builder_t *builder,
+                                                     screen_recipe_builder_field_id_t field_id)
+{
+    if (builder == NULL || field_id >= SCREEN_RECIPE_BUILDER_FIELD_COUNT)
+    {
+        return;
+    }
+
+    builder->editing_field_id = field_id;
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_STYLE)
+    {
+        ui_choice_dialog_show(&builder->choice_dialog,
+                              "Choose Style",
+                              screen_recipe_builder_style_choices,
+                              (uint8_t)(sizeof(screen_recipe_builder_style_choices) /
+                                        sizeof(screen_recipe_builder_style_choices[0])),
+                              screen_recipe_builder_choice_selected,
+                              builder);
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_BATCH)
+    {
+        ui_choice_dialog_show(&builder->choice_dialog,
+                              "Choose Batch",
+                              screen_recipe_builder_batch_choices,
+                              (uint8_t)(sizeof(screen_recipe_builder_batch_choices) /
+                                        sizeof(screen_recipe_builder_batch_choices[0])),
+                              screen_recipe_builder_choice_selected,
+                              builder);
+    }
+}
+
+/****************************************************************************************
+ * @brief Store a picker choice in the local draft and refresh visible labels.
+ ****************************************************************************************/
+static void screen_recipe_builder_choice_selected(uint8_t choice_index, void *user_data)
+{
+    screen_recipe_builder_t *builder;
+    screen_recipe_builder_field_id_t field_id;
+
+    builder = user_data;
+    if (builder == NULL || builder->editing_field_id >= SCREEN_RECIPE_BUILDER_FIELD_COUNT)
+    {
+        return;
+    }
+
+    field_id = builder->editing_field_id;
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_STYLE &&
+        choice_index < (sizeof(screen_recipe_builder_style_choices) /
+                        sizeof(screen_recipe_builder_style_choices[0])))
+    {
+        screen_recipe_builder_set_draft_value(builder,
+                                              field_id,
+                                              screen_recipe_builder_style_choices[choice_index]);
+    }
+    else if (field_id == SCREEN_RECIPE_BUILDER_FIELD_BATCH &&
+             choice_index < (sizeof(screen_recipe_builder_batch_choices) /
+                             sizeof(screen_recipe_builder_batch_choices[0])))
+    {
+        screen_recipe_builder_set_draft_value(builder,
+                                              field_id,
+                                              screen_recipe_builder_batch_choices[choice_index]);
+    }
+
+    screen_recipe_builder_refresh_field_values(builder);
+    screen_recipe_builder_select_field(builder, field_id);
+}
+
 static void screen_recipe_builder_nav_event_cb(lv_event_t *event)
 {
     screen_recipe_builder_nav_context_t *context;
@@ -471,6 +568,13 @@ static void screen_recipe_builder_field_event_cb(lv_event_t *event)
     }
 
     screen_recipe_builder_select_field(context->builder, context->field_id);
+    if (context->field_id == SCREEN_RECIPE_BUILDER_FIELD_STYLE ||
+        context->field_id == SCREEN_RECIPE_BUILDER_FIELD_BATCH)
+    {
+        screen_recipe_builder_show_choice_editor(context->builder, context->field_id);
+        return;
+    }
+
     screen_recipe_builder_show_editor_preview(context->builder, context->field_id);
 }
 
@@ -517,6 +621,7 @@ void screen_recipe_builder_init(screen_recipe_builder_t *builder,
     ui_dialog_set_secondary_action(&builder->editor_dialog,
                                    screen_recipe_builder_use_sample,
                                    builder);
+    ui_choice_dialog_init(&builder->choice_dialog, builder->screen);
 
     intro = lv_label_create(container);
     lv_label_set_text(intro, "Recipe fields");

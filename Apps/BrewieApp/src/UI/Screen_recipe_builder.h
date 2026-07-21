@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "UI_types.h"
+#include "UI_choice_dialog.h"
 #include "UI_dialog.h"
 #include "lvgl.h"
 
@@ -83,6 +84,8 @@ typedef struct screen_recipe_builder_t
     screen_recipe_builder_draft_t draft;
     /** Local-only field editor preview dialog. */
     ui_dialog_t editor_dialog;
+    /** Local-only picker dialog used by fields with fixed choices. */
+    ui_choice_dialog_t choice_dialog;
     /** Backing storage for the editor preview body text. */
     char editor_dialog_body[192];
     /** Currently selected local field. */

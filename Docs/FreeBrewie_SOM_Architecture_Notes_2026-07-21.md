@@ -7,7 +7,7 @@ This document defines the current target architecture for the Brewie SOM applica
 It is meant to keep file ownership, module boundaries, and subsystem responsibilities clear while the SOM app is still in early bring-up.
 
 It should be read together with:
-- `FreeBrewie_UI_Current_Status_2026-07-20.md`
+- `FreeBrewie_UI_Current_Status_2026-07-21.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-21.md`
 - `Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
@@ -316,6 +316,8 @@ Current file set:
 - `Screen_settings.h`
 - `UI.c`
 - `UI.h`
+- `UI_choice_dialog.c`
+- `UI_choice_dialog.h`
 - `UI_dialog.c`
 - `UI_dialog.h`
 - `UI_scroll.c`
@@ -444,6 +446,7 @@ Owns:
 - local non-persistent draft values
 - local selected-field explanation labels
 - local-only field editor dialog through `UI_dialog`
+- local-only fixed-choice picker dialog through `UI_choice_dialog`
 - field rows for Name, Style, Batch, Ingredients, Brewing, and Fermentation
 - disabled Save presentation
 
@@ -457,9 +460,21 @@ Must not own yet:
 
 Important current fact:
 `Screen_recipe_builder` is intentionally presentation-only. Its current `Use Sample`
-dialog action mutates only RAM-backed draft labels. It shows the shape of recipe
-editing/data entry while real recipe storage, input handling, and validation are still
-absent.
+dialog action and Style/Batch pickers mutate only RAM-backed draft labels. It shows the
+shape of recipe editing/data entry while real recipe storage, input handling, and
+validation are still absent.
+
+### `UI_choice_dialog`
+Owns:
+- reusable local fixed-choice modal presentation
+- fixed row widgets reused between show calls
+- choice-index callbacks back to the owning screen
+
+Must not own:
+- validation
+- persistence
+- navigation
+- hardware-affecting actions
 
 ### `Screen_recipe_detail`
 Owns:
