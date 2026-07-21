@@ -154,9 +154,9 @@ The draft should not own:
 - active brewing runtime state
 
 Current implementation:
-`Logic/Recipe_draft` owns the temporary recipe-builder name and the first draft Details
-fields. The module is intentionally small for now, but it is the right place to add bounded
-draft fields as the builder grows.
+`Logic/Recipe_draft` owns the temporary recipe-builder name, the first draft Details fields,
+and the first fixed-size Fermentables/Hops ingredient arrays. The module is intentionally
+small for now, but it is the right place to add bounded draft fields as the builder grows.
 
 ### 3. Recipe catalog
 The catalog is a list/index of saved or built-in recipes.
@@ -305,10 +305,11 @@ Implemented first:
 - moved the temporary draft name out of `Screen_recipe_builder`
 - made Recipe Builder, draft menu, draft Details, and draft Ingredients read from the draft model
 - added the first RAM-only draft Details fields for style and calculated values
+- added the first RAM-only Fermentables/Hops arrays for the Ingredients screen
 - kept the draft in memory only
 - kept all MCU output disabled
 
 Next code steps:
-- add real draft fields section by section, with Ingredients next
+- add brewing-process draft fields next: mash, water, boil, and cooling
 - add validation
 - then design storage with versioning

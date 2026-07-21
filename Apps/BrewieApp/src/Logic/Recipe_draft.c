@@ -8,6 +8,7 @@
 
 static const char *recipe_draft_clean_name(const char *name);
 static void recipe_draft_clear_details(recipe_draft_t *draft);
+static void recipe_draft_clear_ingredients(recipe_draft_t *draft);
 
 /****************************************************************************************
  * @brief Return either a usable name pointer or the draft placeholder.
@@ -49,6 +50,32 @@ static void recipe_draft_clear_details(recipe_draft_t *draft)
 }
 
 /****************************************************************************************
+ * @brief Clear ingredient arrays without freeing anything.
+ *
+ * The first draft model uses fixed arrays and stable string pointers. Later storage/import
+ * code can fill these arrays from files or web/API data without changing the UI contract.
+ ****************************************************************************************/
+static void recipe_draft_clear_ingredients(recipe_draft_t *draft)
+{
+    uint8_t index;
+
+    draft->fermentable_count = 0U;
+    draft->hop_count = 0U;
+    for (index = 0U; index < RECIPE_DRAFT_MAX_FERMENTABLES; ++index)
+    {
+        draft->fermentables[index].name = RECIPE_DRAFT_PLACEHOLDER_TEXT;
+        draft->fermentables[index].amount_g = 0U;
+    }
+
+    for (index = 0U; index < RECIPE_DRAFT_MAX_HOPS; ++index)
+    {
+        draft->hops[index].name = RECIPE_DRAFT_PLACEHOLDER_TEXT;
+        draft->hops[index].amount_g = 0U;
+        draft->hops[index].boil_time_min = 0U;
+    }
+}
+
+/****************************************************************************************
  * @brief Initialize a RAM-only recipe draft.
  ****************************************************************************************/
 void recipe_draft_init(recipe_draft_t *draft)
@@ -69,6 +96,7 @@ void recipe_draft_reset(recipe_draft_t *draft)
     draft->name = RECIPE_DRAFT_PLACEHOLDER_NAME;
     draft->has_name = false;
     recipe_draft_clear_details(draft);
+    recipe_draft_clear_ingredients(draft);
     draft->dirty = false;
 }
 
@@ -117,6 +145,23 @@ void recipe_draft_apply_sample(recipe_draft_t *draft)
     draft->calculated.estimated_ibu = 38U;
     draft->calculated.estimated_og_points = 1050U;
     draft->calculated.estimated_fg_points = 1011U;
+    draft->fermentable_count = 3U;
+    draft->fermentables[0].name = "Pale malt";
+    draft->fermentables[0].amount_g = 4200U;
+    draft->fermentables[1].name = "Munich malt";
+    draft->fermentables[1].amount_g = 450U;
+    draft->fermentables[2].name = "Crystal malt";
+    draft->fermentables[2].amount_g = 250U;
+    draft->hop_count = 3U;
+    draft->hops[0].name = "Cascade";
+    draft->hops[0].amount_g = 22U;
+    draft->hops[0].boil_time_min = 60U;
+    draft->hops[1].name = "Centennial";
+    draft->hops[1].amount_g = 18U;
+    draft->hops[1].boil_time_min = 15U;
+    draft->hops[2].name = "Citra";
+    draft->hops[2].amount_g = 25U;
+    draft->hops[2].boil_time_min = 5U;
     draft->dirty = true;
 }
 

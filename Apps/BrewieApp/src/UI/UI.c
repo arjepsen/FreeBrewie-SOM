@@ -192,8 +192,7 @@ static void ui_show_screen(ui_t *ui,
             ui->recipe_draft_ingredients_created = true;
         }
 
-        screen_recipe_draft_ingredients_show(&ui->recipe_draft_ingredients,
-                                             recipe_draft_get_name(&ui->recipe_draft));
+        screen_recipe_draft_ingredients_show(&ui->recipe_draft_ingredients, &ui->recipe_draft);
         screen = ui->recipe_draft_ingredients.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_DRAFT_MENU)

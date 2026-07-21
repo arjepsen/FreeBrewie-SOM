@@ -271,10 +271,10 @@ Owns:
 - bounded future draft field ownership
 
 Current fact:
-`Recipe_draft` owns the temporary draft recipe name and first Details values, establishing
-the correct boundary before storage, keyboard input, BeerXML/BeerJSON mapping, or Brewfather
-API sync is added. Recipe Builder and draft screens should render/edit this model instead
-of owning recipe values themselves.
+`Recipe_draft` owns the temporary draft recipe name, first Details values, and first
+Fermentables/Hops arrays, establishing the correct boundary before storage, keyboard input,
+BeerXML/BeerJSON mapping, or Brewfather API sync is added. Recipe Builder and draft screens
+should render/edit this model instead of owning recipe values themselves.
 
 ### `Fault_logic`
 Owns:

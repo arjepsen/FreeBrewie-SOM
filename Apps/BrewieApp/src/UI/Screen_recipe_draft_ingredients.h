@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 
+#include "Logic/Recipe_draft.h"
 #include "UI_types.h"
 #include "lvgl.h"
 
@@ -55,6 +56,10 @@ typedef struct screen_recipe_draft_ingredients_t
     lv_obj_t *fermentables_body;
     /** Hops tab body. */
     lv_obj_t *hops_body;
+    /** Fermentable group rebuilt from the draft model when the screen is shown. */
+    lv_obj_t *fermentables_group;
+    /** Hop group rebuilt from the draft model when the screen is shown. */
+    lv_obj_t *hops_group;
     /** Event callback context for returning to the draft recipe menu. */
     screen_recipe_draft_ingredients_nav_context_t back_button_context;
     /** Event callback contexts for local tab switching. */
@@ -69,6 +74,6 @@ void screen_recipe_draft_ingredients_init(screen_recipe_draft_ingredients_t *ing
                                           ui_action_handler_t action_handler,
                                           void *user_data);
 void screen_recipe_draft_ingredients_show(screen_recipe_draft_ingredients_t *ingredients,
-                                          const char *draft_name);
+                                          const recipe_draft_t *draft);
 
 #endif

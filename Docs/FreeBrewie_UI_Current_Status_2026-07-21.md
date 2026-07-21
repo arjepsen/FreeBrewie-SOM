@@ -72,7 +72,8 @@ The following is currently proven on the real SOM target:
   placeholders
 - the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
-  disabled `MODIFY LATER` action
+  disabled `MODIFY LATER` action; Fermentables and Hops now render from fixed RAM-only
+  arrays in `Logic/Recipe_draft`
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar

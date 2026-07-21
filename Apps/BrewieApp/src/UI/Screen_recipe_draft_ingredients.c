@@ -1,5 +1,6 @@
 #include "Screen_recipe_draft_ingredients.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "UI_scroll.h"
@@ -24,6 +25,12 @@ static void screen_recipe_draft_ingredients_create_value_row(lv_obj_t *parent,
                                                              const char *label_text,
                                                              const char *value_text);
 static lv_obj_t *screen_recipe_draft_ingredients_create_disabled_modify_button(lv_obj_t *parent);
+static void screen_recipe_draft_ingredients_set_text_if_changed(lv_obj_t *label, const char *text);
+static void screen_recipe_draft_ingredients_rebuild_fermentables(
+    screen_recipe_draft_ingredients_t *ingredients,
+    const recipe_draft_t *draft);
+static void screen_recipe_draft_ingredients_rebuild_hops(screen_recipe_draft_ingredients_t *ingredients,
+                                                         const recipe_draft_t *draft);
 static void screen_recipe_draft_ingredients_set_active_tab(
     screen_recipe_draft_ingredients_t *ingredients,
     screen_recipe_draft_ingredients_tab_t tab);
@@ -222,6 +229,100 @@ static lv_obj_t *screen_recipe_draft_ingredients_create_disabled_modify_button(l
 }
 
 /****************************************************************************************
+ * @brief Avoid writing unchanged label text into LVGL.
+ ****************************************************************************************/
+static void screen_recipe_draft_ingredients_set_text_if_changed(lv_obj_t *label, const char *text)
+{
+    if (label == NULL || text == NULL || strcmp(lv_label_get_text(label), text) == 0)
+    {
+        return;
+    }
+
+    lv_label_set_text(label, text);
+}
+
+/****************************************************************************************
+ * @brief Rebuild the small fermentables group from the RAM-only draft model.
+ *
+ * This is not a per-frame path; it runs before showing the Ingredients screen. Rebuilding
+ * a few rows keeps the code simple while the draft model is still growing.
+ ****************************************************************************************/
+static void screen_recipe_draft_ingredients_rebuild_fermentables(
+    screen_recipe_draft_ingredients_t *ingredients,
+    const recipe_draft_t *draft)
+{
+    char amount_text[16];
+    uint8_t index;
+
+    if (ingredients == NULL || draft == NULL)
+    {
+        return;
+    }
+
+    if (ingredients->fermentables_group != NULL)
+    {
+        lv_obj_delete(ingredients->fermentables_group);
+    }
+
+    ingredients->fermentables_group =
+        screen_recipe_draft_ingredients_create_group(ingredients->fermentables_body, "BAG 1");
+    if (draft->fermentable_count == 0U)
+    {
+        screen_recipe_draft_ingredients_create_value_row(ingredients->fermentables_group,
+                                                         "No fermentables",
+                                                         "--");
+        return;
+    }
+
+    for (index = 0U; index < draft->fermentable_count && index < RECIPE_DRAFT_MAX_FERMENTABLES; ++index)
+    {
+        snprintf(amount_text, sizeof(amount_text), "%u g", (unsigned int)draft->fermentables[index].amount_g);
+        screen_recipe_draft_ingredients_create_value_row(ingredients->fermentables_group,
+                                                         draft->fermentables[index].name,
+                                                         amount_text);
+    }
+}
+
+/****************************************************************************************
+ * @brief Rebuild the small hops group from the RAM-only draft model.
+ ****************************************************************************************/
+static void screen_recipe_draft_ingredients_rebuild_hops(screen_recipe_draft_ingredients_t *ingredients,
+                                                         const recipe_draft_t *draft)
+{
+    char amount_text[24];
+    uint8_t index;
+
+    if (ingredients == NULL || draft == NULL)
+    {
+        return;
+    }
+
+    if (ingredients->hops_group != NULL)
+    {
+        lv_obj_delete(ingredients->hops_group);
+    }
+
+    ingredients->hops_group = screen_recipe_draft_ingredients_create_group(ingredients->hops_body, "HOP CAGE 1");
+    if (draft->hop_count == 0U)
+    {
+        screen_recipe_draft_ingredients_create_value_row(ingredients->hops_group, "No hops", "--");
+        return;
+    }
+
+    for (index = 0U; index < draft->hop_count && index < RECIPE_DRAFT_MAX_HOPS; ++index)
+    {
+        snprintf(amount_text,
+                 sizeof(amount_text),
+                 "%u g / %u min",
+                 (unsigned int)draft->hops[index].amount_g,
+                 (unsigned int)draft->hops[index].boil_time_min);
+        screen_recipe_draft_ingredients_create_value_row(ingredients->hops_group,
+                                                         draft->hops[index].name,
+                                                         amount_text);
+    }
+}
+
+/****************************************************************************************
  * @brief Show one tab body and style the active tab in orange.
  ****************************************************************************************/
 static void screen_recipe_draft_ingredients_set_active_tab(
@@ -289,8 +390,6 @@ void screen_recipe_draft_ingredients_init(screen_recipe_draft_ingredients_t *ing
 {
     lv_obj_t *container;
     lv_obj_t *tabs;
-    lv_obj_t *fermentables_group;
-    lv_obj_t *hops_group;
 
     if (ingredients == NULL)
     {
@@ -350,17 +449,8 @@ void screen_recipe_draft_ingredients_init(screen_recipe_draft_ingredients_t *ing
                                                           &ingredients->tab_contexts[1]);
 
     ingredients->fermentables_body = screen_recipe_draft_ingredients_create_body(container);
-    fermentables_group =
-        screen_recipe_draft_ingredients_create_group(ingredients->fermentables_body, "BAG 1");
-    screen_recipe_draft_ingredients_create_value_row(fermentables_group, "Pale malt", "--");
-    screen_recipe_draft_ingredients_create_value_row(fermentables_group, "Munich malt", "--");
-    screen_recipe_draft_ingredients_create_value_row(fermentables_group, "Crystal malt", "--");
 
     ingredients->hops_body = screen_recipe_draft_ingredients_create_body(container);
-    hops_group = screen_recipe_draft_ingredients_create_group(ingredients->hops_body, "HOP CAGE 1");
-    screen_recipe_draft_ingredients_create_value_row(hops_group, "Cascade", "--");
-    screen_recipe_draft_ingredients_create_value_row(hops_group, "Saaz", "--");
-    screen_recipe_draft_ingredients_create_value_row(hops_group, "Citra", "--");
 
     screen_recipe_draft_ingredients_create_disabled_modify_button(container);
     screen_recipe_draft_ingredients_set_active_tab(ingredients,
@@ -368,16 +458,25 @@ void screen_recipe_draft_ingredients_init(screen_recipe_draft_ingredients_t *ing
 }
 
 /****************************************************************************************
- * @brief Show a RAM-only draft name without reading or saving a real recipe.
+ * @brief Show RAM-only draft ingredients without reading or saving a real recipe.
  ****************************************************************************************/
 void screen_recipe_draft_ingredients_show(screen_recipe_draft_ingredients_t *ingredients,
-                                          const char *draft_name)
+                                          const recipe_draft_t *draft)
 {
-    if (ingredients == NULL || draft_name == NULL || ingredients->shown_name == draft_name)
+    const char *draft_name;
+
+    if (ingredients == NULL || draft == NULL)
     {
         return;
     }
 
-    lv_label_set_text(ingredients->name_label, draft_name);
-    ingredients->shown_name = draft_name;
+    draft_name = recipe_draft_get_name(draft);
+    if (ingredients->shown_name != draft_name)
+    {
+        screen_recipe_draft_ingredients_set_text_if_changed(ingredients->name_label, draft_name);
+        ingredients->shown_name = draft_name;
+    }
+
+    screen_recipe_draft_ingredients_rebuild_fermentables(ingredients, draft);
+    screen_recipe_draft_ingredients_rebuild_hops(ingredients, draft);
 }

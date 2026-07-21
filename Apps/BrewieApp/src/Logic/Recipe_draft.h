@@ -15,6 +15,27 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#define RECIPE_DRAFT_MAX_FERMENTABLES 8U
+#define RECIPE_DRAFT_MAX_HOPS 8U
+
+typedef struct
+{
+    /** Ingredient name. Points to stable string storage in this first scaffold. */
+    const char *name;
+    /** Addition amount in grams. */
+    uint16_t amount_g;
+} recipe_draft_fermentable_t;
+
+typedef struct
+{
+    /** Hop name. Points to stable string storage in this first scaffold. */
+    const char *name;
+    /** Addition amount in grams. */
+    uint16_t amount_g;
+    /** Boil time in minutes before flameout/end of boil. */
+    uint16_t boil_time_min;
+} recipe_draft_hop_t;
+
 typedef struct
 {
     /** Display name of the selected beer style, or placeholder text when none is selected. */
@@ -55,6 +76,14 @@ typedef struct
     recipe_draft_style_t style;
     /** Calculated or placeholder values shown by the draft Details screen. */
     recipe_draft_calculated_t calculated;
+    /** Number of active fermentable additions in fermentables[]. */
+    uint8_t fermentable_count;
+    /** RAM-only fermentable additions shown by the draft Ingredients screen. */
+    recipe_draft_fermentable_t fermentables[RECIPE_DRAFT_MAX_FERMENTABLES];
+    /** Number of active hop additions in hops[]. */
+    uint8_t hop_count;
+    /** RAM-only hop additions shown by the draft Ingredients screen. */
+    recipe_draft_hop_t hops[RECIPE_DRAFT_MAX_HOPS];
     /** True when draft data has changed since it was created or reset. */
     bool dirty;
 } recipe_draft_t;
