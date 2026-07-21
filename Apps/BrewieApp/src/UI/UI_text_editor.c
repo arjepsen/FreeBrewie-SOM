@@ -1,5 +1,64 @@
 #include "UI_text_editor.h"
 
+#include "Logic/Recipe_draft.h"
+
+#define UI_TEXT_EDITOR_KEY_WIDTH_NORMAL LV_BUTTONMATRIX_CTRL_WIDTH_1
+#define UI_TEXT_EDITOR_KEY_WIDTH_MODE LV_BUTTONMATRIX_CTRL_WIDTH_2
+#define UI_TEXT_EDITOR_KEY_WIDTH_SPACE LV_BUTTONMATRIX_CTRL_WIDTH_8
+#define UI_TEXT_EDITOR_KEY_CONTROL(width) (LV_KEYBOARD_CTRL_BUTTON_FLAGS | (width))
+#define UI_TEXT_EDITOR_KEY_TEXT_LOWER "abc"
+#define UI_TEXT_EDITOR_KEY_TEXT_UPPER "ABC"
+#define UI_TEXT_EDITOR_KEY_SPECIAL "1#"
+#define UI_TEXT_EDITOR_NORMAL_KEY_ROW_7 \
+    UI_TEXT_EDITOR_KEY_WIDTH_NORMAL, UI_TEXT_EDITOR_KEY_WIDTH_NORMAL, UI_TEXT_EDITOR_KEY_WIDTH_NORMAL, \
+    UI_TEXT_EDITOR_KEY_WIDTH_NORMAL, UI_TEXT_EDITOR_KEY_WIDTH_NORMAL, UI_TEXT_EDITOR_KEY_WIDTH_NORMAL, \
+    UI_TEXT_EDITOR_KEY_WIDTH_NORMAL
+#define UI_TEXT_EDITOR_NORMAL_KEY_GRID_28 \
+    UI_TEXT_EDITOR_NORMAL_KEY_ROW_7, UI_TEXT_EDITOR_NORMAL_KEY_ROW_7, \
+    UI_TEXT_EDITOR_NORMAL_KEY_ROW_7, UI_TEXT_EDITOR_NORMAL_KEY_ROW_7
+
+static const char *const ui_text_editor_keyboard_lower_map[] = {
+    "a", "b", "c", "d", "e", "f", "g", "\n",
+    "h", "i", "j", "k", "l", "m", "n", "\n",
+    "o", "p", "q", "r", "s", "t", "u", "\n",
+    "v", "w", "x", "y", "z", ".", "-", "\n",
+    UI_TEXT_EDITOR_KEY_TEXT_UPPER, UI_TEXT_EDITOR_KEY_SPECIAL, " ", LV_SYMBOL_BACKSPACE, ""};
+
+static const lv_buttonmatrix_ctrl_t ui_text_editor_keyboard_lower_ctrl[] = {
+    UI_TEXT_EDITOR_NORMAL_KEY_GRID_28,
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE),
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE),
+    UI_TEXT_EDITOR_KEY_WIDTH_SPACE,
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE)};
+
+static const char *const ui_text_editor_keyboard_upper_map[] = {
+    "A", "B", "C", "D", "E", "F", "G", "\n",
+    "H", "I", "J", "K", "L", "M", "N", "\n",
+    "O", "P", "Q", "R", "S", "T", "U", "\n",
+    "V", "W", "X", "Y", "Z", ".", "-", "\n",
+    UI_TEXT_EDITOR_KEY_TEXT_LOWER, UI_TEXT_EDITOR_KEY_SPECIAL, " ", LV_SYMBOL_BACKSPACE, ""};
+
+static const lv_buttonmatrix_ctrl_t ui_text_editor_keyboard_upper_ctrl[] = {
+    UI_TEXT_EDITOR_NORMAL_KEY_GRID_28,
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE),
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE),
+    UI_TEXT_EDITOR_KEY_WIDTH_SPACE,
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE)};
+
+static const char *const ui_text_editor_keyboard_special_map[] = {
+    "1", "2", "3", "4", "5", "6", "7", "\n",
+    "8", "9", "0", "/", ":", ";", "%", "\n",
+    "æ", "ø", "å", "Æ", "Ø", "Å", "_", "\n",
+    ".", ",", "?", "!", "+", "#", "@", "\n",
+    UI_TEXT_EDITOR_KEY_TEXT_LOWER, " ", LV_SYMBOL_BACKSPACE, ""};
+
+static const lv_buttonmatrix_ctrl_t ui_text_editor_keyboard_special_ctrl[] = {
+    UI_TEXT_EDITOR_NORMAL_KEY_GRID_28,
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE),
+    UI_TEXT_EDITOR_KEY_WIDTH_SPACE,
+    UI_TEXT_EDITOR_KEY_CONTROL(UI_TEXT_EDITOR_KEY_WIDTH_MODE),
+};
+
 static void ui_text_editor_set_static(lv_obj_t *object);
 static lv_obj_t *ui_text_editor_create_button(lv_obj_t *parent,
                                               const char *text,
@@ -120,7 +179,7 @@ void ui_text_editor_init(ui_text_editor_t *editor, lv_obj_t *parent)
     lv_obj_set_width(editor->textarea, lv_pct(100));
     lv_obj_set_height(editor->textarea, 42);
     lv_textarea_set_one_line(editor->textarea, true);
-    lv_textarea_set_max_length(editor->textarea, 39);
+    lv_textarea_set_max_length(editor->textarea, RECIPE_DRAFT_NAME_MAX_LENGTH - 1U);
     lv_obj_set_style_text_color(editor->textarea, lv_color_hex(0xFFFFFF), 0);
     lv_obj_set_style_bg_color(editor->textarea, lv_color_hex(0x282828), 0);
     lv_obj_set_style_border_color(editor->textarea, lv_color_hex(0xE67526), LV_STATE_FOCUSED);
@@ -152,6 +211,30 @@ void ui_text_editor_init(ui_text_editor_t *editor, lv_obj_t *parent)
     editor->keyboard = lv_keyboard_create(panel);
     lv_obj_set_width(editor->keyboard, lv_pct(100));
     lv_obj_set_flex_grow(editor->keyboard, 1);
+    lv_obj_set_style_bg_color(editor->keyboard, lv_color_hex(0x2C2B2B), 0);
+    lv_obj_set_style_bg_opa(editor->keyboard, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_width(editor->keyboard, 0, 0);
+    lv_obj_set_style_pad_all(editor->keyboard, 4, 0);
+    lv_obj_set_style_pad_row(editor->keyboard, 4, 0);
+    lv_obj_set_style_pad_column(editor->keyboard, 4, 0);
+    lv_obj_set_style_bg_color(editor->keyboard, lv_color_hex(0x696969), LV_PART_ITEMS);
+    lv_obj_set_style_bg_color(editor->keyboard, lv_color_hex(0xE67526), LV_PART_ITEMS | LV_STATE_PRESSED);
+    lv_obj_set_style_text_color(editor->keyboard, lv_color_hex(0xFFFFFF), LV_PART_ITEMS);
+    lv_obj_set_style_radius(editor->keyboard, 4, LV_PART_ITEMS);
+    lv_obj_set_style_border_width(editor->keyboard, 0, LV_PART_ITEMS);
+    lv_keyboard_set_map(editor->keyboard,
+                        LV_KEYBOARD_MODE_TEXT_LOWER,
+                        ui_text_editor_keyboard_lower_map,
+                        ui_text_editor_keyboard_lower_ctrl);
+    lv_keyboard_set_map(editor->keyboard,
+                        LV_KEYBOARD_MODE_TEXT_UPPER,
+                        ui_text_editor_keyboard_upper_map,
+                        ui_text_editor_keyboard_upper_ctrl);
+    lv_keyboard_set_map(editor->keyboard,
+                        LV_KEYBOARD_MODE_SPECIAL,
+                        ui_text_editor_keyboard_special_map,
+                        ui_text_editor_keyboard_special_ctrl);
+    lv_keyboard_set_mode(editor->keyboard, LV_KEYBOARD_MODE_TEXT_LOWER);
     lv_keyboard_set_textarea(editor->keyboard, editor->textarea);
 }
 
@@ -173,6 +256,7 @@ void ui_text_editor_show(ui_text_editor_t *editor,
     editor->commit_user_data = user_data;
     lv_label_set_text(editor->title_label, title != NULL ? title : "");
     lv_textarea_set_text(editor->textarea, initial_text != NULL ? initial_text : "");
+    lv_keyboard_set_mode(editor->keyboard, LV_KEYBOARD_MODE_TEXT_LOWER);
     lv_obj_remove_flag(editor->overlay, LV_OBJ_FLAG_HIDDEN);
     lv_obj_move_foreground(editor->overlay);
 }

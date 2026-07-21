@@ -118,7 +118,10 @@ The following is currently proven on the real SOM target:
 - scrollable UI containers now use the shared `UI_scroll` gutter helper so scrollbars do
   not visually overlap full-width rows
 - `UI_text_editor` now provides the first reusable bounded text-entry modal, currently used
-  by Recipe Builder and intended later for search/filter fields and other short text edits
+  by Recipe Builder and intended later for search/filter fields and other short text edits;
+  its keyboard uses old-Brewie-inspired colors and four equal-width alphabetical content rows
+  instead of LVGL's dense default QWERTY map, and keeps Nordic characters such as `æ`, `ø`,
+  and `å` on the symbol page
 
 So the project is no longer only at “headless serial baseline”.
 We now have:

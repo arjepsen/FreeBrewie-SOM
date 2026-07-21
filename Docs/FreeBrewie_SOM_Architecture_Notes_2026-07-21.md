@@ -581,7 +581,11 @@ Must not own:
 Important current fact:
 `UI_text_editor` is UI infrastructure. It commits text through a caller callback; the model
 or screen that opened it decides what to do with that text. The first user is Recipe Builder,
-which stores the recipe name in `Logic/Recipe_draft`.
+which stores the recipe name in `Logic/Recipe_draft`. The keyboard uses custom equal-width
+alphabetical LVGL keyboard maps and old-Brewie-inspired colors, because the default LVGL
+QWERTY layout is too dense for reliable touch on the Brewie panel. Letter and symbol keys
+are split across four content rows plus a command row. Nordic characters such as `æ`, `ø`,
+and `å` live on the symbol page.
 
 ### `Screen_recipe_detail`
 Owns:
