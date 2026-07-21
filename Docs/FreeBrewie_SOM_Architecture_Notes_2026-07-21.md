@@ -460,9 +460,9 @@ Must not own yet:
 
 Important current fact:
 `Screen_recipe_builder` is intentionally presentation-only. Its current `Use Sample`
-dialog action and Style/Batch pickers mutate only RAM-backed draft labels. It shows the
-shape of recipe editing/data entry while real recipe storage, input handling, and
-validation are still absent.
+dialog action and Style/Batch/Ingredients pickers mutate only RAM-backed draft labels. It
+shows the shape of recipe editing/data entry while real recipe storage, input handling,
+and validation are still absent.
 
 ### `UI_choice_dialog`
 Owns:

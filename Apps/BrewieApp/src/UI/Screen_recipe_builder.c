@@ -70,6 +70,18 @@ static const char *const screen_recipe_builder_batch_choices[] = {
     "30 L",
     "40 L"};
 
+static const char *const screen_recipe_builder_ingredients_choices[] = {
+    "Pale malt, Cascade, ale yeast",
+    "Pilsner malt, Saaz, lager yeast",
+    "Wheat malt, Hallertau, wheat yeast",
+    "Maris Otter, Fuggles, English yeast",
+    "Munich malt, Tettnang, lager yeast",
+    "Pale malt, Citra, clean ale yeast",
+    "Roast barley, East Kent Goldings",
+    "Amber malt, Centennial, ale yeast",
+    "Rye malt, Mosaic, farmhouse yeast",
+    "Light extract, Willamette, ale yeast"};
+
 static const screen_recipe_builder_field_info_t
     screen_recipe_builder_fields[SCREEN_RECIPE_BUILDER_FIELD_COUNT] = {
         [SCREEN_RECIPE_BUILDER_FIELD_NAME] = {
@@ -505,6 +517,18 @@ static void screen_recipe_builder_show_choice_editor(screen_recipe_builder_t *bu
                                         sizeof(screen_recipe_builder_batch_choices[0])),
                               screen_recipe_builder_choice_selected,
                               builder);
+        return;
+    }
+
+    if (field_id == SCREEN_RECIPE_BUILDER_FIELD_INGREDIENTS)
+    {
+        ui_choice_dialog_show(&builder->choice_dialog,
+                              "Choose Ingredients",
+                              screen_recipe_builder_ingredients_choices,
+                              (uint8_t)(sizeof(screen_recipe_builder_ingredients_choices) /
+                                        sizeof(screen_recipe_builder_ingredients_choices[0])),
+                              screen_recipe_builder_choice_selected,
+                              builder);
     }
 }
 
@@ -539,6 +563,14 @@ static void screen_recipe_builder_choice_selected(uint8_t choice_index, void *us
                                               field_id,
                                               screen_recipe_builder_batch_choices[choice_index]);
     }
+    else if (field_id == SCREEN_RECIPE_BUILDER_FIELD_INGREDIENTS &&
+             choice_index < (sizeof(screen_recipe_builder_ingredients_choices) /
+                             sizeof(screen_recipe_builder_ingredients_choices[0])))
+    {
+        screen_recipe_builder_set_draft_value(builder,
+                                              field_id,
+                                              screen_recipe_builder_ingredients_choices[choice_index]);
+    }
 
     screen_recipe_builder_refresh_field_values(builder);
     screen_recipe_builder_select_field(builder, field_id);
@@ -569,7 +601,8 @@ static void screen_recipe_builder_field_event_cb(lv_event_t *event)
 
     screen_recipe_builder_select_field(context->builder, context->field_id);
     if (context->field_id == SCREEN_RECIPE_BUILDER_FIELD_STYLE ||
-        context->field_id == SCREEN_RECIPE_BUILDER_FIELD_BATCH)
+        context->field_id == SCREEN_RECIPE_BUILDER_FIELD_BATCH ||
+        context->field_id == SCREEN_RECIPE_BUILDER_FIELD_INGREDIENTS)
     {
         screen_recipe_builder_show_choice_editor(context->builder, context->field_id);
         return;
