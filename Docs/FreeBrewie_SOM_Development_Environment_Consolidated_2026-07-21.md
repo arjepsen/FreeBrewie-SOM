@@ -1,5 +1,5 @@
 # FreeBrewie SOM Development Environment Consolidated
-_Date: 2026-07-02_
+_Date: 2026-07-21_
 
 ## Purpose
 This document defines the practical development and bring-up workflow for the FreeBrewie SOM side.
@@ -20,6 +20,28 @@ Typical workflow:
 - use `brewie.service` as the proven steady-state startup path
 
 The VM is a host build machine, not the SOM itself.
+
+---
+
+## VS Code launcher fixes on Debian Bullseye VM
+On the Debian Bullseye VM, use the user-specific launcher:
+
+- `~/.local/share/applications/code.desktop`
+
+Both `Exec=` lines in that file should call the VS Code wrapper, not the Electron binary,
+and should force X11 while disabling GPU acceleration:
+
+```text
+Exec=/usr/share/code/bin/code --ozone-platform=x11 --disable-gpu %F
+Exec=/usr/share/code/bin/code --new-window --ozone-platform=x11 --disable-gpu %F
+```
+
+Why this matters:
+- `--ozone-platform=x11` prevents crashes during Git commit/push in the VM.
+- `--disable-gpu` fixes the Codex panel hanging on the blinking ChatGPT logo or showing a
+  grey window.
+- calling `/usr/share/code/code` directly caused Codex not to finish loading; use the
+  `/usr/share/code/bin/code` wrapper.
 
 ---
 

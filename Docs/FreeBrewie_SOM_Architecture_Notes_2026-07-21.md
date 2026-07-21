@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-07-20_
+_Date: 2026-07-21_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -8,7 +8,7 @@ It is meant to keep file ownership, module boundaries, and subsystem responsibil
 
 It should be read together with:
 - `FreeBrewie_UI_Current_Status_2026-07-20.md`
-- `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-02.md`
+- `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-21.md`
 - `Brewie_SOM_Platform_Notes_2026-07-02.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
 
