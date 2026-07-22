@@ -192,6 +192,8 @@ Current file set:
 - `Machine_state.h`
 - `Machine_targets.c`
 - `Machine_targets.h`
+- `Process_plan.c`
+- `Process_plan.h`
 - `Recipe_catalog.c`
 - `Recipe_catalog.h`
 - `Recipe_draft.c`
@@ -231,6 +233,26 @@ Important current fact:
 `Brewing_process_view_model` is not real brewing workflow logic yet. It provides a small
 stable shape for the Active Brewing screen to render while the real process/orchestrator
 model is still being built.
+
+### `Process_plan`
+Owns:
+- ordered SOM-side brewing-process intent derived from a recipe draft
+- fixed-size process-step storage for the first preflight/build boundary
+- conversion of friendly draft fields into ordered mash, sparge, boil, hop, cooling, and
+  fermentation steps
+
+Must not own:
+- LVGL widgets
+- recipe storage/import/export
+- active brewing permissions
+- hardware safety decisions
+- SOM-MCU protocol frames
+- direct MCU commands
+
+Important current fact:
+`Process_plan` is local-only. It proves that a complete draft can become ordered process
+intent, but it does not yet produce `CONTROL_SNAPSHOT` payloads or start the machine. The
+next boundary after this is preflight and target-generation logic.
 
 ### `Status_view_model`
 Owns:

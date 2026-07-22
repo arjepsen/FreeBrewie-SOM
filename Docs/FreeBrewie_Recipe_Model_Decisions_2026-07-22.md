@@ -332,6 +332,7 @@ Do not implement filesystem recipe storage yet.
 
 Implemented first:
 - added `Logic/Recipe_draft.c/.h`
+- added `Logic/Process_plan.c/.h` as the first local-only draft-to-process-plan boundary
 - moved the temporary draft name out of `Screen_recipe_builder`
 - made Recipe Builder, draft menu, draft Details, and draft Ingredients read from the draft model
 - added the first RAM-only draft Details fields for style and calculated values
@@ -342,11 +343,13 @@ Implemented first:
   stored in `Logic/Recipe_draft`
 - added the first RAM-only draft completeness check, so the draft menu can tell the user
   which recipe-data section still needs attention before future preflight
+- added ordered local process-plan steps for mash-in, mash rests, sparge, boil, hop
+  additions, cooling, fermentation notes, and completion
 - kept the draft in memory only
 - kept all MCU output disabled
 
 Next code steps:
-- define the first draft-to-process-plan conversion shape before hardware-affecting brewing
-  starts
+- define the first process-plan-to-machine-target conversion boundary before
+  hardware-affecting brewing starts
 - expand validation when the process-plan and hardware preflight boundaries are defined
 - then design storage with versioning
