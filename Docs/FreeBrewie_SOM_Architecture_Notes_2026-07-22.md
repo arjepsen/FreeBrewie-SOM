@@ -594,6 +594,25 @@ Important current fact:
 implementing the old Fermentables/Hops edit forms. Its values render from `Logic/Recipe_draft`
 and remain local-only.
 
+### `Screen_recipe_draft_fermentation`
+Owns:
+- safe old-Brewie-inspired Fermentation section for a local draft recipe
+- display of the draft recipe name
+- local Primary, Secondary, and Conditioning schedule panels
+- local numeric edit paths for fermentation temperature and duration
+
+Must not own yet:
+- full fermentation editing forms
+- yeast/culture management
+- recipe persistence
+- validation
+- brewing preflight or hardware actions
+
+Important current fact:
+`Screen_recipe_draft_fermentation` stores the first friendly fermentation schedule as ordered
+steps in `Logic/Recipe_draft`. This is local-only recipe editing data, not active temperature
+control and not MCU traffic.
+
 ### `UI_text_editor`
 Owns:
 - reusable bounded text-entry modal

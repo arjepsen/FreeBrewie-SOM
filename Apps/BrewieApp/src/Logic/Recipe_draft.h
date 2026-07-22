@@ -21,6 +21,7 @@
 #define RECIPE_DRAFT_MAX_FERMENTABLES 8U
 #define RECIPE_DRAFT_MAX_HOPS 8U
 #define RECIPE_DRAFT_MAX_MASH_STEPS 6U
+#define RECIPE_DRAFT_MAX_FERMENTATION_STEPS 6U
 
 typedef struct
 {
@@ -74,6 +75,24 @@ typedef struct
 
 typedef struct
 {
+    /** Step name shown in the normal recipe editor, for example Primary. */
+    const char *name;
+    /** Target fermentation temperature in degrees C. */
+    uint8_t temperature_c;
+    /** Step duration in days. */
+    uint16_t duration_days;
+} recipe_draft_fermentation_step_t;
+
+typedef struct
+{
+    /** Number of active fermentation steps in steps[]. */
+    uint8_t step_count;
+    /** Ordered fermentation schedule. */
+    recipe_draft_fermentation_step_t steps[RECIPE_DRAFT_MAX_FERMENTATION_STEPS];
+} recipe_draft_fermentation_t;
+
+typedef struct
+{
     /** Display name of the selected beer style, or placeholder text when none is selected. */
     const char *style_name;
     /** BJCP or style-guide number text. Kept as text because external systems vary here. */
@@ -122,6 +141,8 @@ typedef struct
     recipe_draft_hop_t hops[RECIPE_DRAFT_MAX_HOPS];
     /** RAM-only brewing process values shown by the draft Brewing screen. */
     recipe_draft_brewing_t brewing;
+    /** RAM-only fermentation schedule shown by the draft Fermentation screen. */
+    recipe_draft_fermentation_t fermentation;
     /** True when draft data has changed since it was created or reset. */
     bool dirty;
 } recipe_draft_t;
@@ -139,6 +160,12 @@ void recipe_draft_set_sparge_time_min(recipe_draft_t *draft, uint16_t sparge_tim
 void recipe_draft_set_boil_time_min(recipe_draft_t *draft, uint16_t boil_time_min);
 void recipe_draft_set_delayed_hopping_min(recipe_draft_t *draft, uint16_t delayed_hopping_min);
 void recipe_draft_set_cooling_target_c(recipe_draft_t *draft, uint8_t cooling_target_c);
+void recipe_draft_set_fermentation_temperature_c(recipe_draft_t *draft,
+                                                 uint8_t step_index,
+                                                 uint8_t temperature_c);
+void recipe_draft_set_fermentation_duration_days(recipe_draft_t *draft,
+                                                 uint8_t step_index,
+                                                 uint16_t duration_days);
 void recipe_draft_apply_sample(recipe_draft_t *draft);
 const char *recipe_draft_get_name(const recipe_draft_t *draft);
 bool recipe_draft_has_name(const recipe_draft_t *draft);

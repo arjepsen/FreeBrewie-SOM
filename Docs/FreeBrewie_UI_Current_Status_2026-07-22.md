@@ -81,6 +81,10 @@ The following is currently proven on the real SOM target:
   brewing-process values in `Logic/Recipe_draft`; the screen reuses one
   `UI_number_editor` for editable process values such as mash water, mash-in temperature,
   sparge values, boil time, delayed hops, and cooling target, with the same pencil marker
+- the draft recipe `FERMENTATION` button now opens a real local-only Fermentation screen
+  shaped after the old UI, with ordered Primary, Secondary, and Conditioning schedule rows
+  rendered from RAM-only values in `Logic/Recipe_draft`; temperature and duration rows share
+  `UI_number_editor`, stay local-only, and do not affect storage or hardware
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar

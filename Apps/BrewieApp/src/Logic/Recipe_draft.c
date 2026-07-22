@@ -9,6 +9,7 @@
 static void recipe_draft_clear_details(recipe_draft_t *draft);
 static void recipe_draft_clear_ingredients(recipe_draft_t *draft);
 static void recipe_draft_clear_brewing(recipe_draft_t *draft);
+static void recipe_draft_clear_fermentation(recipe_draft_t *draft);
 
 /****************************************************************************************
  * @brief Clear detail fields to stable placeholders.
@@ -85,6 +86,32 @@ static void recipe_draft_clear_brewing(recipe_draft_t *draft)
 }
 
 /****************************************************************************************
+ * @brief Clear the first RAM-only fermentation schedule.
+ *
+ * Fermentation is already stored as ordered steps because the future advanced editor should
+ * eventually expose more explicit process steps. The friendly editor can still show these
+ * as simple named rows.
+ ****************************************************************************************/
+static void recipe_draft_clear_fermentation(recipe_draft_t *draft)
+{
+    uint8_t index;
+
+    draft->fermentation.step_count = 3U;
+    draft->fermentation.steps[0].name = "Primary";
+    draft->fermentation.steps[1].name = "Secondary";
+    draft->fermentation.steps[2].name = "Conditioning";
+    for (index = 0U; index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS; ++index)
+    {
+        if (draft->fermentation.steps[index].name == NULL)
+        {
+            draft->fermentation.steps[index].name = RECIPE_DRAFT_PLACEHOLDER_TEXT;
+        }
+        draft->fermentation.steps[index].temperature_c = 0U;
+        draft->fermentation.steps[index].duration_days = 0U;
+    }
+}
+
+/****************************************************************************************
  * @brief Initialize a RAM-only recipe draft.
  ****************************************************************************************/
 void recipe_draft_init(recipe_draft_t *draft)
@@ -107,6 +134,7 @@ void recipe_draft_reset(recipe_draft_t *draft)
     recipe_draft_clear_details(draft);
     recipe_draft_clear_ingredients(draft);
     recipe_draft_clear_brewing(draft);
+    recipe_draft_clear_fermentation(draft);
     draft->dirty = false;
 }
 
@@ -299,6 +327,38 @@ void recipe_draft_set_cooling_target_c(recipe_draft_t *draft, uint8_t cooling_ta
 }
 
 /****************************************************************************************
+ * @brief Store one fermentation step target temperature.
+ ****************************************************************************************/
+void recipe_draft_set_fermentation_temperature_c(recipe_draft_t *draft,
+                                                 uint8_t step_index,
+                                                 uint8_t temperature_c)
+{
+    if (draft == NULL || step_index >= draft->fermentation.step_count)
+    {
+        return;
+    }
+
+    draft->fermentation.steps[step_index].temperature_c = temperature_c;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Store one fermentation step duration in days.
+ ****************************************************************************************/
+void recipe_draft_set_fermentation_duration_days(recipe_draft_t *draft,
+                                                 uint8_t step_index,
+                                                 uint16_t duration_days)
+{
+    if (draft == NULL || step_index >= draft->fermentation.step_count)
+    {
+        return;
+    }
+
+    draft->fermentation.steps[step_index].duration_days = duration_days;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
  * @brief Fill the RAM-only draft with a small sample recipe profile.
  *
  * This is temporary UI scaffolding. It gives the draft Details screen real model-owned
@@ -353,6 +413,12 @@ void recipe_draft_apply_sample(recipe_draft_t *draft)
     draft->brewing.boil_time_min = 60U;
     draft->brewing.delayed_hopping_min = 10U;
     draft->brewing.cooling_target_c = 20U;
+    draft->fermentation.steps[0].temperature_c = 19U;
+    draft->fermentation.steps[0].duration_days = 10U;
+    draft->fermentation.steps[1].temperature_c = 20U;
+    draft->fermentation.steps[1].duration_days = 4U;
+    draft->fermentation.steps[2].temperature_c = 4U;
+    draft->fermentation.steps[2].duration_days = 7U;
     draft->dirty = true;
 }
 

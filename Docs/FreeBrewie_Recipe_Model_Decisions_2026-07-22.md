@@ -335,13 +335,13 @@ Implemented first:
 - added the first RAM-only draft Details fields for style and calculated values
 - added the first RAM-only Fermentables/Hops arrays for the Ingredients screen
 - added the first RAM-only brewing-process fields for the Brewing screen
+- added the first ordered RAM-only fermentation schedule for the Fermentation screen
 - added bounded recipe-name text entry through `UI_text_editor`, with the committed name
   stored in `Logic/Recipe_draft`
 - kept the draft in memory only
 - kept all MCU output disabled
 
 Next code steps:
-- add fermentation draft fields next
 - add validation
 - define the first draft-to-process-plan conversion shape before hardware-affecting brewing
   starts

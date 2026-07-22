@@ -33,7 +33,7 @@ static const char *const screen_recipe_draft_menu_section_bodies[SCREEN_RECIPE_D
     "Details editing will come after local recipe storage is designed.",
     "Ingredient editing will be split into proper fermentables and hops screens later.",
     "Brewing values now open a local-only draft screen. Editing comes later.",
-    "Fermentation editing will stay separate from SOM hardware control."};
+    "Fermentation values now open a local-only draft screen."};
 
 /****************************************************************************************
  * @brief Make an object static so it cannot become a tiny scroll target.
@@ -345,6 +345,13 @@ void screen_recipe_draft_menu_init(screen_recipe_draft_menu_t *draft_menu,
         {
             draft_menu->section_contexts[section_index].action =
                 UI_ACTION_SHOW_RECIPE_DRAFT_BREWING;
+            draft_menu->section_contexts[section_index].handler = action_handler;
+            draft_menu->section_contexts[section_index].user_data = user_data;
+        }
+        else if (section_index == 3U)
+        {
+            draft_menu->section_contexts[section_index].action =
+                UI_ACTION_SHOW_RECIPE_DRAFT_FERMENTATION;
             draft_menu->section_contexts[section_index].handler = action_handler;
             draft_menu->section_contexts[section_index].user_data = user_data;
         }
