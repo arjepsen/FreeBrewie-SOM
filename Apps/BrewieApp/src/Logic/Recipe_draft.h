@@ -20,35 +20,24 @@
 
 typedef struct
 {
-    /** Current draft recipe name stored in bounded draft-owned RAM. */
+    /** Bounded draft-owned name buffer; storage/catalog can copy from here later. */
     char name[RECIPE_NAME_MAX_LENGTH];
-    /** True once the user has entered or selected a real name instead of the placeholder. */
     bool has_name;
-    /** Beer style fields shown by the draft Details screen. */
     recipe_style_t style;
-    /** Calculated or placeholder values shown by the draft Details screen. */
     recipe_calculated_t calculated;
-    /** Number of active fermentable additions in fermentables[]. */
     uint8_t fermentable_count;
-    /** RAM-only fermentable additions shown by the draft Ingredients screen. */
     recipe_fermentable_t fermentables[RECIPE_MAX_FERMENTABLES];
-    /** Number of active hop additions in hops[]. */
     uint8_t hop_count;
-    /** RAM-only hop additions shown by the draft Ingredients screen. */
     recipe_hop_t hops[RECIPE_MAX_HOPS];
-    /** RAM-only brewing process values shown by the draft Brewing screen. */
     recipe_brewing_t brewing;
-    /** RAM-only fermentation schedule shown by the draft Fermentation screen. */
     recipe_fermentation_t fermentation;
-    /** True when draft data has changed since it was created or reset. */
     bool dirty;
 } recipe_draft_t;
 
+/** Lightweight completeness result for UI guidance; not hardware safety validation. */
 typedef struct
 {
-    /** True when the draft has enough data for a future preflight/brew-start path. */
     bool can_brew;
-    /** Short human-readable reason used by the draft menu status line. */
     const char *status_text;
 } recipe_draft_validation_t;
 

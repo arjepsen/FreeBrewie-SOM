@@ -27,35 +27,30 @@ typedef enum
 
 typedef struct
 {
-    /** Category selected when this row is clicked. */
     screen_settings_category_id_t category_id;
-    /** Screen instance that receives the local selection. */
     struct screen_settings_t *settings;
 } screen_settings_category_context_t;
 
 typedef struct
 {
-    /** Navigation action emitted when the top-left back button is clicked. */
     ui_action_t action;
-    /** Callback owned by the UI shell. */
     ui_action_handler_t handler;
-    /** Opaque pointer passed back to the callback, normally the ui_t instance. */
     void *user_data;
 } screen_settings_nav_context_t;
 
+/**
+ * Settings presentation state.
+ *
+ * This screen is still informational. Selecting a category only swaps local text until
+ * persistent settings and safety-sensitive calibration flows are designed.
+ */
 typedef struct screen_settings_t
 {
-    /** Root LVGL screen object for Settings. */
     lv_obj_t *screen;
-    /** Label showing the selected category title. */
     lv_obj_t *selected_title_label;
-    /** Label showing the selected category explanation. */
     lv_obj_t *selected_body_label;
-    /** Event callback context for returning to the top-level menu. */
     screen_settings_nav_context_t back_button_context;
-    /** Event callback contexts for local settings rows. */
     screen_settings_category_context_t category_contexts[SCREEN_SETTINGS_CATEGORY_COUNT];
-    /** Last selected category, used only for local presentation state. */
     screen_settings_category_id_t selected_category_id;
 } screen_settings_t;
 

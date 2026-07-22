@@ -18,7 +18,6 @@
 
 typedef struct
 {
-    /** Root LVGL screen object for the status/debug screen. */
     lv_obj_t *screen;
     lv_obj_t *title_label;
     /** Value labels updated from status_screen_view_model_t. */

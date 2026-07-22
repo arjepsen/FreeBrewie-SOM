@@ -15,21 +15,16 @@
 
 typedef struct
 {
-    /** Navigation action emitted when this menu row is clicked. */
     ui_action_t action;
-    /** Optional action value; unused for simple menu navigation. */
     uint32_t value;
-    /** Callback owned by the UI shell. */
     ui_action_handler_t handler;
-    /** Opaque pointer passed back to the callback, normally the ui_t instance. */
     void *user_data;
 } screen_menu_button_context_t;
 
+/** Full-screen menu state; one persistent context is kept for each row callback. */
 typedef struct
 {
-    /** Root LVGL screen object for the full-screen menu. */
     lv_obj_t *screen;
-    /** Event callback context for each menu row. */
     screen_menu_button_context_t home_context;
     screen_menu_button_context_t recipes_context;
     screen_menu_button_context_t manual_context;

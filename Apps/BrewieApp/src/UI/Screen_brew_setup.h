@@ -25,41 +25,35 @@ typedef enum
 
 typedef struct
 {
-    /** Navigation action emitted when the back/menu button is clicked. */
     ui_action_t action;
-    /** Optional action value, currently the selected recipe ID. */
     uint32_t value;
-    /** Callback owned by the UI shell. */
     ui_action_handler_t handler;
-    /** Opaque pointer passed back to the callback, normally the ui_t instance. */
     void *user_data;
 } screen_brew_setup_nav_context_t;
 
 typedef struct
 {
-    /** Option toggled when this row is clicked. */
     screen_brew_setup_option_id_t option_id;
-    /** Screen instance that receives the local toggle. */
     struct screen_brew_setup_t *setup;
 } screen_brew_setup_option_context_t;
 
+/**
+ * Pre-brew setup screen state.
+ *
+ * The option toggles are currently local UI state only. They make the old Brewie flow
+ * visible without pretending that UI widgets can authorize hardware behavior.
+ */
 typedef struct screen_brew_setup_t
 {
-    /** Root LVGL screen object for Brew Setup. */
     lv_obj_t *screen;
-    /** Selected recipe name shown near the top of the setup flow. */
     lv_obj_t *recipe_label;
-    /** Local checkbox fill objects shown/hidden when option rows are clicked. */
     lv_obj_t *option_check_fills[SCREEN_BREW_SETUP_OPTION_COUNT];
-    /** Event callback context for returning to the selected recipe detail. */
     screen_brew_setup_nav_context_t back_button_context;
-    /** Event callback context for moving to the safe checklist scaffold. */
     screen_brew_setup_nav_context_t checklist_button_context;
-    /** Event callback contexts for local option rows. */
     screen_brew_setup_option_context_t option_contexts[SCREEN_BREW_SETUP_OPTION_COUNT];
     /** Recipe currently shown, used to avoid unchanged label updates. */
     recipe_id_t shown_recipe_id;
-    /** Local option state. These are display-only until app-level safety routing exists. */
+    /** Display-only until app-level safety routing exists. */
     bool option_enabled[SCREEN_BREW_SETUP_OPTION_COUNT];
 } screen_brew_setup_t;
 

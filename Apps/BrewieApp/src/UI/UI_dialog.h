@@ -14,21 +14,20 @@
 
 typedef void (*ui_dialog_action_handler_t)(void *user_data);
 
+/**
+ * Lightweight modal dialog state.
+ *
+ * Dialog button handlers are optional. The dialog hides itself after running the selected
+ * action, so callers only provide the side effect they need.
+ */
 typedef struct
 {
-    /** Full-screen darkened overlay that receives the modal. */
     lv_obj_t *overlay;
-    /** Dialog title label. */
     lv_obj_t *title_label;
-    /** Dialog body label. */
     lv_obj_t *body_label;
-    /** Optional action called by the left/primary button before the dialog hides. */
     ui_dialog_action_handler_t primary_handler;
-    /** Optional caller state passed to primary_handler. */
     void *primary_user_data;
-    /** Optional action called by the right/secondary button before the dialog hides. */
     ui_dialog_action_handler_t secondary_handler;
-    /** Optional caller state passed to secondary_handler. */
     void *secondary_user_data;
 } ui_dialog_t;
 

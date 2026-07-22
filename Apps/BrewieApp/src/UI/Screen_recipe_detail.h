@@ -22,16 +22,19 @@ typedef struct
     void *user_data;
 } screen_recipe_detail_button_context_t;
 
+/**
+ * Read-only selected-recipe overview state.
+ *
+ * The button contexts carry the selected recipe id into later screens. This screen displays
+ * catalog data only; it does not edit or start brewing directly.
+ */
 typedef struct
 {
-    /** Root LVGL screen object for the recipe detail view. */
     lv_obj_t *screen;
-    /** Labels updated when the selected recipe changes. */
     lv_obj_t *name_label;
     lv_obj_t *style_label;
     /** Recipe currently shown, used to avoid unchanged label updates. */
     recipe_id_t shown_recipe_id;
-    /** Event callback contexts for safe navigation. */
     screen_recipe_detail_button_context_t back_button_context;
     screen_recipe_detail_button_context_t menu_button_context;
     screen_recipe_detail_button_context_t details_context;

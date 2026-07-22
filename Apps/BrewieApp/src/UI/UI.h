@@ -34,79 +34,53 @@
 
 typedef struct ui_t ui_t;
 
+/**
+ * Top-level UI state owned by the app.
+ *
+ * Common screens are created during `ui_init()` for snappy boot-to-home navigation. Less
+ * common workflow screens are stored here too, but created lazily the first time the user
+ * visits them. That keeps event callback contexts stable without allocating every LVGL
+ * object tree during startup.
+ */
 struct ui_t
 {
-    /** Always-created Home screen. */
     screen_home_t home;
-    /** Bring-up/status screen with comms and touch diagnostics. */
     screen_status_t status;
-    /** Safe first recipe chooser scaffold. */
     screen_recipes_t recipes;
-    /** RAM-only draft recipe currently edited by the recipe-builder flow. */
     recipe_draft_t recipe_draft;
-    /** Safe recipe-builder scaffold, lazy-created on first use. */
     screen_recipe_builder_t recipe_builder;
-    /** True after the recipe-builder scaffold has been created. */
     bool recipe_builder_created;
-    /** Safe local-only draft recipe menu, lazy-created after naming a recipe. */
     screen_recipe_draft_menu_t recipe_draft_menu;
-    /** True after the local-only draft recipe menu has been created. */
     bool recipe_draft_menu_created;
-    /** Safe local-only draft Brewing screen, lazy-created from the draft recipe menu. */
     screen_recipe_draft_brewing_t recipe_draft_brewing;
-    /** True after the local-only draft Brewing screen has been created. */
     bool recipe_draft_brewing_created;
-    /** Safe local-only draft Details screen, lazy-created from the draft recipe menu. */
     screen_recipe_draft_details_t recipe_draft_details;
-    /** True after the local-only draft Details screen has been created. */
     bool recipe_draft_details_created;
-    /** Safe local-only draft Fermentation screen, lazy-created from the draft recipe menu. */
     screen_recipe_draft_fermentation_t recipe_draft_fermentation;
-    /** True after the local-only draft Fermentation screen has been created. */
     bool recipe_draft_fermentation_created;
-    /** Safe local-only draft Ingredients screen, lazy-created from the draft recipe menu. */
     screen_recipe_draft_ingredients_t recipe_draft_ingredients;
-    /** True after the local-only draft Ingredients screen has been created. */
     bool recipe_draft_ingredients_created;
-    /** Safe selected-recipe detail screen, lazy-created on first selected-recipe visit. */
     screen_recipe_detail_t recipe_detail;
-    /** True after the selected-recipe detail screen has been created. */
     bool recipe_detail_created;
-    /** Safe selected-recipe section screen, lazy-created on first subsection visit. */
     screen_recipe_section_t recipe_section;
-    /** True after the selected-recipe section screen has been created. */
     bool recipe_section_created;
-    /** Safe brew setup scaffold, lazy-created on first use. */
     screen_brew_setup_t brew_setup;
-    /** True after the Brew Setup scaffold has been created. */
     bool brew_setup_created;
-    /** Safe brewing checklist scaffold, lazy-created on first use. */
     screen_brew_checklist_t brew_checklist;
-    /** True after the brewing checklist scaffold has been created. */
     bool brew_checklist_created;
-    /** Safe active brewing scaffold, lazy-created on first use. */
     screen_active_brewing_t active_brewing;
-    /** True after the active brewing scaffold has been created. */
     bool active_brewing_created;
-    /** Full-screen navigation menu. */
     screen_menu_t menu;
-    /** Safe Manual/Cleaning scaffold, lazy-created on first use. */
     screen_manual_t manual;
-    /** True after the Manual/Cleaning scaffold has been created. */
     bool manual_created;
-    /** Safe Settings scaffold, lazy-created on first use. */
     screen_settings_t settings;
-    /** True after the Settings scaffold has been created. */
     bool settings_created;
     /** Screen currently loaded into LVGL. */
     ui_screen_id_t current_screen;
-    /** Deferred navigation target requested from an LVGL event callback. */
+    /** Deferred navigation request, applied outside the LVGL event callback. */
     ui_screen_id_t pending_screen;
-    /** Optional value for the pending navigation, currently recipe_id for recipe detail. */
     uint32_t pending_value;
-    /** Optional section id for recipe-section navigation. */
     recipe_section_id_t pending_recipe_section;
-    /** True when pending_screen should be applied during ui_update(). */
     bool has_pending_screen;
 };
 

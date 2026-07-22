@@ -19,39 +19,32 @@
 
 typedef struct
 {
-    /** Navigation action emitted when this button is clicked. */
     ui_action_t action;
-    /** Optional action value, unused for the current Recipe Builder scaffold. */
     uint32_t value;
-    /** Callback owned by the UI shell. */
     ui_action_handler_t handler;
-    /** Opaque pointer passed back to the callback, normally the ui_t instance. */
     void *user_data;
 } screen_recipe_builder_nav_context_t;
 
 typedef struct
 {
-    /** Screen instance updated when the name row is clicked. */
     struct screen_recipe_builder_t *builder;
 } screen_recipe_builder_name_context_t;
 
+/**
+ * First recipe-builder screen state.
+ *
+ * The screen owns LVGL objects and a reusable text editor, but the actual recipe values
+ * live in `recipe_draft_t` so future storage/web import work can reuse the model.
+ */
 typedef struct screen_recipe_builder_t
 {
-    /** Root LVGL screen object for Recipe Builder. */
     lv_obj_t *screen;
-    /** Label showing the current local draft name. */
     lv_obj_t *name_value_label;
-    /** DONE button, enabled after the local name no longer shows the placeholder. */
     lv_obj_t *done_button;
-    /** Event callback context for returning to Recipes. */
     screen_recipe_builder_nav_context_t back_button_context;
-    /** Event callback context for the disabled future Done button. */
     screen_recipe_builder_nav_context_t done_button_context;
-    /** Event callback context for the local draft-name row. */
     screen_recipe_builder_name_context_t name_context;
-    /** Logic-owned in-memory draft shown and edited by this screen. */
     recipe_draft_t *draft;
-    /** Reusable bounded text editor used for the draft recipe name. */
     ui_text_editor_t name_editor;
 } screen_recipe_builder_t;
 

@@ -7,13 +7,16 @@
 #include "Logic/Recipe_draft.h"
 #include "UI_theme.h"
 
+/**
+ * One row in the event-to-screen navigation table.
+ *
+ * `recipe_section_id` is only meaningful for `UI_SCREEN_RECIPE_SECTION`; other rows keep
+ * the default details value so the table can stay uniform.
+ */
 typedef struct
 {
-    /** Navigation action emitted by a screen widget. */
     ui_action_t action;
-    /** Screen that should be loaded after the event has finished bubbling. */
     ui_screen_id_t screen_id;
-    /** Optional recipe subsection for recipe-section navigation. */
     recipe_section_id_t recipe_section_id;
 } ui_action_route_t;
 

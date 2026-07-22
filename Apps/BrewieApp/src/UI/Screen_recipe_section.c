@@ -4,6 +4,12 @@
 
 #include "UI_scroll.h"
 
+/*
+ * This file implements one reusable read-only recipe section screen. The row widgets are
+ * created once, then shown/hidden and relabeled for Details, Ingredients, Brewing, or
+ * Fermentation when the selected recipe changes.
+ */
+
 static void screen_recipe_section_set_static(lv_obj_t *object);
 static lv_obj_t *screen_recipe_section_create_header(lv_obj_t *parent, screen_recipe_section_t *section);
 static lv_obj_t *screen_recipe_section_create_nav_button(lv_obj_t *parent,
@@ -186,6 +192,7 @@ static uint32_t screen_recipe_section_fill_rows(screen_recipe_section_t *section
 
     if (section_id == RECIPE_SECTION_INGREDIENTS)
     {
+        /* Old-style recipe sections are text summaries until full recipe editing exists. */
         screen_recipe_section_set_row(section, 0U, "Fermentables", recipe->fermentables);
         screen_recipe_section_set_row(section, 1U, "Hops", recipe->hops);
         screen_recipe_section_set_row(section, 2U, "Additions", recipe->additions);
@@ -327,6 +334,7 @@ void screen_recipe_section_show(screen_recipe_section_t *section,
         return;
     }
 
+    /* Update labels and callback values; the fixed row objects stay allocated. */
     section->back_button_context.value = recipe->id;
     lv_label_set_text(section->title_label, screen_recipe_section_title(section_id));
     lv_label_set_text(section->recipe_label, recipe->name);

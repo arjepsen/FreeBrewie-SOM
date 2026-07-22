@@ -33,6 +33,12 @@ typedef struct
     void *user_data;
 } screen_recipe_section_button_context_t;
 
+/**
+ * Reusable read-only recipe section screen.
+ *
+ * One screen instance is reused for Details, Ingredients, Brewing, and Fermentation. The
+ * fixed row arrays avoid heap allocation and are rebuilt from the selected recipe section.
+ */
 typedef struct
 {
     lv_obj_t *screen;

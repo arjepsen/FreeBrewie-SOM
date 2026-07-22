@@ -6,6 +6,14 @@
 
 #define SCREEN_RECIPE_DETAIL_SECTION_WIDTH_PCT 97
 
+/*
+ * This file builds the selected-recipe overview:
+ * - a fixed header with back/menu navigation,
+ * - a hero strip showing the selected recipe,
+ * - four section buttons that drill into read-only recipe details,
+ * - and a Brew button that only navigates to setup.
+ */
+
 static void screen_recipe_detail_set_static(lv_obj_t *object);
 static lv_obj_t *screen_recipe_detail_create_header(lv_obj_t *parent, screen_recipe_detail_t *detail);
 static lv_obj_t *screen_recipe_detail_create_nav_button(lv_obj_t *parent,
@@ -230,6 +238,7 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     detail->brew_context.handler = action_handler;
     detail->brew_context.user_data = user_data;
 
+    /* Build the object tree once. Later recipe changes only update labels and action values. */
     detail->screen = lv_obj_create(NULL);
     screen_recipe_detail_set_static(detail->screen);
     lv_obj_set_style_bg_color(detail->screen, lv_color_hex(0x000000), 0);
@@ -326,6 +335,8 @@ void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const reci
 
     lv_label_set_text(detail->name_label, recipe->name);
     lv_label_set_text(detail->style_label, recipe->style);
+
+    /* Carry the selected recipe id through every navigation action from this screen. */
     detail->details_context.value = recipe->id;
     detail->ingredients_context.value = recipe->id;
     detail->brewing_context.value = recipe->id;

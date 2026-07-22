@@ -20,13 +20,9 @@
 
 typedef struct
 {
-    /** Navigation action emitted when this button is clicked. */
     ui_action_t action;
-    /** Optional action value, unused for the local draft details screen. */
     uint32_t value;
-    /** Callback owned by the UI shell. */
     ui_action_handler_t handler;
-    /** Opaque pointer passed back to the callback, normally the ui_t instance. */
     void *user_data;
 } screen_recipe_draft_details_nav_context_t;
 
@@ -34,17 +30,21 @@ typedef struct screen_recipe_draft_details_t screen_recipe_draft_details_t;
 
 typedef struct
 {
-    /** Details screen instance that owns the picker and draft pointer. */
     screen_recipe_draft_details_t *details;
     /** Index into Style_catalog's fixed-size style cache. */
     uint8_t option_index;
 } screen_recipe_draft_details_style_context_t;
 
+/**
+ * Draft Details editor state.
+ *
+ * The screen shows draft-owned values and owns only presentation objects, the local style
+ * picker, and the reusable batch-size editor. The style picker uses fixed option contexts
+ * because the current style catalog is a bounded in-memory list.
+ */
 typedef struct screen_recipe_draft_details_t
 {
-    /** Root LVGL screen object for the draft Details view. */
     lv_obj_t *screen;
-    /** Draft recipe name shown as the header subcaption. */
     lv_obj_t *name_label;
     /** Style value labels, updated from the draft model before the screen is shown. */
     lv_obj_t *style_name_label;
@@ -59,19 +59,12 @@ typedef struct screen_recipe_draft_details_t
     lv_obj_t *ibu_label;
     lv_obj_t *og_label;
     lv_obj_t *fg_label;
-    /** Clickable row that opens the local style picker. */
     lv_obj_t *style_row;
-    /** Clickable row that opens the batch-size numeric editor. */
     lv_obj_t *batch_size_row;
-    /** Local style picker overlay shown by the Style row. */
     lv_obj_t *style_picker_overlay;
-    /** Reusable local numeric editor, first used by Batch size. */
     ui_number_editor_t batch_size_editor;
-    /** Draft model edited by this screen's local-only style picker. */
     recipe_draft_t *draft;
-    /** Persistent button contexts for style option callbacks. */
     screen_recipe_draft_details_style_context_t style_option_contexts[STYLE_CATALOG_MAX_STYLES];
-    /** Event callback context for returning to the draft recipe menu. */
     screen_recipe_draft_details_nav_context_t back_button_context;
     /** Last shown draft name, used to avoid unchanged label writes. */
     const char *shown_name;

@@ -15,19 +15,20 @@
 
 typedef void (*ui_text_editor_commit_handler_t)(const char *text, void *user_data);
 
+/**
+ * Reusable text editor widget set.
+ *
+ * Callers supply the title, initial text, and commit callback when showing the editor.
+ * The editor owns only LVGL objects and callback storage; the accepted text is copied by
+ * the caller's commit handler into the real model.
+ */
 typedef struct
 {
-    /** Full-screen darkened overlay that contains the editor. */
     lv_obj_t *overlay;
-    /** Editor title label. */
     lv_obj_t *title_label;
-    /** Text input object. */
     lv_obj_t *textarea;
-    /** On-screen keyboard attached to textarea. */
     lv_obj_t *keyboard;
-    /** Optional commit callback called when the editor is accepted. */
     ui_text_editor_commit_handler_t commit_handler;
-    /** Caller state passed to commit_handler. */
     void *commit_user_data;
 } ui_text_editor_t;
 
