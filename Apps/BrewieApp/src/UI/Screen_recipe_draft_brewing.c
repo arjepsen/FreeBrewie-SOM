@@ -16,7 +16,8 @@ static lv_obj_t *screen_recipe_draft_brewing_create_nav_button(
 static lv_obj_t *screen_recipe_draft_brewing_create_group(lv_obj_t *parent, const char *caption);
 static lv_obj_t *screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
                                                               const char *label_text,
-                                                              const char *value_text);
+                                                              const char *value_text,
+                                                              bool is_editable);
 static lv_obj_t *screen_recipe_draft_brewing_create_disabled_modify_button(lv_obj_t *parent);
 static void screen_recipe_draft_brewing_format_liters(char *buffer,
                                                       size_t buffer_size,
@@ -132,11 +133,13 @@ static lv_obj_t *screen_recipe_draft_brewing_create_group(lv_obj_t *parent, cons
 
 static lv_obj_t *screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
                                                               const char *label_text,
-                                                              const char *value_text)
+                                                              const char *value_text,
+                                                              bool is_editable)
 {
     lv_obj_t *row;
     lv_obj_t *label;
     lv_obj_t *value;
+    lv_obj_t *edit_icon;
 
     row = lv_obj_create(parent);
     screen_recipe_draft_brewing_set_static(row);
@@ -156,12 +159,21 @@ static lv_obj_t *screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
     value = lv_label_create(row);
     lv_label_set_text(value, value_text);
     lv_label_set_long_mode(value, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(value, lv_pct(38));
+    lv_obj_set_width(value, is_editable ? lv_pct(28) : lv_pct(38));
     lv_obj_set_style_text_color(value, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(value, LV_ALIGN_RIGHT_MID, 0, 0);
+    lv_obj_align(value, LV_ALIGN_RIGHT_MID, is_editable ? -22 : 0, 0);
 
     lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_remove_flag(value, LV_OBJ_FLAG_CLICKABLE);
+    if (is_editable)
+    {
+        edit_icon = lv_label_create(row);
+        lv_label_set_text(edit_icon, LV_SYMBOL_EDIT);
+        lv_obj_set_style_text_color(edit_icon, lv_color_hex(0xE67526), 0);
+        lv_obj_align(edit_icon, LV_ALIGN_RIGHT_MID, 0, 0);
+        lv_obj_remove_flag(edit_icon, LV_OBJ_FLAG_CLICKABLE);
+    }
+
     return row;
 }
 
@@ -260,7 +272,7 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     screen_recipe_draft_brewing_format_liters(value_text,
                                               sizeof(value_text),
                                               draft->brewing.mash_in_water_dl);
-    mash_water_row = screen_recipe_draft_brewing_create_value_row(water_group, "Mash water", value_text);
+    mash_water_row = screen_recipe_draft_brewing_create_value_row(water_group, "Mash water", value_text, true);
     lv_obj_add_flag(mash_water_row, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_color(mash_water_row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
     lv_obj_add_event_cb(mash_water_row,
@@ -270,24 +282,24 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     screen_recipe_draft_brewing_format_temp(value_text,
                                             sizeof(value_text),
                                             draft->brewing.mash_in_temperature_c);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Mash in temp", value_text);
+    screen_recipe_draft_brewing_create_value_row(water_group, "Mash in temp", value_text, false);
     screen_recipe_draft_brewing_format_liters(value_text,
                                               sizeof(value_text),
                                               draft->brewing.sparge_water_dl);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge water", value_text);
+    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge water", value_text, false);
     screen_recipe_draft_brewing_format_temp(value_text,
                                             sizeof(value_text),
                                             draft->brewing.sparge_temperature_c);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge temp", value_text);
+    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge temp", value_text, false);
     screen_recipe_draft_brewing_format_minutes(value_text,
                                                sizeof(value_text),
                                                draft->brewing.sparge_time_min);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge time", value_text);
+    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge time", value_text, false);
 
     mash_group = screen_recipe_draft_brewing_create_group(brewing->body, "MASH");
     if (draft->brewing.mash_step_count == 0U)
     {
-        screen_recipe_draft_brewing_create_value_row(mash_group, "No mash steps", "--");
+        screen_recipe_draft_brewing_create_value_row(mash_group, "No mash steps", "--", false);
     }
     for (index = 0U; index < draft->brewing.mash_step_count && index < RECIPE_DRAFT_MAX_MASH_STEPS; ++index)
     {
@@ -297,22 +309,22 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
                  "%u C / %u min",
                  (unsigned int)draft->brewing.mash_steps[index].temperature_c,
                  (unsigned int)draft->brewing.mash_steps[index].time_min);
-        screen_recipe_draft_brewing_create_value_row(mash_group, step_name, value_text);
+        screen_recipe_draft_brewing_create_value_row(mash_group, step_name, value_text, false);
     }
 
     boil_group = screen_recipe_draft_brewing_create_group(brewing->body, "BOIL / COOLING");
     screen_recipe_draft_brewing_format_minutes(value_text,
                                                sizeof(value_text),
                                                draft->brewing.boil_time_min);
-    screen_recipe_draft_brewing_create_value_row(boil_group, "Boil time", value_text);
+    screen_recipe_draft_brewing_create_value_row(boil_group, "Boil time", value_text, false);
     screen_recipe_draft_brewing_format_minutes(value_text,
                                                sizeof(value_text),
                                                draft->brewing.delayed_hopping_min);
-    screen_recipe_draft_brewing_create_value_row(boil_group, "Delayed hops", value_text);
+    screen_recipe_draft_brewing_create_value_row(boil_group, "Delayed hops", value_text, false);
     screen_recipe_draft_brewing_format_temp(value_text,
                                             sizeof(value_text),
                                             draft->brewing.cooling_target_c);
-    screen_recipe_draft_brewing_create_value_row(boil_group, "Cooling target", value_text);
+    screen_recipe_draft_brewing_create_value_row(boil_group, "Cooling target", value_text, false);
 }
 
 static void screen_recipe_draft_brewing_nav_event_cb(lv_event_t *event)

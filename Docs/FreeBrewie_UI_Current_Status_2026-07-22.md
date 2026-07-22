@@ -70,7 +70,8 @@ The following is currently proven on the real SOM target:
   the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a `SELECT STYLE` picker backed
   by `Logic/Style_catalog` and starter data in `Data/styles.json`; calculated values remain
   placeholders until the real recipe calculation path exists, but `Batch size` is now the
-  first editable numeric field through reusable `UI_number_editor`
+  first editable numeric field through reusable `UI_number_editor`; editable overview rows
+  use a small orange pencil icon as their tap-to-edit affordance
 - the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
   disabled `MODIFY LATER` action; Fermentables and Hops now render from fixed RAM-only
@@ -78,7 +79,7 @@ The following is currently proven on the real SOM target:
 - the draft recipe `BREWING` button now opens a real local-only Brewing screen shaped
   after the old UI, with Water, Mash, Boil, and Cooling rows rendered from RAM-only
   brewing-process values in `Logic/Recipe_draft`; `Mash water` now reuses
-  `UI_number_editor` as the first editable Brewing value
+  `UI_number_editor` as the first editable Brewing value and uses the same pencil marker
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar

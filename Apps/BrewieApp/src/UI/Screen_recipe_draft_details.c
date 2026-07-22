@@ -17,6 +17,7 @@ static lv_obj_t *screen_recipe_draft_details_create_panel(lv_obj_t *parent, cons
 static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
                                                               const char *label_text,
                                                               const char *value_text,
+                                                              bool is_editable,
                                                               lv_obj_t **value_label);
 static lv_obj_t *screen_recipe_draft_details_create_modify_button(lv_obj_t *parent,
                                                                   screen_recipe_draft_details_t *details);
@@ -150,11 +151,13 @@ static lv_obj_t *screen_recipe_draft_details_create_panel(lv_obj_t *parent, cons
 static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
                                                               const char *label_text,
                                                               const char *value_text,
+                                                              bool is_editable,
                                                               lv_obj_t **value_label)
 {
     lv_obj_t *row;
     lv_obj_t *label;
     lv_obj_t *value;
+    lv_obj_t *edit_icon;
 
     row = lv_obj_create(parent);
     screen_recipe_draft_details_set_static(row);
@@ -174,12 +177,21 @@ static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
     *value_label = lv_label_create(row);
     lv_label_set_text(*value_label, value_text);
     lv_label_set_long_mode(*value_label, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(*value_label, lv_pct(48));
+    lv_obj_set_width(*value_label, is_editable ? lv_pct(38) : lv_pct(48));
     lv_obj_set_style_text_color(*value_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(*value_label, LV_ALIGN_RIGHT_MID, 0, 0);
+    lv_obj_align(*value_label, LV_ALIGN_RIGHT_MID, is_editable ? -22 : 0, 0);
 
     lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_remove_flag(*value_label, LV_OBJ_FLAG_CLICKABLE);
+    if (is_editable)
+    {
+        edit_icon = lv_label_create(row);
+        lv_label_set_text(edit_icon, LV_SYMBOL_EDIT);
+        lv_obj_set_style_text_color(edit_icon, lv_color_hex(0xE67526), 0);
+        lv_obj_align(edit_icon, LV_ALIGN_RIGHT_MID, 0, 0);
+        lv_obj_remove_flag(edit_icon, LV_OBJ_FLAG_CLICKABLE);
+    }
+
     return row;
 }
 
@@ -602,28 +614,34 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
     screen_recipe_draft_details_create_value_row(style_panel,
                                                  "Style",
                                                  "--",
+                                                 false,
                                                  &details->style_name_label);
     screen_recipe_draft_details_create_value_row(style_panel,
                                                  "BJCP number",
                                                  "--",
+                                                 false,
                                                  &details->style_number_label);
     screen_recipe_draft_details_create_value_row(style_panel,
                                                  "Category",
                                                  "--",
+                                                 false,
                                                  &details->style_category_label);
     screen_recipe_draft_details_create_value_row(style_panel,
                                                  "Type",
                                                  "--",
+                                                 false,
                                                  &details->style_type_label);
 
     calculated_panel = screen_recipe_draft_details_create_panel(body, "CALCULATED VALUES");
     screen_recipe_draft_details_create_value_row(calculated_panel,
                                                  "Efficiency",
                                                  "--",
+                                                 false,
                                                  &details->efficiency_label);
     details->batch_size_row = screen_recipe_draft_details_create_value_row(calculated_panel,
                                                                            "Batch size",
                                                                            "--",
+                                                                           true,
                                                                            &details->batch_size_label);
     lv_obj_add_flag(details->batch_size_row, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_style_bg_color(details->batch_size_row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
@@ -631,11 +649,11 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
                         screen_recipe_draft_details_batch_size_event_cb,
                         LV_EVENT_CLICKED,
                         details);
-    screen_recipe_draft_details_create_value_row(calculated_panel, "ABV", "--", &details->abv_label);
-    screen_recipe_draft_details_create_value_row(calculated_panel, "SRM", "--", &details->srm_label);
-    screen_recipe_draft_details_create_value_row(calculated_panel, "IBU", "--", &details->ibu_label);
-    screen_recipe_draft_details_create_value_row(calculated_panel, "OG", "--", &details->og_label);
-    screen_recipe_draft_details_create_value_row(calculated_panel, "FG", "--", &details->fg_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "ABV", "--", false, &details->abv_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "SRM", "--", false, &details->srm_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "IBU", "--", false, &details->ibu_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "OG", "--", false, &details->og_label);
+    screen_recipe_draft_details_create_value_row(calculated_panel, "FG", "--", false, &details->fg_label);
 
     screen_recipe_draft_details_create_modify_button(container, details);
     screen_recipe_draft_details_create_style_picker(details);
