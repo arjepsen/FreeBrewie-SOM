@@ -69,7 +69,8 @@ The following is currently proven on the real SOM target:
 - the draft recipe `DETAILS` button now opens a real local-only Details screen shaped after
   the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a `SELECT STYLE` picker backed
   by `Logic/Style_catalog` and starter data in `Data/styles.json`; calculated values remain
-  placeholders until the real recipe calculation path exists
+  placeholders until the real recipe calculation path exists, but `Batch size` is now the
+  first editable numeric field through reusable `UI_number_editor`
 - the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
   disabled `MODIFY LATER` action; Fermentables and Hops now render from fixed RAM-only

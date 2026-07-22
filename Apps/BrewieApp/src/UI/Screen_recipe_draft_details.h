@@ -14,6 +14,7 @@
 
 #include "Logic/Recipe_draft.h"
 #include "Logic/Style_catalog.h"
+#include "UI_number_editor.h"
 #include "UI_types.h"
 #include "lvgl.h"
 
@@ -58,8 +59,12 @@ typedef struct screen_recipe_draft_details_t
     lv_obj_t *ibu_label;
     lv_obj_t *og_label;
     lv_obj_t *fg_label;
+    /** Clickable row that opens the batch-size numeric editor. */
+    lv_obj_t *batch_size_row;
     /** Local style picker overlay shown by the Modify button. */
     lv_obj_t *style_picker_overlay;
+    /** Reusable local numeric editor, first used by Batch size. */
+    ui_number_editor_t batch_size_editor;
     /** Draft model edited by this screen's local-only style picker. */
     recipe_draft_t *draft;
     /** Persistent button contexts for style option callbacks. */

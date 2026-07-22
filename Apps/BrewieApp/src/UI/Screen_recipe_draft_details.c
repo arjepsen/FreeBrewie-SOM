@@ -14,10 +14,10 @@ static lv_obj_t *screen_recipe_draft_details_create_nav_button(
     lv_align_t align,
     screen_recipe_draft_details_nav_context_t *context);
 static lv_obj_t *screen_recipe_draft_details_create_panel(lv_obj_t *parent, const char *caption);
-static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
-                                                         const char *label_text,
-                                                         const char *value_text,
-                                                         lv_obj_t **value_label);
+static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
+                                                              const char *label_text,
+                                                              const char *value_text,
+                                                              lv_obj_t **value_label);
 static lv_obj_t *screen_recipe_draft_details_create_modify_button(lv_obj_t *parent,
                                                                   screen_recipe_draft_details_t *details);
 static void screen_recipe_draft_details_create_style_picker(screen_recipe_draft_details_t *details);
@@ -43,6 +43,8 @@ static void screen_recipe_draft_details_format_gravity(char *buffer,
                                                        uint16_t value_points);
 static void screen_recipe_draft_details_set_text_if_changed(lv_obj_t *label, const char *text);
 static void screen_recipe_draft_details_nav_event_cb(lv_event_t *event);
+static void screen_recipe_draft_details_batch_size_event_cb(lv_event_t *event);
+static void screen_recipe_draft_details_batch_size_commit_cb(uint16_t value, void *user_data);
 static void screen_recipe_draft_details_modify_event_cb(lv_event_t *event);
 static void screen_recipe_draft_details_style_option_event_cb(lv_event_t *event);
 
@@ -145,10 +147,10 @@ static lv_obj_t *screen_recipe_draft_details_create_panel(lv_obj_t *parent, cons
 /****************************************************************************************
  * @brief Create one compact label/value row inside a details panel.
  ****************************************************************************************/
-static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
-                                                         const char *label_text,
-                                                         const char *value_text,
-                                                         lv_obj_t **value_label)
+static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
+                                                              const char *label_text,
+                                                              const char *value_text,
+                                                              lv_obj_t **value_label)
 {
     lv_obj_t *row;
     lv_obj_t *label;
@@ -178,6 +180,7 @@ static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
 
     lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_remove_flag(*value_label, LV_OBJ_FLAG_CLICKABLE);
+    return row;
 }
 
 static lv_obj_t *screen_recipe_draft_details_create_modify_button(lv_obj_t *parent,
@@ -463,6 +466,49 @@ static void screen_recipe_draft_details_nav_event_cb(lv_event_t *event)
     context->handler(context->action, context->value, context->user_data);
 }
 
+static void screen_recipe_draft_details_batch_size_event_cb(lv_event_t *event)
+{
+    screen_recipe_draft_details_t *details;
+    uint16_t current_value;
+
+    details = lv_event_get_user_data(event);
+    if (details == NULL || details->draft == NULL)
+    {
+        return;
+    }
+
+    current_value = details->draft->calculated.batch_size_dl;
+    if (current_value == 0U)
+    {
+        current_value = 200U;
+    }
+
+    ui_number_editor_show(&details->batch_size_editor,
+                          "BATCH SIZE",
+                          "L",
+                          current_value,
+                          50U,
+                          300U,
+                          5U,
+                          true,
+                          screen_recipe_draft_details_batch_size_commit_cb,
+                          details);
+}
+
+static void screen_recipe_draft_details_batch_size_commit_cb(uint16_t value, void *user_data)
+{
+    screen_recipe_draft_details_t *details;
+
+    details = user_data;
+    if (details == NULL || details->draft == NULL)
+    {
+        return;
+    }
+
+    recipe_draft_set_batch_size_dl(details->draft, value);
+    screen_recipe_draft_details_show(details, details->draft);
+}
+
 static void screen_recipe_draft_details_modify_event_cb(lv_event_t *event)
 {
     screen_recipe_draft_details_t *details;
@@ -575,10 +621,16 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
                                                  "Efficiency",
                                                  "--",
                                                  &details->efficiency_label);
-    screen_recipe_draft_details_create_value_row(calculated_panel,
-                                                 "Batch size",
-                                                 "--",
-                                                 &details->batch_size_label);
+    details->batch_size_row = screen_recipe_draft_details_create_value_row(calculated_panel,
+                                                                           "Batch size",
+                                                                           "--",
+                                                                           &details->batch_size_label);
+    lv_obj_add_flag(details->batch_size_row, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(details->batch_size_row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
+    lv_obj_add_event_cb(details->batch_size_row,
+                        screen_recipe_draft_details_batch_size_event_cb,
+                        LV_EVENT_CLICKED,
+                        details);
     screen_recipe_draft_details_create_value_row(calculated_panel, "ABV", "--", &details->abv_label);
     screen_recipe_draft_details_create_value_row(calculated_panel, "SRM", "--", &details->srm_label);
     screen_recipe_draft_details_create_value_row(calculated_panel, "IBU", "--", &details->ibu_label);
@@ -587,6 +639,7 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
 
     screen_recipe_draft_details_create_modify_button(container, details);
     screen_recipe_draft_details_create_style_picker(details);
+    ui_number_editor_init(&details->batch_size_editor, details->screen);
 }
 
 /****************************************************************************************

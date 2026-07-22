@@ -365,6 +365,8 @@ Current file set:
 - `UI.h`
 - `UI_dialog.c`
 - `UI_dialog.h`
+- `UI_number_editor.c`
+- `UI_number_editor.h`
 - `UI_scroll.c`
 - `UI_scroll.h`
 - `UI_status_bar.c`
@@ -715,6 +717,23 @@ Must not own:
 - persistence
 - hardware actions
 - screen navigation
+
+### `UI_number_editor`
+Owns:
+- reusable bounded numeric editor modal
+- caller-provided min/max/step handling
+- integer-only value display, including deciliters shown as liters without floating point
+
+Must not own:
+- recipe fields
+- validation policy beyond caller-provided bounds
+- persistence
+- hardware actions
+
+Important current fact:
+`UI_number_editor` is first used by the draft Details `Batch size` row. It commits a
+bounded `uint16_t` through a caller callback, so future water-volume, temperature, and time
+fields can reuse the same interaction pattern without duplicating LVGL modal code.
 
 ### `UI_scroll`
 Owns:

@@ -168,6 +168,23 @@ void recipe_draft_set_style(recipe_draft_t *draft, const style_catalog_style_t *
 }
 
 /****************************************************************************************
+ * @brief Store the selected batch size as deciliters.
+ *
+ * Keeping this in deciliters avoids floating point in the model while still showing one
+ * decimal place in the UI, for example 200 means 20.0 L.
+ ****************************************************************************************/
+void recipe_draft_set_batch_size_dl(recipe_draft_t *draft, uint16_t batch_size_dl)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->calculated.batch_size_dl = batch_size_dl;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
  * @brief Fill the RAM-only draft with a small sample recipe profile.
  *
  * This is temporary UI scaffolding. It gives the draft Details screen real model-owned
