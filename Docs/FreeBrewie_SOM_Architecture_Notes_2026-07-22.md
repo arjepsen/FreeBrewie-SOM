@@ -534,20 +534,22 @@ file, or route any brewing action.
 
 ### `Screen_recipe_draft_brewing`
 Owns:
-- safe old-Brewie-inspired read-only Brewing section for a local draft recipe
+- safe old-Brewie-inspired Brewing section for a local draft recipe
 - display of the draft recipe name
 - local Water, Mash, Boil, and Cooling panels
-- disabled `MODIFY LATER` presentation
+- first local numeric edit path for `Mash water`
 
 Must not own yet:
-- mash/water/boil/cooling editing forms
+- full mash/water/boil/cooling editing forms
 - brewing validation
 - recipe persistence
 - brewing preflight or hardware actions
 
 Important current fact:
 `Screen_recipe_draft_brewing` mirrors the old Brewing view shape before implementing the
-old edit forms. Its values render from `Logic/Recipe_draft` and remain local-only.
+old edit forms. Its values render from `Logic/Recipe_draft`; `Mash water` now opens
+`UI_number_editor` and commits back to the RAM-only draft without saving, validating, or
+contacting the MCU.
 
 ### `Screen_recipe_draft_details`
 Owns:

@@ -131,6 +131,7 @@ void recipe_draft_reset(recipe_draft_t *draft);
 void recipe_draft_set_name(recipe_draft_t *draft, const char *name);
 void recipe_draft_set_style(recipe_draft_t *draft, const style_catalog_style_t *style);
 void recipe_draft_set_batch_size_dl(recipe_draft_t *draft, uint16_t batch_size_dl);
+void recipe_draft_set_mash_in_water_dl(recipe_draft_t *draft, uint16_t mash_in_water_dl);
 void recipe_draft_apply_sample(recipe_draft_t *draft);
 const char *recipe_draft_get_name(const recipe_draft_t *draft);
 bool recipe_draft_has_name(const recipe_draft_t *draft);

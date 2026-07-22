@@ -185,6 +185,23 @@ void recipe_draft_set_batch_size_dl(recipe_draft_t *draft, uint16_t batch_size_d
 }
 
 /****************************************************************************************
+ * @brief Store the mash-in water amount as deciliters.
+ *
+ * This is an editable brewing-process field, not a command to fill water. The actual MCU
+ * action path will come later through validation and brewing start/preflight logic.
+ ****************************************************************************************/
+void recipe_draft_set_mash_in_water_dl(recipe_draft_t *draft, uint16_t mash_in_water_dl)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.mash_in_water_dl = mash_in_water_dl;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
  * @brief Fill the RAM-only draft with a small sample recipe profile.
  *
  * This is temporary UI scaffolding. It gives the draft Details screen real model-owned

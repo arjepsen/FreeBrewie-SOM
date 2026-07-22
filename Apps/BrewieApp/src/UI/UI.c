@@ -176,7 +176,10 @@ static void ui_show_screen(ui_t *ui,
 
         if (!ui->recipe_draft_brewing_created)
         {
-            screen_recipe_draft_brewing_init(&ui->recipe_draft_brewing, ui_handle_action, ui);
+            screen_recipe_draft_brewing_init(&ui->recipe_draft_brewing,
+                                             &ui->recipe_draft,
+                                             ui_handle_action,
+                                             ui);
             ui->recipe_draft_brewing_created = true;
         }
 

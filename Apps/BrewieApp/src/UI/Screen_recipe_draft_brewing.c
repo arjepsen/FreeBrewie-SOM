@@ -14,9 +14,9 @@ static lv_obj_t *screen_recipe_draft_brewing_create_nav_button(
     lv_align_t align,
     screen_recipe_draft_brewing_nav_context_t *context);
 static lv_obj_t *screen_recipe_draft_brewing_create_group(lv_obj_t *parent, const char *caption);
-static void screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
-                                                         const char *label_text,
-                                                         const char *value_text);
+static lv_obj_t *screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
+                                                              const char *label_text,
+                                                              const char *value_text);
 static lv_obj_t *screen_recipe_draft_brewing_create_disabled_modify_button(lv_obj_t *parent);
 static void screen_recipe_draft_brewing_format_liters(char *buffer,
                                                       size_t buffer_size,
@@ -31,6 +31,8 @@ static void screen_recipe_draft_brewing_set_text_if_changed(lv_obj_t *label, con
 static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing_t *brewing,
                                                      const recipe_draft_t *draft);
 static void screen_recipe_draft_brewing_nav_event_cb(lv_event_t *event);
+static void screen_recipe_draft_brewing_mash_water_event_cb(lv_event_t *event);
+static void screen_recipe_draft_brewing_mash_water_commit_cb(uint16_t value, void *user_data);
 
 /****************************************************************************************
  * @brief Make an object static so it cannot become a tiny scroll target.
@@ -128,9 +130,9 @@ static lv_obj_t *screen_recipe_draft_brewing_create_group(lv_obj_t *parent, cons
     return group;
 }
 
-static void screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
-                                                         const char *label_text,
-                                                         const char *value_text)
+static lv_obj_t *screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
+                                                              const char *label_text,
+                                                              const char *value_text)
 {
     lv_obj_t *row;
     lv_obj_t *label;
@@ -160,6 +162,7 @@ static void screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
 
     lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_remove_flag(value, LV_OBJ_FLAG_CLICKABLE);
+    return row;
 }
 
 static lv_obj_t *screen_recipe_draft_brewing_create_disabled_modify_button(lv_obj_t *parent)
@@ -246,6 +249,7 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     lv_obj_t *mash_group;
     lv_obj_t *water_group;
     lv_obj_t *boil_group;
+    lv_obj_t *mash_water_row;
     char value_text[24];
     char step_name[16];
     uint8_t index;
@@ -256,7 +260,13 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     screen_recipe_draft_brewing_format_liters(value_text,
                                               sizeof(value_text),
                                               draft->brewing.mash_in_water_dl);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Mash water", value_text);
+    mash_water_row = screen_recipe_draft_brewing_create_value_row(water_group, "Mash water", value_text);
+    lv_obj_add_flag(mash_water_row, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(mash_water_row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
+    lv_obj_add_event_cb(mash_water_row,
+                        screen_recipe_draft_brewing_mash_water_event_cb,
+                        LV_EVENT_CLICKED,
+                        brewing);
     screen_recipe_draft_brewing_format_temp(value_text,
                                             sizeof(value_text),
                                             draft->brewing.mash_in_temperature_c);
@@ -318,7 +328,51 @@ static void screen_recipe_draft_brewing_nav_event_cb(lv_event_t *event)
     context->handler(context->action, context->value, context->user_data);
 }
 
+static void screen_recipe_draft_brewing_mash_water_event_cb(lv_event_t *event)
+{
+    screen_recipe_draft_brewing_t *brewing;
+    uint16_t current_value;
+
+    brewing = lv_event_get_user_data(event);
+    if (brewing == NULL || brewing->draft == NULL)
+    {
+        return;
+    }
+
+    current_value = brewing->draft->brewing.mash_in_water_dl;
+    if (current_value == 0U)
+    {
+        current_value = 150U;
+    }
+
+    ui_number_editor_show(&brewing->mash_water_editor,
+                          "MASH WATER",
+                          "L",
+                          current_value,
+                          20U,
+                          300U,
+                          5U,
+                          true,
+                          screen_recipe_draft_brewing_mash_water_commit_cb,
+                          brewing);
+}
+
+static void screen_recipe_draft_brewing_mash_water_commit_cb(uint16_t value, void *user_data)
+{
+    screen_recipe_draft_brewing_t *brewing;
+
+    brewing = user_data;
+    if (brewing == NULL || brewing->draft == NULL)
+    {
+        return;
+    }
+
+    recipe_draft_set_mash_in_water_dl(brewing->draft, value);
+    screen_recipe_draft_brewing_show(brewing, brewing->draft);
+}
+
 void screen_recipe_draft_brewing_init(screen_recipe_draft_brewing_t *brewing,
+                                      recipe_draft_t *draft,
                                       ui_action_handler_t action_handler,
                                       void *user_data)
 {
@@ -330,6 +384,7 @@ void screen_recipe_draft_brewing_init(screen_recipe_draft_brewing_t *brewing,
     }
 
     memset(brewing, 0, sizeof(*brewing));
+    brewing->draft = draft;
     brewing->back_button_context.action = UI_ACTION_SHOW_RECIPE_DRAFT_MENU;
     brewing->back_button_context.handler = action_handler;
     brewing->back_button_context.user_data = user_data;
@@ -369,6 +424,7 @@ void screen_recipe_draft_brewing_init(screen_recipe_draft_brewing_t *brewing,
     lv_obj_set_flex_flow(brewing->body, LV_FLEX_FLOW_COLUMN);
 
     screen_recipe_draft_brewing_create_disabled_modify_button(container);
+    ui_number_editor_init(&brewing->mash_water_editor, brewing->screen);
 }
 
 /****************************************************************************************

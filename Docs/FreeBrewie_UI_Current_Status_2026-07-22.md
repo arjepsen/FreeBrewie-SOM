@@ -77,7 +77,8 @@ The following is currently proven on the real SOM target:
   arrays in `Logic/Recipe_draft`
 - the draft recipe `BREWING` button now opens a real local-only Brewing screen shaped
   after the old UI, with Water, Mash, Boil, and Cooling rows rendered from RAM-only
-  brewing-process values in `Logic/Recipe_draft`
+  brewing-process values in `Logic/Recipe_draft`; `Mash water` now reuses
+  `UI_number_editor` as the first editable Brewing value
 - the selected recipe detail screen now has old-style section destinations for Details,
   Ingredients, Brewing, and Fermentation, each routed to a safe read-only section screen
 - recipe detail now keeps `BREW` as the true bottom action and uses the shared scrollbar
