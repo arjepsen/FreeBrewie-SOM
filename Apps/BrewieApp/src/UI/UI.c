@@ -257,8 +257,7 @@ static void ui_show_screen(ui_t *ui,
             ui->recipe_draft_menu_created = true;
         }
 
-        screen_recipe_draft_menu_show(&ui->recipe_draft_menu,
-                                      recipe_draft_get_name(&ui->recipe_draft));
+        screen_recipe_draft_menu_show(&ui->recipe_draft_menu, &ui->recipe_draft);
         screen = ui->recipe_draft_menu.screen;
     }
     else if (screen_id == UI_SCREEN_RECIPE_SECTION)

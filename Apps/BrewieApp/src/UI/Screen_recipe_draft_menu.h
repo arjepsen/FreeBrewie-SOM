@@ -12,6 +12,7 @@
 
 #include <stdint.h>
 
+#include "Logic/Recipe_draft.h"
 #include "UI_dialog.h"
 #include "UI_types.h"
 #include "lvgl.h"
@@ -68,6 +69,6 @@ void screen_recipe_draft_menu_init(screen_recipe_draft_menu_t *draft_menu,
                                    ui_action_handler_t action_handler,
                                    void *user_data);
 void screen_recipe_draft_menu_show(screen_recipe_draft_menu_t *draft_menu,
-                                   const char *draft_name);
+                                   const recipe_draft_t *draft);
 
 #endif

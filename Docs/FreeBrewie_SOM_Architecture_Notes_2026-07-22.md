@@ -277,7 +277,10 @@ Current fact:
 Fermentables/Hops arrays, establishing the correct boundary before storage, keyboard input,
 BeerXML/BeerJSON mapping, or Brewfather API sync is added. It stores the selected style
 values, but does not own the available style catalog. Recipe Builder and draft screens
-should render/edit this model instead of owning recipe values themselves.
+should render/edit this model instead of owning recipe values themselves. It also exposes
+the first lightweight completeness check used by the draft menu to tell the user which
+recipe section still needs data. This check is not hardware safety validation; real brew
+start still needs app-level preflight, machine state, fault state, and MCU readiness.
 
 ### `Style_catalog`
 Owns:
@@ -516,13 +519,14 @@ still absent.
 Owns:
 - safe old-Brewie-inspired menu for a newly named local draft recipe
 - local display of the draft recipe name
+- local display of the draft completeness status returned by `Logic/Recipe_draft`
 - old-style section buttons for Details, Ingredients, Brewing, and Fermentation
 - local-only section explanation dialog for sections that do not have screens yet
 - disabled `BREW LATER` presentation
 
 Must not own yet:
 - recipe persistence
-- recipe validation
+- recipe validation policy
 - real section editing forms
 - brewing preflight or start behavior
 - direct hardware control
@@ -530,7 +534,8 @@ Must not own yet:
 Important current fact:
 `Screen_recipe_draft_menu` is intentionally local-only. It is the next visual/navigation
 step after naming a recipe, but it does not insert a recipe into `Recipe_catalog`, save a
-file, or route any brewing action.
+file, or route any brewing action. It displays the draft model's completeness status, but
+it does not decide whether the machine is safe to start.
 
 ### `Screen_recipe_draft_brewing`
 Owns:

@@ -374,16 +374,29 @@ void screen_recipe_draft_menu_init(screen_recipe_draft_menu_t *draft_menu,
 }
 
 /****************************************************************************************
- * @brief Show a RAM-only draft name without creating or saving a real recipe.
+ * @brief Show RAM-only draft status without creating or saving a real recipe.
  ****************************************************************************************/
 void screen_recipe_draft_menu_show(screen_recipe_draft_menu_t *draft_menu,
-                                   const char *draft_name)
+                                   const recipe_draft_t *draft)
 {
-    if (draft_menu == NULL || draft_name == NULL || draft_menu->shown_name == draft_name)
+    recipe_draft_validation_t validation;
+    const char *draft_name;
+
+    if (draft_menu == NULL || draft == NULL)
     {
         return;
     }
 
-    lv_label_set_text(draft_menu->name_label, draft_name);
-    draft_menu->shown_name = draft_name;
+    draft_name = recipe_draft_get_name(draft);
+    if (draft_menu->shown_name != draft_name)
+    {
+        lv_label_set_text(draft_menu->name_label, draft_name);
+        draft_menu->shown_name = draft_name;
+    }
+
+    recipe_draft_validate(draft, &validation);
+    lv_label_set_text(draft_menu->style_label, validation.status_text);
+    lv_obj_set_style_text_color(draft_menu->style_label,
+                                validation.can_brew ? lv_color_hex(0x6BBF59) : lv_color_hex(0xE67526),
+                                0);
 }

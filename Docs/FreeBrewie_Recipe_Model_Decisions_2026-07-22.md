@@ -340,11 +340,13 @@ Implemented first:
 - added the first ordered RAM-only fermentation schedule for the Fermentation screen
 - added bounded recipe-name text entry through `UI_text_editor`, with the committed name
   stored in `Logic/Recipe_draft`
+- added the first RAM-only draft completeness check, so the draft menu can tell the user
+  which recipe-data section still needs attention before future preflight
 - kept the draft in memory only
 - kept all MCU output disabled
 
 Next code steps:
-- add validation
 - define the first draft-to-process-plan conversion shape before hardware-affecting brewing
   starts
+- expand validation when the process-plan and hardware preflight boundaries are defined
 - then design storage with versioning

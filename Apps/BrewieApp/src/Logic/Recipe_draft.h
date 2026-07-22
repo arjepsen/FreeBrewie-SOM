@@ -147,6 +147,14 @@ typedef struct
     bool dirty;
 } recipe_draft_t;
 
+typedef struct
+{
+    /** True when the draft has enough data for a future preflight/brew-start path. */
+    bool can_brew;
+    /** Short human-readable reason used by the draft menu status line. */
+    const char *status_text;
+} recipe_draft_validation_t;
+
 void recipe_draft_init(recipe_draft_t *draft);
 void recipe_draft_reset(recipe_draft_t *draft);
 void recipe_draft_set_name(recipe_draft_t *draft, const char *name);
@@ -170,5 +178,6 @@ void recipe_draft_apply_sample(recipe_draft_t *draft);
 const char *recipe_draft_get_name(const recipe_draft_t *draft);
 bool recipe_draft_has_name(const recipe_draft_t *draft);
 bool recipe_draft_is_dirty(const recipe_draft_t *draft);
+void recipe_draft_validate(const recipe_draft_t *draft, recipe_draft_validation_t *validation);
 
 #endif

@@ -10,6 +10,9 @@ static void recipe_draft_clear_details(recipe_draft_t *draft);
 static void recipe_draft_clear_ingredients(recipe_draft_t *draft);
 static void recipe_draft_clear_brewing(recipe_draft_t *draft);
 static void recipe_draft_clear_fermentation(recipe_draft_t *draft);
+static bool recipe_draft_has_selected_style(const recipe_draft_t *draft);
+static bool recipe_draft_has_complete_brewing_basics(const recipe_draft_t *draft);
+static bool recipe_draft_has_complete_fermentation_basics(const recipe_draft_t *draft);
 
 /****************************************************************************************
  * @brief Clear detail fields to stable placeholders.
@@ -109,6 +112,44 @@ static void recipe_draft_clear_fermentation(recipe_draft_t *draft)
         draft->fermentation.steps[index].temperature_c = 0U;
         draft->fermentation.steps[index].duration_days = 0U;
     }
+}
+
+static bool recipe_draft_has_selected_style(const recipe_draft_t *draft)
+{
+    return draft->style.style_name != NULL &&
+           strcmp(draft->style.style_name, RECIPE_DRAFT_PLACEHOLDER_TEXT) != 0;
+}
+
+static bool recipe_draft_has_complete_brewing_basics(const recipe_draft_t *draft)
+{
+    return draft->brewing.mash_in_water_dl > 0U &&
+           draft->brewing.mash_in_temperature_c > 0U &&
+           draft->brewing.mash_step_count > 0U &&
+           draft->brewing.boil_time_min > 0U &&
+           draft->brewing.cooling_target_c > 0U;
+}
+
+static bool recipe_draft_has_complete_fermentation_basics(const recipe_draft_t *draft)
+{
+    uint8_t index;
+
+    if (draft->fermentation.step_count == 0U)
+    {
+        return false;
+    }
+
+    for (index = 0U;
+         index < draft->fermentation.step_count && index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS;
+         ++index)
+    {
+        if (draft->fermentation.steps[index].temperature_c == 0U ||
+            draft->fermentation.steps[index].duration_days == 0U)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /****************************************************************************************
@@ -464,4 +505,64 @@ bool recipe_draft_is_dirty(const recipe_draft_t *draft)
     }
 
     return draft->dirty;
+}
+
+/****************************************************************************************
+ * @brief Check whether the RAM-only draft is complete enough to start future preflight.
+ *
+ * This is deliberately not hardware safety validation. It only answers whether the draft
+ * recipe has the first required recipe sections filled in. Real brewing will still need a
+ * separate preflight path through app logic, machine state, faults, and MCU readiness.
+ ****************************************************************************************/
+void recipe_draft_validate(const recipe_draft_t *draft, recipe_draft_validation_t *validation)
+{
+    if (validation == NULL)
+    {
+        return;
+    }
+
+    validation->can_brew = false;
+    validation->status_text = "Missing recipe name";
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    if (!recipe_draft_has_name(draft))
+    {
+        return;
+    }
+
+    validation->status_text = "Missing beer style";
+    if (!recipe_draft_has_selected_style(draft))
+    {
+        return;
+    }
+
+    validation->status_text = "Missing batch size";
+    if (draft->calculated.batch_size_dl == 0U)
+    {
+        return;
+    }
+
+    validation->status_text = "Missing ingredients";
+    if (draft->fermentable_count == 0U || draft->hop_count == 0U)
+    {
+        return;
+    }
+
+    validation->status_text = "Missing brewing steps";
+    if (!recipe_draft_has_complete_brewing_basics(draft))
+    {
+        return;
+    }
+
+    validation->status_text = "Missing fermentation";
+    if (!recipe_draft_has_complete_fermentation_basics(draft))
+    {
+        return;
+    }
+
+    validation->can_brew = true;
+    validation->status_text = "Draft ready for preflight";
 }
