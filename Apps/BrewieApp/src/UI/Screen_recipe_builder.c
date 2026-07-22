@@ -219,7 +219,7 @@ static void screen_recipe_builder_show_name_editor(screen_recipe_builder_t *buil
     }
 
     ui_text_editor_show(&builder->name_editor,
-                        "Name your recipe",
+                        "RECIPE NAME",
                         recipe_draft_has_name(builder->draft) ? recipe_draft_get_name(builder->draft) : "",
                         screen_recipe_builder_commit_name,
                         builder);

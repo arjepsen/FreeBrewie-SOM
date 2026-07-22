@@ -5,9 +5,9 @@
  * @file Screen_recipe_draft_details.h
  * @brief Local-only old-Brewie-style details screen for a draft recipe.
  *
- * Responsibility: show the read-only Details section shape for an unsaved draft recipe.
- * Owns: draft Details LVGL objects and navigation callbacks.
- * Must not own: recipe persistence, style database selection, validation, or MCU commands.
+ * Responsibility: show and edit draft Details values that are safe to change locally.
+ * Owns: draft Details LVGL objects, the local style picker overlay, and navigation callbacks.
+ * Must not own: recipe persistence, full style database/import mapping, validation, or MCU commands.
  ****************************************************************************************/
 
 #include <stdint.h>
@@ -28,6 +28,16 @@ typedef struct
     void *user_data;
 } screen_recipe_draft_details_nav_context_t;
 
+typedef struct screen_recipe_draft_details_t screen_recipe_draft_details_t;
+
+typedef struct
+{
+    /** Details screen instance that owns the picker and draft pointer. */
+    screen_recipe_draft_details_t *details;
+    /** Index into Recipe_draft's fixed style option list. */
+    uint8_t option_index;
+} screen_recipe_draft_details_style_context_t;
+
 typedef struct screen_recipe_draft_details_t
 {
     /** Root LVGL screen object for the draft Details view. */
@@ -47,15 +57,20 @@ typedef struct screen_recipe_draft_details_t
     lv_obj_t *ibu_label;
     lv_obj_t *og_label;
     lv_obj_t *fg_label;
+    /** Local style picker overlay shown by the Modify button. */
+    lv_obj_t *style_picker_overlay;
+    /** Draft model edited by this screen's local-only style picker. */
+    recipe_draft_t *draft;
+    /** Persistent button contexts for style option callbacks. */
+    screen_recipe_draft_details_style_context_t style_option_contexts[RECIPE_DRAFT_STYLE_OPTION_COUNT];
     /** Event callback context for returning to the draft recipe menu. */
     screen_recipe_draft_details_nav_context_t back_button_context;
-    /** Event callback context for the disabled future Modify button. */
-    screen_recipe_draft_details_nav_context_t modify_button_context;
     /** Last shown draft name, used to avoid unchanged label writes. */
     const char *shown_name;
 } screen_recipe_draft_details_t;
 
 void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
+                                      recipe_draft_t *draft,
                                       ui_action_handler_t action_handler,
                                       void *user_data);
 void screen_recipe_draft_details_show(screen_recipe_draft_details_t *details,

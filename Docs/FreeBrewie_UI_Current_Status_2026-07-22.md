@@ -67,9 +67,9 @@ The following is currently proven on the real SOM target:
   Details, Ingredients, Brewing, and Fermentation; implemented section taps open local-only
   screens, not storage or hardware actions, and `BREW LATER` remains disabled
 - the draft recipe `DETAILS` button now opens a real local-only Details screen shaped after
-  the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a disabled `MODIFY LATER`
-  action; the visible values now read from `Logic/Recipe_draft` instead of hardcoded screen
-  placeholders
+  the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a `SELECT STYLE` picker backed
+  by fixed RAM-only style options in `Logic/Recipe_draft`; calculated values remain
+  placeholders until the real recipe calculation path exists
 - the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
   disabled `MODIFY LATER` action; Fermentables and Hops now render from fixed RAM-only
@@ -119,9 +119,9 @@ The following is currently proven on the real SOM target:
   not visually overlap full-width rows
 - `UI_text_editor` now provides the first reusable bounded text-entry modal, currently used
   by Recipe Builder and intended later for search/filter fields and other short text edits;
-  its keyboard uses old-Brewie-inspired colors and four equal-width alphabetical content rows
-  instead of LVGL's dense default QWERTY map, and keeps Nordic characters such as `æ`, `ø`,
-  and `å` on the symbol page
+  its recipe-name presentation now follows the dark/orange old-style full-screen editor shape,
+  with a top title, focused input field, alphabetic key grid, orange action icons, bottom
+  command row, and Nordic characters such as `æ`, `ø`, and `å` on the symbol page
 
 So the project is no longer only at “headless serial baseline”.
 We now have:

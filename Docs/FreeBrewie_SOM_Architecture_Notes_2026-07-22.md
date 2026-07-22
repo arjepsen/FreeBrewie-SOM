@@ -7,7 +7,7 @@ This document defines the current target architecture for the Brewie SOM applica
 It is meant to keep file ownership, module boundaries, and subsystem responsibilities clear while the SOM app is still in early bring-up.
 
 It should be read together with:
-- `FreeBrewie_UI_Current_Status_2026-07-21.md`
+- `FreeBrewie_UI_Current_Status_2026-07-22.md`
 - `FreeBrewie_Recipe_Model_Decisions_2026-07-21.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-21.md`
 - `Brewie_SOM_Platform_Notes_2026-07-02.md`
@@ -273,8 +273,10 @@ Owns:
 Current fact:
 `Recipe_draft` owns the temporary draft recipe name, first Details values, and first
 Fermentables/Hops arrays, establishing the correct boundary before storage, keyboard input,
-BeerXML/BeerJSON mapping, or Brewfather API sync is added. Recipe Builder and draft screens
-should render/edit this model instead of owning recipe values themselves.
+BeerXML/BeerJSON mapping, or Brewfather API sync is added. It also owns the first fixed
+style option list used by the draft Details picker, so UI screens do not become the source
+of recipe data. Recipe Builder and draft screens should render/edit this model instead of
+owning recipe values themselves.
 
 ### `Fault_logic`
 Owns:
@@ -529,13 +531,13 @@ old edit forms. Its values render from `Logic/Recipe_draft` and remain local-onl
 
 ### `Screen_recipe_draft_details`
 Owns:
-- safe old-Brewie-inspired read-only Details section for a local draft recipe
+- safe old-Brewie-inspired Details section for a local draft recipe
 - display of the draft recipe name
 - `BEER STYLE` and `CALCULATED VALUES` panels
-- disabled `MODIFY LATER` presentation
+- local `SELECT STYLE` picker overlay
 
 Must not own yet:
-- BJCP/style database selection
+- full BJCP/style database selection
 - calculated recipe values
 - recipe persistence
 - validation
@@ -543,7 +545,8 @@ Must not own yet:
 
 Important current fact:
 `Screen_recipe_draft_details` mirrors the old Details view shape before implementing the
-old Details edit form. Its values render from `Logic/Recipe_draft` and remain local-only.
+old full Details edit form. Its visible values render from `Logic/Recipe_draft`; selecting
+a style updates the RAM-only draft but does not save, calculate, import, or contact the MCU.
 
 ### `Screen_recipe_draft_ingredients`
 Owns:
@@ -583,9 +586,12 @@ Important current fact:
 or screen that opened it decides what to do with that text. The first user is Recipe Builder,
 which stores the recipe name in `Logic/Recipe_draft`. The keyboard uses custom equal-width
 alphabetical LVGL keyboard maps and old-Brewie-inspired colors, because the default LVGL
-QWERTY layout is too dense for reliable touch on the Brewie panel. Letter and symbol keys
-are split across four content rows plus a command row. Nordic characters such as `æ`, `ø`,
-and `å` live on the symbol page.
+QWERTY layout is too dense for reliable touch on the Brewie panel. The recipe-name editor
+is shaped like the old full-screen dark/orange keyboard view: title and input above, alphabet
+grid below, orange action icons for symbol/shift/backspace controls, command row at the
+bottom, and Nordic characters such as `æ`, `ø`, and `å` on the symbol page. A tiny custom
+keyboard event adapter handles the visual shift arrow and `Done` label while leaving normal
+typing and backspace behavior on LVGL's keyboard implementation.
 
 ### `Screen_recipe_detail`
 Owns:

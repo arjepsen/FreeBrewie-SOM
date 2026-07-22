@@ -192,7 +192,10 @@ static void ui_show_screen(ui_t *ui,
 
         if (!ui->recipe_draft_details_created)
         {
-            screen_recipe_draft_details_init(&ui->recipe_draft_details, ui_handle_action, ui);
+            screen_recipe_draft_details_init(&ui->recipe_draft_details,
+                                             &ui->recipe_draft,
+                                             ui_handle_action,
+                                             ui);
             ui->recipe_draft_details_created = true;
         }
 

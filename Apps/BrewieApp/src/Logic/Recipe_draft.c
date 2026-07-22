@@ -11,6 +11,14 @@ static void recipe_draft_clear_details(recipe_draft_t *draft);
 static void recipe_draft_clear_ingredients(recipe_draft_t *draft);
 static void recipe_draft_clear_brewing(recipe_draft_t *draft);
 
+static const recipe_draft_style_option_t recipe_draft_style_options[RECIPE_DRAFT_STYLE_OPTION_COUNT] = {
+    {"Belgian IPA", "21B", "IPA", "Ale"},
+    {"American Pale Ale", "18B", "Pale American Ale", "Ale"},
+    {"Bohemian Pilsner", "3B", "Pale Lager", "Lager"},
+    {"Irish Stout", "15B", "Dark British Beer", "Ale"},
+    {"Hefeweizen", "10A", "German Wheat Beer", "Ale"},
+    {"Witbier", "24A", "Belgian Ale", "Ale"}};
+
 /****************************************************************************************
  * @brief Clear detail fields to stable placeholders.
  *
@@ -148,6 +156,29 @@ void recipe_draft_set_name(recipe_draft_t *draft, const char *name)
 }
 
 /****************************************************************************************
+ * @brief Select one predefined style option for the RAM-only draft.
+ *
+ * This is still a scaffold, not a full BJCP/import database. Keeping the picker values in
+ * the model layer prevents UI screens from becoming the source of recipe data.
+ ****************************************************************************************/
+void recipe_draft_select_style(recipe_draft_t *draft, uint8_t option_index)
+{
+    const recipe_draft_style_option_t *option;
+
+    option = recipe_draft_get_style_option(option_index);
+    if (draft == NULL || option == NULL)
+    {
+        return;
+    }
+
+    draft->style.style_name = option->style_name;
+    draft->style.style_number = option->style_number;
+    draft->style.style_category = option->style_category;
+    draft->style.style_type = option->style_type;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
  * @brief Fill the RAM-only draft with a small sample recipe profile.
  *
  * This is temporary UI scaffolding. It gives the draft Details screen real model-owned
@@ -203,6 +234,19 @@ void recipe_draft_apply_sample(recipe_draft_t *draft)
     draft->brewing.delayed_hopping_min = 10U;
     draft->brewing.cooling_target_c = 20U;
     draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Return a selectable style option by index.
+ ****************************************************************************************/
+const recipe_draft_style_option_t *recipe_draft_get_style_option(uint8_t option_index)
+{
+    if (option_index >= RECIPE_DRAFT_STYLE_OPTION_COUNT)
+    {
+        return NULL;
+    }
+
+    return &recipe_draft_style_options[option_index];
 }
 
 /****************************************************************************************

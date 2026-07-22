@@ -7,7 +7,7 @@
  *
  * Responsibility: provide a small LVGL text-entry dialog that can edit model-owned text
  * through caller-provided commit callbacks.
- * Owns: text-entry overlay, textarea, keyboard, and OK/Cancel button callbacks.
+ * Owns: text-entry overlay, textarea, keyboard, and commit/cancel callbacks.
  * Must not own: recipe data, search state, persistence, validation, or hardware actions.
  ****************************************************************************************/
 
@@ -25,7 +25,7 @@ typedef struct
     lv_obj_t *textarea;
     /** On-screen keyboard attached to textarea. */
     lv_obj_t *keyboard;
-    /** Optional commit callback called when OK is pressed. */
+    /** Optional commit callback called when the editor is accepted. */
     ui_text_editor_commit_handler_t commit_handler;
     /** Caller state passed to commit_handler. */
     void *commit_user_data;

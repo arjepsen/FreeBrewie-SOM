@@ -18,7 +18,14 @@ static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
                                                          const char *label_text,
                                                          const char *value_text,
                                                          lv_obj_t **value_label);
-static lv_obj_t *screen_recipe_draft_details_create_disabled_modify_button(lv_obj_t *parent);
+static lv_obj_t *screen_recipe_draft_details_create_modify_button(lv_obj_t *parent,
+                                                                  screen_recipe_draft_details_t *details);
+static void screen_recipe_draft_details_create_style_picker(screen_recipe_draft_details_t *details);
+static lv_obj_t *screen_recipe_draft_details_create_style_option_button(
+    lv_obj_t *parent,
+    screen_recipe_draft_details_style_context_t *context);
+static void screen_recipe_draft_details_hide_style_picker(screen_recipe_draft_details_t *details);
+static void screen_recipe_draft_details_show_style_picker(screen_recipe_draft_details_t *details);
 static void screen_recipe_draft_details_format_percent(char *buffer,
                                                        size_t buffer_size,
                                                        uint16_t value);
@@ -36,6 +43,8 @@ static void screen_recipe_draft_details_format_gravity(char *buffer,
                                                        uint16_t value_points);
 static void screen_recipe_draft_details_set_text_if_changed(lv_obj_t *label, const char *text);
 static void screen_recipe_draft_details_nav_event_cb(lv_event_t *event);
+static void screen_recipe_draft_details_modify_event_cb(lv_event_t *event);
+static void screen_recipe_draft_details_style_option_event_cb(lv_event_t *event);
 
 /****************************************************************************************
  * @brief Make an object static so it cannot become a tiny scroll target.
@@ -171,7 +180,8 @@ static void screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
     lv_obj_remove_flag(*value_label, LV_OBJ_FLAG_CLICKABLE);
 }
 
-static lv_obj_t *screen_recipe_draft_details_create_disabled_modify_button(lv_obj_t *parent)
+static lv_obj_t *screen_recipe_draft_details_create_modify_button(lv_obj_t *parent,
+                                                                  screen_recipe_draft_details_t *details)
 {
     lv_obj_t *button;
     lv_obj_t *label;
@@ -179,15 +189,160 @@ static lv_obj_t *screen_recipe_draft_details_create_disabled_modify_button(lv_ob
     button = lv_button_create(parent);
     lv_obj_set_width(button, lv_pct(100));
     lv_obj_set_height(button, 44);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0x4B4741), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xE67526), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_state(button, LV_STATE_DISABLED);
+    lv_obj_add_event_cb(button, screen_recipe_draft_details_modify_event_cb, LV_EVENT_CLICKED, details);
 
     label = lv_label_create(button);
-    lv_label_set_text(label, "MODIFY LATER");
-    lv_obj_set_style_text_color(label, lv_color_hex(0xC8C8C8), 0);
+    lv_label_set_text(label, "SELECT STYLE");
+    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
     lv_obj_center(label);
     return button;
+}
+
+/****************************************************************************************
+ * @brief Create the hidden style picker overlay.
+ ****************************************************************************************/
+static void screen_recipe_draft_details_create_style_picker(screen_recipe_draft_details_t *details)
+{
+    lv_obj_t *panel;
+    lv_obj_t *title;
+    lv_obj_t *list;
+    lv_obj_t *close_button;
+    lv_obj_t *close_label;
+    uint8_t index;
+
+    details->style_picker_overlay = lv_obj_create(details->screen);
+    screen_recipe_draft_details_set_static(details->style_picker_overlay);
+    lv_obj_set_size(details->style_picker_overlay, lv_pct(100), lv_pct(100));
+    lv_obj_center(details->style_picker_overlay);
+    lv_obj_set_style_bg_color(details->style_picker_overlay, lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(details->style_picker_overlay, LV_OPA_70, 0);
+    lv_obj_set_style_border_width(details->style_picker_overlay, 0, 0);
+    lv_obj_set_style_pad_all(details->style_picker_overlay, 10, 0);
+    lv_obj_add_flag(details->style_picker_overlay, LV_OBJ_FLAG_HIDDEN);
+
+    panel = lv_obj_create(details->style_picker_overlay);
+    lv_obj_set_size(panel, lv_pct(100), lv_pct(100));
+    lv_obj_set_style_bg_color(panel, lv_color_hex(0x1F1D1B), 0);
+    lv_obj_set_style_bg_opa(panel, LV_OPA_COVER, 0);
+    lv_obj_set_style_border_color(panel, lv_color_hex(0xE67526), 0);
+    lv_obj_set_style_border_width(panel, 1, 0);
+    lv_obj_set_style_radius(panel, 5, 0);
+    lv_obj_set_style_pad_all(panel, 8, 0);
+    lv_obj_set_style_pad_row(panel, 8, 0);
+    lv_obj_set_layout(panel, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(panel, LV_FLEX_FLOW_COLUMN);
+
+    title = lv_label_create(panel);
+    lv_label_set_text(title, "SELECT BEER STYLE");
+    lv_obj_set_width(title, lv_pct(100));
+    lv_obj_set_style_text_color(title, lv_color_hex(0xE67526), 0);
+    lv_obj_set_style_text_font(title, &lv_font_montserrat_20, 0);
+
+    list = lv_obj_create(panel);
+    lv_obj_set_width(list, lv_pct(100));
+    lv_obj_set_flex_grow(list, 1);
+    lv_obj_set_style_bg_opa(list, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(list, 0, 0);
+    lv_obj_set_style_pad_all(list, 0, 0);
+    lv_obj_set_style_pad_row(list, 7, 0);
+    ui_scroll_apply_gutter(list);
+    lv_obj_set_layout(list, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
+
+    for (index = 0U; index < RECIPE_DRAFT_STYLE_OPTION_COUNT; ++index)
+    {
+        details->style_option_contexts[index].details = details;
+        details->style_option_contexts[index].option_index = index;
+        screen_recipe_draft_details_create_style_option_button(list, &details->style_option_contexts[index]);
+    }
+
+    close_button = lv_button_create(panel);
+    lv_obj_set_width(close_button, lv_pct(100));
+    lv_obj_set_height(close_button, 42);
+    lv_obj_set_style_bg_color(close_button, lv_color_hex(0x4B4741), 0);
+    lv_obj_set_style_bg_color(close_button, lv_color_hex(0x343434), LV_STATE_PRESSED);
+    lv_obj_set_style_radius(close_button, 5, 0);
+    lv_obj_add_event_cb(close_button, screen_recipe_draft_details_modify_event_cb, LV_EVENT_CLICKED, details);
+
+    close_label = lv_label_create(close_button);
+    lv_label_set_text(close_label, "BACK");
+    lv_obj_set_style_text_color(close_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_center(close_label);
+}
+
+/****************************************************************************************
+ * @brief Create one selectable beer-style row in the picker.
+ ****************************************************************************************/
+static lv_obj_t *screen_recipe_draft_details_create_style_option_button(
+    lv_obj_t *parent,
+    screen_recipe_draft_details_style_context_t *context)
+{
+    const recipe_draft_style_option_t *option;
+    lv_obj_t *button;
+    lv_obj_t *name_label;
+    lv_obj_t *body_label;
+
+    option = recipe_draft_get_style_option(context->option_index);
+    if (option == NULL)
+    {
+        return NULL;
+    }
+
+    button = lv_button_create(parent);
+    lv_obj_set_width(button, lv_pct(97));
+    lv_obj_set_height(button, 60);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x292929), 0);
+    lv_obj_set_style_bg_color(button, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
+    lv_obj_set_style_border_color(button, lv_color_hex(0x3F3F3F), 0);
+    lv_obj_set_style_border_width(button, 1, 0);
+    lv_obj_set_style_radius(button, 0, 0);
+    lv_obj_set_style_pad_all(button, 7, 0);
+    lv_obj_set_layout(button, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(button, LV_FLEX_FLOW_COLUMN);
+    lv_obj_set_style_pad_row(button, 3, 0);
+    lv_obj_add_event_cb(button, screen_recipe_draft_details_style_option_event_cb, LV_EVENT_CLICKED, context);
+
+    name_label = lv_label_create(button);
+    lv_label_set_text(name_label, option->style_name);
+    lv_label_set_long_mode(name_label, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(name_label, lv_pct(100));
+    lv_obj_set_style_text_color(name_label, lv_color_hex(0xFFFFFF), 0);
+    lv_obj_remove_flag(name_label, LV_OBJ_FLAG_CLICKABLE);
+
+    body_label = lv_label_create(button);
+    lv_label_set_text_fmt(body_label,
+                          "%s - %s",
+                          option->style_number,
+                          option->style_category);
+    lv_label_set_long_mode(body_label, LV_LABEL_LONG_DOT);
+    lv_obj_set_width(body_label, lv_pct(100));
+    lv_obj_set_style_text_color(body_label, lv_color_hex(0xE67526), 0);
+    lv_obj_remove_flag(body_label, LV_OBJ_FLAG_CLICKABLE);
+    return button;
+}
+
+static void screen_recipe_draft_details_hide_style_picker(screen_recipe_draft_details_t *details)
+{
+    if (details == NULL || details->style_picker_overlay == NULL)
+    {
+        return;
+    }
+
+    lv_obj_add_flag(details->style_picker_overlay, LV_OBJ_FLAG_HIDDEN);
+}
+
+static void screen_recipe_draft_details_show_style_picker(screen_recipe_draft_details_t *details)
+{
+    if (details == NULL || details->style_picker_overlay == NULL)
+    {
+        return;
+    }
+
+    lv_obj_remove_flag(details->style_picker_overlay, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_move_foreground(details->style_picker_overlay);
 }
 
 /****************************************************************************************
@@ -305,7 +460,43 @@ static void screen_recipe_draft_details_nav_event_cb(lv_event_t *event)
     context->handler(context->action, context->value, context->user_data);
 }
 
+static void screen_recipe_draft_details_modify_event_cb(lv_event_t *event)
+{
+    screen_recipe_draft_details_t *details;
+
+    details = lv_event_get_user_data(event);
+    if (details == NULL || details->style_picker_overlay == NULL)
+    {
+        return;
+    }
+
+    if (lv_obj_has_flag(details->style_picker_overlay, LV_OBJ_FLAG_HIDDEN))
+    {
+        screen_recipe_draft_details_show_style_picker(details);
+    }
+    else
+    {
+        screen_recipe_draft_details_hide_style_picker(details);
+    }
+}
+
+static void screen_recipe_draft_details_style_option_event_cb(lv_event_t *event)
+{
+    screen_recipe_draft_details_style_context_t *context;
+
+    context = lv_event_get_user_data(event);
+    if (context == NULL || context->details == NULL)
+    {
+        return;
+    }
+
+    recipe_draft_select_style(context->details->draft, context->option_index);
+    screen_recipe_draft_details_show(context->details, context->details->draft);
+    screen_recipe_draft_details_hide_style_picker(context->details);
+}
+
 void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
+                                      recipe_draft_t *draft,
                                       ui_action_handler_t action_handler,
                                       void *user_data)
 {
@@ -320,13 +511,10 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
     }
 
     memset(details, 0, sizeof(*details));
+    details->draft = draft;
     details->back_button_context.action = UI_ACTION_SHOW_RECIPE_DRAFT_MENU;
     details->back_button_context.handler = action_handler;
     details->back_button_context.user_data = user_data;
-    details->modify_button_context.action = UI_ACTION_SHOW_RECIPE_DRAFT_MENU;
-    details->modify_button_context.handler = action_handler;
-    details->modify_button_context.user_data = user_data;
-
     details->screen = lv_obj_create(NULL);
     screen_recipe_draft_details_set_static(details->screen);
     lv_obj_set_style_bg_color(details->screen, lv_color_hex(0x000000), 0);
@@ -394,7 +582,8 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
     screen_recipe_draft_details_create_value_row(calculated_panel, "OG", "--", &details->og_label);
     screen_recipe_draft_details_create_value_row(calculated_panel, "FG", "--", &details->fg_label);
 
-    screen_recipe_draft_details_create_disabled_modify_button(container);
+    screen_recipe_draft_details_create_modify_button(container, details);
+    screen_recipe_draft_details_create_style_picker(details);
 }
 
 /****************************************************************************************
