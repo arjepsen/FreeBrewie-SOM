@@ -144,7 +144,11 @@ static lv_obj_t *screen_recipe_draft_details_create_panel(lv_obj_t *parent, cons
 }
 
 /****************************************************************************************
- * @brief Create one compact label/value row inside a details panel.
+ * @brief Create one label/value row inside a details panel.
+ *
+ * Details values can come from imported recipe/style data, so some fields are too long
+ * for a single portrait-screen line. The row therefore grows to fit wrapped value text
+ * instead of clipping one row over the next.
  ****************************************************************************************/
 static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
                                                               const char *label_text,
@@ -160,24 +164,27 @@ static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
     row = lv_obj_create(parent);
     screen_recipe_draft_details_set_static(row);
     lv_obj_set_width(row, lv_pct(100));
-    lv_obj_set_height(row, 24);
+    lv_obj_set_height(row, LV_SIZE_CONTENT);
+    lv_obj_set_style_min_height(row, 24, 0);
     lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, 0);
     lv_obj_set_style_border_width(row, 0, 0);
     lv_obj_set_style_pad_all(row, 0, 0);
+    lv_obj_set_style_pad_column(row, 5, 0);
+    lv_obj_set_layout(row, LV_LAYOUT_FLEX);
+    lv_obj_set_flex_flow(row, LV_FLEX_FLOW_ROW);
+    lv_obj_set_flex_align(row, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_START);
 
     label = lv_label_create(row);
     lv_label_set_text(label, label_text);
     lv_label_set_long_mode(label, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(label, lv_pct(48));
+    lv_obj_set_width(label, 86);
     lv_obj_set_style_text_color(label, lv_color_hex(0xC8C8C8), 0);
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 0, 0);
 
     *value_label = lv_label_create(row);
     lv_label_set_text(*value_label, value_text);
-    lv_label_set_long_mode(*value_label, LV_LABEL_LONG_DOT);
-    lv_obj_set_width(*value_label, is_editable ? lv_pct(38) : lv_pct(48));
+    lv_label_set_long_mode(*value_label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_flex_grow(*value_label, 1);
     lv_obj_set_style_text_color(*value_label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_align(*value_label, LV_ALIGN_RIGHT_MID, is_editable ? -22 : 0, 0);
 
     lv_obj_remove_flag(label, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_remove_flag(*value_label, LV_OBJ_FLAG_CLICKABLE);
@@ -185,8 +192,8 @@ static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
     {
         edit_icon = lv_label_create(row);
         lv_label_set_text(edit_icon, LV_SYMBOL_EDIT);
+        lv_obj_set_width(edit_icon, 18);
         lv_obj_set_style_text_color(edit_icon, lv_color_hex(0xE67526), 0);
-        lv_obj_align(edit_icon, LV_ALIGN_RIGHT_MID, 0, 0);
         lv_obj_remove_flag(edit_icon, LV_OBJ_FLAG_CLICKABLE);
     }
 
