@@ -5,7 +5,6 @@
 
 #define RECIPE_DRAFT_PLACEHOLDER_NAME "Tap to name"
 #define RECIPE_DRAFT_PLACEHOLDER_TEXT "--"
-#define RECIPE_DRAFT_NO_STYLE_TEXT "No selected style"
 
 static void recipe_draft_clear_details(recipe_draft_t *draft);
 static void recipe_draft_clear_ingredients(recipe_draft_t *draft);
@@ -19,7 +18,7 @@ static void recipe_draft_clear_brewing(recipe_draft_t *draft);
  ****************************************************************************************/
 static void recipe_draft_clear_details(recipe_draft_t *draft)
 {
-    draft->style.style_name = RECIPE_DRAFT_NO_STYLE_TEXT;
+    draft->style.style_name = RECIPE_DRAFT_PLACEHOLDER_TEXT;
     draft->style.style_number = RECIPE_DRAFT_PLACEHOLDER_TEXT;
     draft->style.style_category = RECIPE_DRAFT_PLACEHOLDER_TEXT;
     draft->style.style_type = RECIPE_DRAFT_PLACEHOLDER_TEXT;
