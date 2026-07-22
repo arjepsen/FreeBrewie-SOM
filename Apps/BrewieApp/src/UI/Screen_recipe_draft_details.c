@@ -212,6 +212,7 @@ static void screen_recipe_draft_details_create_style_picker(screen_recipe_draft_
     lv_obj_t *close_button;
     lv_obj_t *close_label;
     uint8_t index;
+    uint8_t style_count;
 
     details->style_picker_overlay = lv_obj_create(details->screen);
     screen_recipe_draft_details_set_static(details->style_picker_overlay);
@@ -252,7 +253,9 @@ static void screen_recipe_draft_details_create_style_picker(screen_recipe_draft_
     lv_obj_set_layout(list, LV_LAYOUT_FLEX);
     lv_obj_set_flex_flow(list, LV_FLEX_FLOW_COLUMN);
 
-    for (index = 0U; index < RECIPE_DRAFT_STYLE_OPTION_COUNT; ++index)
+    style_catalog_init();
+    style_count = style_catalog_get_count();
+    for (index = 0U; index < style_count && index < STYLE_CATALOG_MAX_STYLES; ++index)
     {
         details->style_option_contexts[index].details = details;
         details->style_option_contexts[index].option_index = index;
@@ -280,12 +283,12 @@ static lv_obj_t *screen_recipe_draft_details_create_style_option_button(
     lv_obj_t *parent,
     screen_recipe_draft_details_style_context_t *context)
 {
-    const recipe_draft_style_option_t *option;
+    const style_catalog_style_t *option;
     lv_obj_t *button;
     lv_obj_t *name_label;
     lv_obj_t *body_label;
 
-    option = recipe_draft_get_style_option(context->option_index);
+    option = style_catalog_get_style(context->option_index);
     if (option == NULL)
     {
         return NULL;
@@ -490,7 +493,7 @@ static void screen_recipe_draft_details_style_option_event_cb(lv_event_t *event)
         return;
     }
 
-    recipe_draft_select_style(context->details->draft, context->option_index);
+    recipe_draft_set_style(context->details->draft, style_catalog_get_style(context->option_index));
     screen_recipe_draft_details_show(context->details, context->details->draft);
     screen_recipe_draft_details_hide_style_picker(context->details);
 }

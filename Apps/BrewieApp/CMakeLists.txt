@@ -13,6 +13,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Logic/Recipe_draft.c
     src/Logic/Startup_logic.c
     src/Logic/Status_view_model.c
+    src/Logic/Style_catalog.c
     src/Logic/User_actions.c
     src/Platform/Display.c
     src/Platform/Display_rotation.c

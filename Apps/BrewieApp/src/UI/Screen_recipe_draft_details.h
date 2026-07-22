@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "Logic/Recipe_draft.h"
+#include "Logic/Style_catalog.h"
 #include "UI_types.h"
 #include "lvgl.h"
 
@@ -34,7 +35,7 @@ typedef struct
 {
     /** Details screen instance that owns the picker and draft pointer. */
     screen_recipe_draft_details_t *details;
-    /** Index into Recipe_draft's fixed style option list. */
+    /** Index into Style_catalog's fixed-size style cache. */
     uint8_t option_index;
 } screen_recipe_draft_details_style_context_t;
 
@@ -62,7 +63,7 @@ typedef struct screen_recipe_draft_details_t
     /** Draft model edited by this screen's local-only style picker. */
     recipe_draft_t *draft;
     /** Persistent button contexts for style option callbacks. */
-    screen_recipe_draft_details_style_context_t style_option_contexts[RECIPE_DRAFT_STYLE_OPTION_COUNT];
+    screen_recipe_draft_details_style_context_t style_option_contexts[STYLE_CATALOG_MAX_STYLES];
     /** Event callback context for returning to the draft recipe menu. */
     screen_recipe_draft_details_nav_context_t back_button_context;
     /** Last shown draft name, used to avoid unchanged label writes. */

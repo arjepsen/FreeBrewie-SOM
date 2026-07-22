@@ -1,0 +1,38 @@
+[
+  {
+    "name": "Belgian IPA",
+    "number": "21B",
+    "category": "IPA",
+    "type": "Ale"
+  },
+  {
+    "name": "American Pale Ale",
+    "number": "18B",
+    "category": "Pale American Ale",
+    "type": "Ale"
+  },
+  {
+    "name": "Bohemian Pilsner",
+    "number": "3B",
+    "category": "Pale Lager",
+    "type": "Lager"
+  },
+  {
+    "name": "Irish Stout",
+    "number": "15B",
+    "category": "Dark British Beer",
+    "type": "Ale"
+  },
+  {
+    "name": "Hefeweizen",
+    "number": "10A",
+    "category": "German Wheat Beer",
+    "type": "Ale"
+  },
+  {
+    "name": "Witbier",
+    "number": "24A",
+    "category": "Belgian Ale",
+    "type": "Ale"
+  }
+]

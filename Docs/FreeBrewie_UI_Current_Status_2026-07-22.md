@@ -68,7 +68,7 @@ The following is currently proven on the real SOM target:
   screens, not storage or hardware actions, and `BREW LATER` remains disabled
 - the draft recipe `DETAILS` button now opens a real local-only Details screen shaped after
   the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a `SELECT STYLE` picker backed
-  by fixed RAM-only style options in `Logic/Recipe_draft`; calculated values remain
+  by `Logic/Style_catalog` and starter data in `Data/styles.json`; calculated values remain
   placeholders until the real recipe calculation path exists
 - the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a

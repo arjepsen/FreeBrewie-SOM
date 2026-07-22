@@ -201,6 +201,8 @@ Current file set:
 - `Startup_logic.h`
 - `Status_view_model.c`
 - `Status_view_model.h`
+- `Style_catalog.c`
+- `Style_catalog.h`
 - `User_actions.c`
 - `User_actions.h`
 
@@ -273,10 +275,26 @@ Owns:
 Current fact:
 `Recipe_draft` owns the temporary draft recipe name, first Details values, and first
 Fermentables/Hops arrays, establishing the correct boundary before storage, keyboard input,
-BeerXML/BeerJSON mapping, or Brewfather API sync is added. It also owns the first fixed
-style option list used by the draft Details picker, so UI screens do not become the source
-of recipe data. Recipe Builder and draft screens should render/edit this model instead of
-owning recipe values themselves.
+BeerXML/BeerJSON mapping, or Brewfather API sync is added. It stores the selected style
+values, but does not own the available style catalog. Recipe Builder and draft screens
+should render/edit this model instead of owning recipe values themselves.
+
+### `Style_catalog`
+Owns:
+- bounded in-memory cache of selectable beer style records
+- loading starter style records from `Data/styles.json`
+- small fallback starter list for bring-up when the data file is not installed yet
+
+Must not own:
+- draft recipe state
+- LVGL widgets
+- full BeerXML/BeerJSON import
+- recipe persistence
+
+Current fact:
+`Style_catalog` uses fixed-size buffers and no heap allocation. The first JSON reader is a
+small parser for the project-owned `Data/styles.json` shape, not a general JSON engine.
+This keeps the style data editable outside C while keeping the SOM runtime predictable.
 
 ### `Fault_logic`
 Owns:
@@ -545,8 +563,9 @@ Must not own yet:
 
 Important current fact:
 `Screen_recipe_draft_details` mirrors the old Details view shape before implementing the
-old full Details edit form. Its visible values render from `Logic/Recipe_draft`; selecting
-a style updates the RAM-only draft but does not save, calculate, import, or contact the MCU.
+old full Details edit form. Its visible values render from `Logic/Recipe_draft`; style
+choices come from `Logic/Style_catalog`. Selecting a style updates the RAM-only draft but
+does not save, calculate, import, or contact the MCU.
 
 ### `Screen_recipe_draft_ingredients`
 Owns:

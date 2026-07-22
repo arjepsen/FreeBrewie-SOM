@@ -15,11 +15,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "Style_catalog.h"
+
 #define RECIPE_DRAFT_NAME_MAX_LENGTH 40U
 #define RECIPE_DRAFT_MAX_FERMENTABLES 8U
 #define RECIPE_DRAFT_MAX_HOPS 8U
 #define RECIPE_DRAFT_MAX_MASH_STEPS 6U
-#define RECIPE_DRAFT_STYLE_OPTION_COUNT 6U
 
 typedef struct
 {
@@ -85,18 +86,6 @@ typedef struct
 
 typedef struct
 {
-    /** Display name shown in the style picker and stored into the draft when selected. */
-    const char *style_name;
-    /** BJCP-style short code. Kept as text because style systems differ. */
-    const char *style_number;
-    /** Human-readable category shown under the style name. */
-    const char *style_category;
-    /** Broad fermentation family, for example Ale or Lager. */
-    const char *style_type;
-} recipe_draft_style_option_t;
-
-typedef struct
-{
     /** Expected brewhouse efficiency in whole percent. */
     uint8_t efficiency_percent;
     /** Batch size in deciliters, so 200 means 20.0 L without floating point. */
@@ -140,9 +129,8 @@ typedef struct
 void recipe_draft_init(recipe_draft_t *draft);
 void recipe_draft_reset(recipe_draft_t *draft);
 void recipe_draft_set_name(recipe_draft_t *draft, const char *name);
-void recipe_draft_select_style(recipe_draft_t *draft, uint8_t option_index);
+void recipe_draft_set_style(recipe_draft_t *draft, const style_catalog_style_t *style);
 void recipe_draft_apply_sample(recipe_draft_t *draft);
-const recipe_draft_style_option_t *recipe_draft_get_style_option(uint8_t option_index);
 const char *recipe_draft_get_name(const recipe_draft_t *draft);
 bool recipe_draft_has_name(const recipe_draft_t *draft);
 bool recipe_draft_is_dirty(const recipe_draft_t *draft);
