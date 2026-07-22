@@ -537,7 +537,7 @@ static bool display_drm_set_scanout(display_drm_context_t *context)
 static bool display_drm_page_flip(display_drm_context_t *context)
 {
     drmEventContext event_context;
-    struct pollfd poll_fd;
+    struct pollfd page_flip_poll_request;
     bool page_flip_complete;
 
     page_flip_complete = false;
@@ -561,11 +561,11 @@ static bool display_drm_page_flip(display_drm_context_t *context)
 
     while (!page_flip_complete)
     {
-        poll_fd.fd = context->fd;
-        poll_fd.events = POLLIN;
-        poll_fd.revents = 0;
+        page_flip_poll_request.fd = context->fd;
+        page_flip_poll_request.events = POLLIN;
+        page_flip_poll_request.revents = 0;
 
-        if (poll(&poll_fd, 1, 1000) <= 0)
+        if (poll(&page_flip_poll_request, 1, 1000) <= 0)
         {
             log_error("display_drm_page_flip: timed out waiting for vblank");
             return false;

@@ -169,9 +169,9 @@ The current useful SOM doc set is:
 
 - `README.md`
 - `Docs/README_2026-07-22.md`
-- `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
+- `Docs/Brewie_SOM_Platform_Notes_2026-07-22.md`
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
-- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-21.md`
+- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
 - `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-22.md`
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-22.md`
@@ -184,11 +184,11 @@ Use them as follows:
 
 - `Docs/README_2026-07-22.md`
   Short index of the SOM-side document set.
-- `Docs/Brewie_SOM_Platform_Notes_2026-07-02.md`
+- `Docs/Brewie_SOM_Platform_Notes_2026-07-22.md`
   Hardware/platform facts for the SOM target.
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
   Current systemd service install and autostart status.
-- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-21.md`
+- `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
   Development host, toolchain, build environment, and workflow notes.
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
   Practical SOM↔MCU integration notes and serial/protocol direction.

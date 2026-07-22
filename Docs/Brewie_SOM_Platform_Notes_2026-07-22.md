@@ -1,5 +1,5 @@
 # Brewie SOM Platform Notes
-_Date: 2026-07-02_
+_Date: 2026-07-22_
 
 ## Purpose
 This document captures the current practical SOM platform facts for the FreeBrewie project.
@@ -279,4 +279,4 @@ When continuing SOM work, remember:
 - `/dev/ttyS1` is the current MCU serial path
 - `/dev/dri/card0` is the current display backend target
 - `libdrm2` is now part of the SOM runtime requirement
-- touch is still pending
+- touch is integrated through LVGL evdev on `/dev/input/event0`

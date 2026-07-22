@@ -1,5 +1,5 @@
 # FreeBrewie Recipe Model Decisions
-_Date: 2026-07-21_
+_Date: 2026-07-22_
 
 ## Purpose
 This document records the current direction for how FreeBrewie should model recipes.
@@ -196,6 +196,29 @@ The runtime plan is not the same as the recipe file:
 The SOM should step through the runtime plan and send only the current target state to the
 MCU.
 
+### 6. Normal editor and advanced process editor
+The current draft Brewing fields should be treated as a **normal/simple recipe editor**,
+not as the final internal process representation.
+
+Near-term UI fields such as mash water, sparge time, boil time, and cooling target are useful
+because they match the old Brewie UI and are easy for a normal user to understand. Later,
+those values should be converted by SOM logic into an ordered process plan.
+
+Future advanced recipe editing should expose that process plan more directly:
+- ordered steps
+- target temperatures
+- durations
+- intended pump/valve/heater behavior
+- safety-relevant limits or preconditions
+
+This means the architecture should keep two paths open:
+- normal recipe screens edit friendly recipe fields
+- advanced recipe screens edit or inspect explicit process steps
+
+Both paths should eventually feed the same SOM-owned runtime plan before anything becomes
+MCU protocol traffic. The MCU still should not receive a whole recipe or a whole process
+script unless the shared protocol is deliberately redesigned later.
+
 ---
 
 ## SOM-MCU protocol implications
@@ -260,6 +283,10 @@ recipe
 The model can grow later, but this first shape matches the old Brewie recipe screens and the
 machine's likely near-term needs.
 
+Important:
+this first shape is the **friendly editing shape**, not the final runtime execution shape.
+The future runtime execution shape should be an ordered process plan derived from the recipe.
+
 ---
 
 ## Practical constraints for C implementation
@@ -316,4 +343,6 @@ Implemented first:
 Next code steps:
 - add fermentation draft fields next
 - add validation
+- define the first draft-to-process-plan conversion shape before hardware-affecting brewing
+  starts
 - then design storage with versioning

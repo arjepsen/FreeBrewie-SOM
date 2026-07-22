@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-07-21_
+_Date: 2026-07-22_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -8,9 +8,9 @@ It is meant to keep file ownership, module boundaries, and subsystem responsibil
 
 It should be read together with:
 - `FreeBrewie_UI_Current_Status_2026-07-22.md`
-- `FreeBrewie_Recipe_Model_Decisions_2026-07-21.md`
-- `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-21.md`
-- `Brewie_SOM_Platform_Notes_2026-07-02.md`
+- `FreeBrewie_Recipe_Model_Decisions_2026-07-22.md`
+- `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
+- `Brewie_SOM_Platform_Notes_2026-07-22.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
 
 ---
@@ -253,7 +253,7 @@ This is intentionally not tied to LVGL. The embedded UI, future recipe storage, 
 web/API interface should be able to share these plain recipe data shapes.
 
 The fuller recipe-model direction is documented in
-`FreeBrewie_Recipe_Model_Decisions_2026-07-21.md`. That document should be checked before
+`FreeBrewie_Recipe_Model_Decisions_2026-07-22.md`. That document should be checked before
 adding recipe storage, draft editing, import/export, or brewing-plan conversion.
 
 ### `Recipe_catalog`
@@ -537,26 +537,29 @@ Owns:
 - safe old-Brewie-inspired Brewing section for a local draft recipe
 - display of the draft recipe name
 - local Water, Mash, Boil, and Cooling panels
-- first local numeric edit path for `Mash water`
+- local numeric edit paths for current simple Brewing values
 
 Must not own yet:
 - full mash/water/boil/cooling editing forms
 - brewing validation
+- advanced process-step editing
 - recipe persistence
 - brewing preflight or hardware actions
 
 Important current fact:
 `Screen_recipe_draft_brewing` mirrors the old Brewing view shape before implementing the
-old edit forms. Its values render from `Logic/Recipe_draft`; `Mash water` now opens
-`UI_number_editor` and commits back to the RAM-only draft without saving, validating, or
-contacting the MCU.
+old edit forms. Its values render from `Logic/Recipe_draft`; editable rows share
+`UI_number_editor` and commit back to the RAM-only draft without saving, validating, or
+contacting the MCU. These fields are the friendly/simple editing shape; future advanced
+editing should work through an explicit process-step model rather than turning this screen
+into a hardware-command editor.
 
 ### `Screen_recipe_draft_details`
 Owns:
 - safe old-Brewie-inspired Details section for a local draft recipe
 - display of the draft recipe name
 - `BEER STYLE` and `CALCULATED VALUES` panels
-- local `SELECT STYLE` picker overlay
+- local beer-style picker overlay opened from the editable Style row
 
 Must not own yet:
 - full BJCP/style database selection

@@ -1,5 +1,5 @@
 # FreeBrewie SOM Development Environment Consolidated
-_Date: 2026-07-21_
+_Date: 2026-07-22_
 
 ## Purpose
 This document defines the practical development and bring-up workflow for the FreeBrewie SOM side.
@@ -367,4 +367,4 @@ For this SOM setup, always remember:
 - target builds are `armhf`
 - DRM support added real VM/sysroot/runtime dependencies
 - current target display backend is DRM
-- current visible display proof exists, but touch is still pending
+- current visible display proof exists, and touch has been integrated through LVGL evdev
