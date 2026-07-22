@@ -201,6 +201,104 @@ void recipe_draft_set_mash_in_water_dl(recipe_draft_t *draft, uint16_t mash_in_w
 }
 
 /****************************************************************************************
+ * @brief Store the mash-in target temperature.
+ ****************************************************************************************/
+void recipe_draft_set_mash_in_temperature_c(recipe_draft_t *draft, uint8_t mash_in_temperature_c)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.mash_in_temperature_c = mash_in_temperature_c;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Store the sparge water amount as deciliters.
+ ****************************************************************************************/
+void recipe_draft_set_sparge_water_dl(recipe_draft_t *draft, uint16_t sparge_water_dl)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.sparge_water_dl = sparge_water_dl;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Store the sparge water temperature.
+ ****************************************************************************************/
+void recipe_draft_set_sparge_temperature_c(recipe_draft_t *draft, uint8_t sparge_temperature_c)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.sparge_temperature_c = sparge_temperature_c;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Store the sparge duration in minutes.
+ ****************************************************************************************/
+void recipe_draft_set_sparge_time_min(recipe_draft_t *draft, uint16_t sparge_time_min)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.sparge_time_min = sparge_time_min;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Store the boil duration in minutes.
+ ****************************************************************************************/
+void recipe_draft_set_boil_time_min(recipe_draft_t *draft, uint16_t boil_time_min)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.boil_time_min = boil_time_min;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Store the delayed hopping timing in minutes.
+ ****************************************************************************************/
+void recipe_draft_set_delayed_hopping_min(recipe_draft_t *draft, uint16_t delayed_hopping_min)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.delayed_hopping_min = delayed_hopping_min;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
+ * @brief Store the cooling target temperature.
+ ****************************************************************************************/
+void recipe_draft_set_cooling_target_c(recipe_draft_t *draft, uint8_t cooling_target_c)
+{
+    if (draft == NULL)
+    {
+        return;
+    }
+
+    draft->brewing.cooling_target_c = cooling_target_c;
+    draft->dirty = true;
+}
+
+/****************************************************************************************
  * @brief Fill the RAM-only draft with a small sample recipe profile.
  *
  * This is temporary UI scaffolding. It gives the draft Details screen real model-owned

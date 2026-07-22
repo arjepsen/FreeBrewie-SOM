@@ -18,7 +18,14 @@ static lv_obj_t *screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
                                                               const char *label_text,
                                                               const char *value_text,
                                                               bool is_editable);
+static lv_obj_t *screen_recipe_draft_brewing_create_editable_value_row(
+    lv_obj_t *parent,
+    const char *label_text,
+    const char *value_text,
+    screen_recipe_draft_brewing_t *brewing,
+    screen_recipe_draft_brewing_edit_field_t field);
 static lv_obj_t *screen_recipe_draft_brewing_create_disabled_modify_button(lv_obj_t *parent);
+static void screen_recipe_draft_brewing_init_edit_contexts(screen_recipe_draft_brewing_t *brewing);
 static void screen_recipe_draft_brewing_format_liters(char *buffer,
                                                       size_t buffer_size,
                                                       uint16_t value_dl);
@@ -31,9 +38,22 @@ static void screen_recipe_draft_brewing_format_minutes(char *buffer,
 static void screen_recipe_draft_brewing_set_text_if_changed(lv_obj_t *label, const char *text);
 static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing_t *brewing,
                                                      const recipe_draft_t *draft);
+static uint16_t screen_recipe_draft_brewing_get_edit_value(const recipe_draft_t *draft,
+                                                           screen_recipe_draft_brewing_edit_field_t field);
+static uint16_t screen_recipe_draft_brewing_get_default_value(
+    screen_recipe_draft_brewing_edit_field_t field);
+static uint16_t screen_recipe_draft_brewing_get_min_value(screen_recipe_draft_brewing_edit_field_t field);
+static uint16_t screen_recipe_draft_brewing_get_max_value(screen_recipe_draft_brewing_edit_field_t field);
+static uint16_t screen_recipe_draft_brewing_get_step_value(screen_recipe_draft_brewing_edit_field_t field);
+static bool screen_recipe_draft_brewing_get_value_is_liters(screen_recipe_draft_brewing_edit_field_t field);
+static const char *screen_recipe_draft_brewing_get_editor_title(screen_recipe_draft_brewing_edit_field_t field);
+static const char *screen_recipe_draft_brewing_get_editor_unit(screen_recipe_draft_brewing_edit_field_t field);
+static void screen_recipe_draft_brewing_store_edit_value(recipe_draft_t *draft,
+                                                         screen_recipe_draft_brewing_edit_field_t field,
+                                                         uint16_t value);
 static void screen_recipe_draft_brewing_nav_event_cb(lv_event_t *event);
-static void screen_recipe_draft_brewing_mash_water_event_cb(lv_event_t *event);
-static void screen_recipe_draft_brewing_mash_water_commit_cb(uint16_t value, void *user_data);
+static void screen_recipe_draft_brewing_value_event_cb(lv_event_t *event);
+static void screen_recipe_draft_brewing_value_commit_cb(uint16_t value, void *user_data);
 
 /****************************************************************************************
  * @brief Make an object static so it cannot become a tiny scroll target.
@@ -177,6 +197,28 @@ static lv_obj_t *screen_recipe_draft_brewing_create_value_row(lv_obj_t *parent,
     return row;
 }
 
+/****************************************************************************************
+ * @brief Create one editable Brewing row and connect it to the shared number editor.
+ ****************************************************************************************/
+static lv_obj_t *screen_recipe_draft_brewing_create_editable_value_row(
+    lv_obj_t *parent,
+    const char *label_text,
+    const char *value_text,
+    screen_recipe_draft_brewing_t *brewing,
+    screen_recipe_draft_brewing_edit_field_t field)
+{
+    lv_obj_t *row;
+
+    row = screen_recipe_draft_brewing_create_value_row(parent, label_text, value_text, true);
+    lv_obj_add_flag(row, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
+    lv_obj_add_event_cb(row,
+                        screen_recipe_draft_brewing_value_event_cb,
+                        LV_EVENT_CLICKED,
+                        &brewing->edit_contexts[field]);
+    return row;
+}
+
 static lv_obj_t *screen_recipe_draft_brewing_create_disabled_modify_button(lv_obj_t *parent)
 {
     lv_obj_t *button;
@@ -194,6 +236,27 @@ static lv_obj_t *screen_recipe_draft_brewing_create_disabled_modify_button(lv_ob
     lv_obj_set_style_text_color(label, lv_color_hex(0xC8C8C8), 0);
     lv_obj_center(label);
     return button;
+}
+
+/****************************************************************************************
+ * @brief Prepare stable callback contexts for rebuilt editable rows.
+ ****************************************************************************************/
+static void screen_recipe_draft_brewing_init_edit_contexts(screen_recipe_draft_brewing_t *brewing)
+{
+    screen_recipe_draft_brewing_edit_field_t field;
+
+    if (brewing == NULL)
+    {
+        return;
+    }
+
+    for (field = SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER;
+         field < SCREEN_RECIPE_DRAFT_BREWING_EDIT_COUNT;
+         ++field)
+    {
+        brewing->edit_contexts[field].brewing = brewing;
+        brewing->edit_contexts[field].field = field;
+    }
 }
 
 static void screen_recipe_draft_brewing_format_liters(char *buffer,
@@ -261,7 +324,6 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     lv_obj_t *mash_group;
     lv_obj_t *water_group;
     lv_obj_t *boil_group;
-    lv_obj_t *mash_water_row;
     char value_text[24];
     char step_name[16];
     uint8_t index;
@@ -272,29 +334,43 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     screen_recipe_draft_brewing_format_liters(value_text,
                                               sizeof(value_text),
                                               draft->brewing.mash_in_water_dl);
-    mash_water_row = screen_recipe_draft_brewing_create_value_row(water_group, "Mash water", value_text, true);
-    lv_obj_add_flag(mash_water_row, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_bg_color(mash_water_row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
-    lv_obj_add_event_cb(mash_water_row,
-                        screen_recipe_draft_brewing_mash_water_event_cb,
-                        LV_EVENT_CLICKED,
-                        brewing);
+    screen_recipe_draft_brewing_create_editable_value_row(water_group,
+                                                          "Mash water",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER);
     screen_recipe_draft_brewing_format_temp(value_text,
                                             sizeof(value_text),
                                             draft->brewing.mash_in_temperature_c);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Mash in temp", value_text, false);
+    screen_recipe_draft_brewing_create_editable_value_row(water_group,
+                                                          "Mash in temp",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP);
     screen_recipe_draft_brewing_format_liters(value_text,
                                               sizeof(value_text),
                                               draft->brewing.sparge_water_dl);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge water", value_text, false);
+    screen_recipe_draft_brewing_create_editable_value_row(water_group,
+                                                          "Sparge water",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER);
     screen_recipe_draft_brewing_format_temp(value_text,
                                             sizeof(value_text),
                                             draft->brewing.sparge_temperature_c);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge temp", value_text, false);
+    screen_recipe_draft_brewing_create_editable_value_row(water_group,
+                                                          "Sparge temp",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP);
     screen_recipe_draft_brewing_format_minutes(value_text,
                                                sizeof(value_text),
                                                draft->brewing.sparge_time_min);
-    screen_recipe_draft_brewing_create_value_row(water_group, "Sparge time", value_text, false);
+    screen_recipe_draft_brewing_create_editable_value_row(water_group,
+                                                          "Sparge time",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TIME);
 
     mash_group = screen_recipe_draft_brewing_create_group(brewing->body, "MASH");
     if (draft->brewing.mash_step_count == 0U)
@@ -316,15 +392,222 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     screen_recipe_draft_brewing_format_minutes(value_text,
                                                sizeof(value_text),
                                                draft->brewing.boil_time_min);
-    screen_recipe_draft_brewing_create_value_row(boil_group, "Boil time", value_text, false);
+    screen_recipe_draft_brewing_create_editable_value_row(boil_group,
+                                                          "Boil time",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_BOIL_TIME);
     screen_recipe_draft_brewing_format_minutes(value_text,
                                                sizeof(value_text),
                                                draft->brewing.delayed_hopping_min);
-    screen_recipe_draft_brewing_create_value_row(boil_group, "Delayed hops", value_text, false);
+    screen_recipe_draft_brewing_create_editable_value_row(boil_group,
+                                                          "Delayed hops",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_DELAYED_HOPS);
     screen_recipe_draft_brewing_format_temp(value_text,
                                             sizeof(value_text),
                                             draft->brewing.cooling_target_c);
-    screen_recipe_draft_brewing_create_value_row(boil_group, "Cooling target", value_text, false);
+    screen_recipe_draft_brewing_create_editable_value_row(boil_group,
+                                                          "Cooling target",
+                                                          value_text,
+                                                          brewing,
+                                                          SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET);
+}
+
+/****************************************************************************************
+ * @brief Read the current draft value for the selected Brewing field.
+ ****************************************************************************************/
+static uint16_t screen_recipe_draft_brewing_get_edit_value(const recipe_draft_t *draft,
+                                                           screen_recipe_draft_brewing_edit_field_t field)
+{
+    if (draft == NULL)
+    {
+        return 0U;
+    }
+
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER:
+            return draft->brewing.mash_in_water_dl;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP:
+            return draft->brewing.mash_in_temperature_c;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER:
+            return draft->brewing.sparge_water_dl;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP:
+            return draft->brewing.sparge_temperature_c;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TIME:
+            return draft->brewing.sparge_time_min;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_BOIL_TIME:
+            return draft->brewing.boil_time_min;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_DELAYED_HOPS:
+            return draft->brewing.delayed_hopping_min;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET:
+            return draft->brewing.cooling_target_c;
+        default:
+            return 0U;
+    }
+}
+
+/****************************************************************************************
+ * @brief Provide a practical starter value when an unset field still contains zero.
+ ****************************************************************************************/
+static uint16_t screen_recipe_draft_brewing_get_default_value(
+    screen_recipe_draft_brewing_edit_field_t field)
+{
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER:
+            return 150U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP:
+            return 67U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER:
+            return 120U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP:
+            return 78U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TIME:
+            return 20U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_BOIL_TIME:
+            return 60U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_DELAYED_HOPS:
+            return 10U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET:
+            return 20U;
+        default:
+            return 1U;
+    }
+}
+
+static uint16_t screen_recipe_draft_brewing_get_min_value(screen_recipe_draft_brewing_edit_field_t field)
+{
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER:
+            return 20U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET:
+            return 1U;
+        default:
+            return 0U;
+    }
+}
+
+static uint16_t screen_recipe_draft_brewing_get_max_value(screen_recipe_draft_brewing_edit_field_t field)
+{
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER:
+            return 300U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP:
+            return 100U;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET:
+            return 40U;
+        default:
+            return 240U;
+    }
+}
+
+static uint16_t screen_recipe_draft_brewing_get_step_value(screen_recipe_draft_brewing_edit_field_t field)
+{
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER:
+            return 5U;
+        default:
+            return 1U;
+    }
+}
+
+static bool screen_recipe_draft_brewing_get_value_is_liters(screen_recipe_draft_brewing_edit_field_t field)
+{
+    return (field == SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER ||
+            field == SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER);
+}
+
+static const char *screen_recipe_draft_brewing_get_editor_title(screen_recipe_draft_brewing_edit_field_t field)
+{
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER:
+            return "MASH WATER";
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP:
+            return "MASH IN TEMP";
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER:
+            return "SPARGE WATER";
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP:
+            return "SPARGE TEMP";
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TIME:
+            return "SPARGE TIME";
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_BOIL_TIME:
+            return "BOIL TIME";
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_DELAYED_HOPS:
+            return "DELAYED HOPS";
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET:
+            return "COOLING TARGET";
+        default:
+            return "VALUE";
+    }
+}
+
+static const char *screen_recipe_draft_brewing_get_editor_unit(screen_recipe_draft_brewing_edit_field_t field)
+{
+    if (screen_recipe_draft_brewing_get_value_is_liters(field))
+    {
+        return "L";
+    }
+
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP:
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET:
+            return "C";
+        default:
+            return "min";
+    }
+}
+
+/****************************************************************************************
+ * @brief Write an edited Brewing value back through the draft model boundary.
+ ****************************************************************************************/
+static void screen_recipe_draft_brewing_store_edit_value(recipe_draft_t *draft,
+                                                         screen_recipe_draft_brewing_edit_field_t field,
+                                                         uint16_t value)
+{
+    switch (field)
+    {
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER:
+            recipe_draft_set_mash_in_water_dl(draft, value);
+            break;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP:
+            recipe_draft_set_mash_in_temperature_c(draft, (uint8_t)value);
+            break;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER:
+            recipe_draft_set_sparge_water_dl(draft, value);
+            break;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP:
+            recipe_draft_set_sparge_temperature_c(draft, (uint8_t)value);
+            break;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TIME:
+            recipe_draft_set_sparge_time_min(draft, value);
+            break;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_BOIL_TIME:
+            recipe_draft_set_boil_time_min(draft, value);
+            break;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_DELAYED_HOPS:
+            recipe_draft_set_delayed_hopping_min(draft, value);
+            break;
+        case SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET:
+            recipe_draft_set_cooling_target_c(draft, (uint8_t)value);
+            break;
+        default:
+            break;
+    }
 }
 
 static void screen_recipe_draft_brewing_nav_event_cb(lv_event_t *event)
@@ -340,36 +623,44 @@ static void screen_recipe_draft_brewing_nav_event_cb(lv_event_t *event)
     context->handler(context->action, context->value, context->user_data);
 }
 
-static void screen_recipe_draft_brewing_mash_water_event_cb(lv_event_t *event)
+static void screen_recipe_draft_brewing_value_event_cb(lv_event_t *event)
 {
+    screen_recipe_draft_brewing_edit_context_t *context;
     screen_recipe_draft_brewing_t *brewing;
     uint16_t current_value;
 
-    brewing = lv_event_get_user_data(event);
+    context = lv_event_get_user_data(event);
+    if (context == NULL)
+    {
+        return;
+    }
+
+    brewing = context->brewing;
     if (brewing == NULL || brewing->draft == NULL)
     {
         return;
     }
 
-    current_value = brewing->draft->brewing.mash_in_water_dl;
+    current_value = screen_recipe_draft_brewing_get_edit_value(brewing->draft, context->field);
     if (current_value == 0U)
     {
-        current_value = 150U;
+        current_value = screen_recipe_draft_brewing_get_default_value(context->field);
     }
 
-    ui_number_editor_show(&brewing->mash_water_editor,
-                          "MASH WATER",
-                          "L",
+    brewing->active_edit_field = context->field;
+    ui_number_editor_show(&brewing->number_editor,
+                          screen_recipe_draft_brewing_get_editor_title(context->field),
+                          screen_recipe_draft_brewing_get_editor_unit(context->field),
                           current_value,
-                          20U,
-                          300U,
-                          5U,
-                          true,
-                          screen_recipe_draft_brewing_mash_water_commit_cb,
+                          screen_recipe_draft_brewing_get_min_value(context->field),
+                          screen_recipe_draft_brewing_get_max_value(context->field),
+                          screen_recipe_draft_brewing_get_step_value(context->field),
+                          screen_recipe_draft_brewing_get_value_is_liters(context->field),
+                          screen_recipe_draft_brewing_value_commit_cb,
                           brewing);
 }
 
-static void screen_recipe_draft_brewing_mash_water_commit_cb(uint16_t value, void *user_data)
+static void screen_recipe_draft_brewing_value_commit_cb(uint16_t value, void *user_data)
 {
     screen_recipe_draft_brewing_t *brewing;
 
@@ -379,7 +670,7 @@ static void screen_recipe_draft_brewing_mash_water_commit_cb(uint16_t value, voi
         return;
     }
 
-    recipe_draft_set_mash_in_water_dl(brewing->draft, value);
+    screen_recipe_draft_brewing_store_edit_value(brewing->draft, brewing->active_edit_field, value);
     screen_recipe_draft_brewing_show(brewing, brewing->draft);
 }
 
@@ -400,6 +691,8 @@ void screen_recipe_draft_brewing_init(screen_recipe_draft_brewing_t *brewing,
     brewing->back_button_context.action = UI_ACTION_SHOW_RECIPE_DRAFT_MENU;
     brewing->back_button_context.handler = action_handler;
     brewing->back_button_context.user_data = user_data;
+    brewing->active_edit_field = SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER;
+    screen_recipe_draft_brewing_init_edit_contexts(brewing);
 
     brewing->screen = lv_obj_create(NULL);
     screen_recipe_draft_brewing_set_static(brewing->screen);
@@ -436,7 +729,7 @@ void screen_recipe_draft_brewing_init(screen_recipe_draft_brewing_t *brewing,
     lv_obj_set_flex_flow(brewing->body, LV_FLEX_FLOW_COLUMN);
 
     screen_recipe_draft_brewing_create_disabled_modify_button(container);
-    ui_number_editor_init(&brewing->mash_water_editor, brewing->screen);
+    ui_number_editor_init(&brewing->number_editor, brewing->screen);
 }
 
 /****************************************************************************************

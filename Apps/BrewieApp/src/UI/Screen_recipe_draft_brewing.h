@@ -29,6 +29,29 @@ typedef struct
     void *user_data;
 } screen_recipe_draft_brewing_nav_context_t;
 
+typedef enum
+{
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_WATER = 0,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_MASH_TEMP,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_WATER,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TEMP,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_SPARGE_TIME,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_BOIL_TIME,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_DELAYED_HOPS,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_COOLING_TARGET,
+    SCREEN_RECIPE_DRAFT_BREWING_EDIT_COUNT
+} screen_recipe_draft_brewing_edit_field_t;
+
+typedef struct screen_recipe_draft_brewing_t screen_recipe_draft_brewing_t;
+
+typedef struct
+{
+    /** Screen instance that owns the reusable number editor. */
+    screen_recipe_draft_brewing_t *brewing;
+    /** Draft brewing field edited when this row is clicked. */
+    screen_recipe_draft_brewing_edit_field_t field;
+} screen_recipe_draft_brewing_edit_context_t;
+
 typedef struct screen_recipe_draft_brewing_t
 {
     /** Root LVGL screen object for the draft Brewing view. */
@@ -39,8 +62,12 @@ typedef struct screen_recipe_draft_brewing_t
     lv_obj_t *body;
     /** Draft model edited by this screen's local-only numeric editor. */
     recipe_draft_t *draft;
-    /** Reusable number editor, first used for Mash water. */
-    ui_number_editor_t mash_water_editor;
+    /** Reusable number editor shared by every editable Brewing value row. */
+    ui_number_editor_t number_editor;
+    /** Persistent row callback contexts, one per editable field. */
+    screen_recipe_draft_brewing_edit_context_t edit_contexts[SCREEN_RECIPE_DRAFT_BREWING_EDIT_COUNT];
+    /** Field currently being edited by number_editor. */
+    screen_recipe_draft_brewing_edit_field_t active_edit_field;
     /** Event callback context for returning to the draft recipe menu. */
     screen_recipe_draft_brewing_nav_context_t back_button_context;
     /** Last shown draft name, used to avoid unchanged label writes. */
