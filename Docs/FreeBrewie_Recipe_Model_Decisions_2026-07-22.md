@@ -300,6 +300,8 @@ Because the SOM is memory-limited and the UI must stay responsive:
 - avoid per-frame allocation
 - keep recipe editing local until the user explicitly saves
 - validate draft sections incrementally
+- use small descriptor tables for simple repeated editor fields, so adding/removing fields
+  does not require parallel switch statements in the UI
 
 Example early fixed limits:
 - fermentables: 8 additions

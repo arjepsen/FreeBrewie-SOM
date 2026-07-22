@@ -554,6 +554,11 @@ contacting the MCU. These fields are the friendly/simple editing shape; future a
 editing should work through an explicit process-step model rather than turning this screen
 into a hardware-command editor.
 
+The current simple Brewing fields are descriptor-driven inside the screen: each editable row
+has one descriptor for label text, editor title/unit, bounds, formatting, and draft
+read/write callbacks. Prefer extending that descriptor table over adding parallel switch
+statements when simple fields are added or removed.
+
 ### `Screen_recipe_draft_details`
 Owns:
 - safe old-Brewie-inspired Details section for a local draft recipe
