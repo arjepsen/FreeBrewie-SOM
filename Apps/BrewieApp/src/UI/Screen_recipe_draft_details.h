@@ -59,9 +59,11 @@ typedef struct screen_recipe_draft_details_t
     lv_obj_t *ibu_label;
     lv_obj_t *og_label;
     lv_obj_t *fg_label;
+    /** Clickable row that opens the local style picker. */
+    lv_obj_t *style_row;
     /** Clickable row that opens the batch-size numeric editor. */
     lv_obj_t *batch_size_row;
-    /** Local style picker overlay shown by the Modify button. */
+    /** Local style picker overlay shown by the Style row. */
     lv_obj_t *style_picker_overlay;
     /** Reusable local numeric editor, first used by Batch size. */
     ui_number_editor_t batch_size_editor;

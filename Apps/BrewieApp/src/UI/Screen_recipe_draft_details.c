@@ -19,8 +19,6 @@ static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
                                                               const char *value_text,
                                                               bool is_editable,
                                                               lv_obj_t **value_label);
-static lv_obj_t *screen_recipe_draft_details_create_modify_button(lv_obj_t *parent,
-                                                                  screen_recipe_draft_details_t *details);
 static void screen_recipe_draft_details_create_style_picker(screen_recipe_draft_details_t *details);
 static lv_obj_t *screen_recipe_draft_details_create_style_option_button(
     lv_obj_t *parent,
@@ -46,7 +44,7 @@ static void screen_recipe_draft_details_set_text_if_changed(lv_obj_t *label, con
 static void screen_recipe_draft_details_nav_event_cb(lv_event_t *event);
 static void screen_recipe_draft_details_batch_size_event_cb(lv_event_t *event);
 static void screen_recipe_draft_details_batch_size_commit_cb(uint16_t value, void *user_data);
-static void screen_recipe_draft_details_modify_event_cb(lv_event_t *event);
+static void screen_recipe_draft_details_style_picker_toggle_event_cb(lv_event_t *event);
 static void screen_recipe_draft_details_style_option_event_cb(lv_event_t *event);
 
 /****************************************************************************************
@@ -195,27 +193,6 @@ static lv_obj_t *screen_recipe_draft_details_create_value_row(lv_obj_t *parent,
     return row;
 }
 
-static lv_obj_t *screen_recipe_draft_details_create_modify_button(lv_obj_t *parent,
-                                                                  screen_recipe_draft_details_t *details)
-{
-    lv_obj_t *button;
-    lv_obj_t *label;
-
-    button = lv_button_create(parent);
-    lv_obj_set_width(button, lv_pct(100));
-    lv_obj_set_height(button, 44);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0xE67526), 0);
-    lv_obj_set_style_bg_color(button, lv_color_hex(0xC85F22), LV_STATE_PRESSED);
-    lv_obj_set_style_radius(button, 5, 0);
-    lv_obj_add_event_cb(button, screen_recipe_draft_details_modify_event_cb, LV_EVENT_CLICKED, details);
-
-    label = lv_label_create(button);
-    lv_label_set_text(label, "SELECT STYLE");
-    lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), 0);
-    lv_obj_center(label);
-    return button;
-}
-
 /****************************************************************************************
  * @brief Create the hidden style picker overlay.
  ****************************************************************************************/
@@ -283,7 +260,10 @@ static void screen_recipe_draft_details_create_style_picker(screen_recipe_draft_
     lv_obj_set_style_bg_color(close_button, lv_color_hex(0x4B4741), 0);
     lv_obj_set_style_bg_color(close_button, lv_color_hex(0x343434), LV_STATE_PRESSED);
     lv_obj_set_style_radius(close_button, 5, 0);
-    lv_obj_add_event_cb(close_button, screen_recipe_draft_details_modify_event_cb, LV_EVENT_CLICKED, details);
+    lv_obj_add_event_cb(close_button,
+                        screen_recipe_draft_details_style_picker_toggle_event_cb,
+                        LV_EVENT_CLICKED,
+                        details);
 
     close_label = lv_label_create(close_button);
     lv_label_set_text(close_label, "BACK");
@@ -521,7 +501,7 @@ static void screen_recipe_draft_details_batch_size_commit_cb(uint16_t value, voi
     screen_recipe_draft_details_show(details, details->draft);
 }
 
-static void screen_recipe_draft_details_modify_event_cb(lv_event_t *event)
+static void screen_recipe_draft_details_style_picker_toggle_event_cb(lv_event_t *event)
 {
     screen_recipe_draft_details_t *details;
 
@@ -611,11 +591,17 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
     lv_obj_set_flex_flow(body, LV_FLEX_FLOW_COLUMN);
 
     style_panel = screen_recipe_draft_details_create_panel(body, "BEER STYLE");
-    screen_recipe_draft_details_create_value_row(style_panel,
-                                                 "Style",
-                                                 "--",
-                                                 false,
-                                                 &details->style_name_label);
+    details->style_row = screen_recipe_draft_details_create_value_row(style_panel,
+                                                                      "Style",
+                                                                      "--",
+                                                                      true,
+                                                                      &details->style_name_label);
+    lv_obj_add_flag(details->style_row, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_style_bg_color(details->style_row, lv_color_hex(0x3B332D), LV_STATE_PRESSED);
+    lv_obj_add_event_cb(details->style_row,
+                        screen_recipe_draft_details_style_picker_toggle_event_cb,
+                        LV_EVENT_CLICKED,
+                        details);
     screen_recipe_draft_details_create_value_row(style_panel,
                                                  "BJCP number",
                                                  "--",
@@ -655,7 +641,6 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
     screen_recipe_draft_details_create_value_row(calculated_panel, "OG", "--", false, &details->og_label);
     screen_recipe_draft_details_create_value_row(calculated_panel, "FG", "--", false, &details->fg_label);
 
-    screen_recipe_draft_details_create_modify_button(container, details);
     screen_recipe_draft_details_create_style_picker(details);
     ui_number_editor_init(&details->batch_size_editor, details->screen);
 }

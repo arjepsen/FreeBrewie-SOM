@@ -67,11 +67,11 @@ The following is currently proven on the real SOM target:
   Details, Ingredients, Brewing, and Fermentation; implemented section taps open local-only
   screens, not storage or hardware actions, and `BREW LATER` remains disabled
 - the draft recipe `DETAILS` button now opens a real local-only Details screen shaped after
-  the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a `SELECT STYLE` picker backed
-  by `Logic/Style_catalog` and starter data in `Data/styles.json`; calculated values remain
-  placeholders until the real recipe calculation path exists, but `Batch size` is now the
-  first editable numeric field through reusable `UI_number_editor`; editable overview rows
-  use a small orange pencil icon as their tap-to-edit affordance
+  the old UI, with `BEER STYLE`, `CALCULATED VALUES`, and a beer-style picker backed by
+  `Logic/Style_catalog` and starter data in `Data/styles.json`; calculated values remain
+  placeholders until the real recipe calculation path exists, but `Style` and `Batch size`
+  now edit from their overview rows instead of using a misleading screen-wide action button;
+  editable overview rows use a small orange pencil icon as their tap-to-edit affordance
 - the draft recipe `INGREDIENTS` button now opens a real local-only Ingredients screen
   shaped after the old UI, with Fermentables/Hops tabs, placeholder list rows, and a
   disabled `MODIFY LATER` action; Fermentables and Hops now render from fixed RAM-only
