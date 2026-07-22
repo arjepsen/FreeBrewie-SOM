@@ -610,7 +610,7 @@ void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,
                         LV_EVENT_CLICKED,
                         details);
     screen_recipe_draft_details_create_value_row(style_panel,
-                                                 "BJCP number",
+                                                 "BJCP",
                                                  "--",
                                                  false,
                                                  &details->style_number_label);
