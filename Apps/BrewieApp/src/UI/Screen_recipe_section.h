@@ -57,7 +57,7 @@ void screen_recipe_section_init(screen_recipe_section_t *section,
                                 ui_action_handler_t action_handler,
                                 void *user_data);
 void screen_recipe_section_show(screen_recipe_section_t *section,
-                                const recipe_t *recipe,
+                                const recipe_catalog_entry_t *recipe,
                                 recipe_section_id_t section_id);
 
 #endif

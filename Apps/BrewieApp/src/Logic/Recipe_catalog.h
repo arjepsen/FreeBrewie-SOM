@@ -16,7 +16,7 @@
 #include "Recipe_types.h"
 
 size_t recipe_catalog_count();
-const recipe_t *recipe_catalog_get_by_index(size_t index);
-const recipe_t *recipe_catalog_find_by_id(recipe_id_t recipe_id);
+const recipe_catalog_entry_t *recipe_catalog_get_by_index(size_t index);
+const recipe_catalog_entry_t *recipe_catalog_find_by_id(recipe_id_t recipe_id);
 
 #endif

@@ -87,6 +87,12 @@ typedef struct
     uint16_t estimated_fg_points;  // Estimated final gravity as gravity points, so 1011 means 1.011.
 } recipe_calculated_t;
 
+/*
+ * This is intentionally a catalog/listing shape, not the canonical recipe model.
+ * The static sample recipes still contain preformatted strings because the current UI only
+ * needs compact browse/detail text. Editable and brewable recipes should move through
+ * recipe_model_t and Process_plan instead.
+ */
 typedef struct
 {
     recipe_id_t id;
@@ -109,6 +115,6 @@ typedef struct
     const char *fermentation_temperature;
     const char *fermentation_duration;
     uint32_t accent_color;
-} recipe_t;
+} recipe_catalog_entry_t;
 
 #endif

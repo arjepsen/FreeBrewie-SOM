@@ -222,26 +222,31 @@ temporary scaffolding until draft save/commit and catalog persistence exist.
 
 ### 6. Normal editor and advanced process editor
 The current draft Brewing fields should be treated as a **normal/simple recipe editor**,
-not as the final internal process representation.
+not as a separate basic recipe type and not as the final internal process representation.
 
 Near-term UI fields such as mash water, sparge time, boil time, and cooling target are useful
 because they match the old Brewie UI and are easy for a normal user to understand. Later,
-those values should be converted by SOM logic into an ordered process plan.
+those values should be converted by SOM logic into the recipe's ordered process plan.
 
-Future advanced recipe editing should expose that process plan more directly:
+Future advanced recipe editing should expose the same process plan more directly:
 - ordered steps
 - target temperatures
 - durations
 - intended pump/valve/heater behavior
 - safety-relevant limits or preconditions
 
-This means the architecture should keep two paths open:
-- normal recipe screens edit friendly recipe fields
-- advanced recipe screens edit or inspect explicit process steps
+This means the architecture should keep two editing paths open:
+- normal recipe screens edit friendly fields that generate process steps
+- advanced recipe screens edit or inspect explicit process steps directly
 
-Both paths should eventually feed the same SOM-owned runtime plan before anything becomes
-MCU protocol traffic. The MCU still should not receive a whole recipe or a whole process
-script unless the shared protocol is deliberately redesigned later.
+Both paths must feed one canonical process plan. The recipe must not permanently hold a
+separate "basic brewing plan" and "advanced process plan" that can diverge. If the UI needs
+to remember friendly editor inputs, those should be draft/editor state or derived summaries,
+not competing recipe truth.
+
+The SOM then uses the process plan to create runtime execution state before anything becomes
+MCU protocol traffic. The MCU still should not receive a whole recipe or a whole process script
+unless the shared protocol is deliberately redesigned later.
 
 ---
 
@@ -289,7 +294,7 @@ recipe
         fermentable additions
         hop additions
 
-    brewing
+    basic editor inputs
         mash_in_water_l
         mash_in_temperature_c
         mash steps
@@ -302,14 +307,18 @@ recipe
 
     fermentation
         fermentation steps
+
+    process_plan
+        ordered machine-level brewing steps generated from the basic editor
+        or edited directly by the future advanced editor
 ```
 
 The model can grow later, but this first shape matches the old Brewie recipe screens and the
 machine's likely near-term needs.
 
 Important:
-this first shape is the **friendly editing shape**, not the final runtime execution shape.
-The future runtime execution shape should be an ordered process plan derived from the recipe.
+the basic editor input shape is friendly UI state. It should generate/update the same process
+plan that the future advanced editor will expose more directly.
 
 ---
 

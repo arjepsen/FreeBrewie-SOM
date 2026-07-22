@@ -714,7 +714,7 @@ void screen_active_brewing_init(screen_active_brewing_t *active_brewing,
 }
 
 void screen_active_brewing_show_recipe(screen_active_brewing_t *active_brewing,
-                                       const recipe_t *recipe)
+                                       const recipe_catalog_entry_t *recipe)
 {
     if (active_brewing == NULL || recipe == NULL || active_brewing->shown_recipe_id == recipe->id)
     {

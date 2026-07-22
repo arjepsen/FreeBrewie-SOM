@@ -75,7 +75,7 @@ typedef struct screen_active_brewing_t
 void screen_active_brewing_init(screen_active_brewing_t *active_brewing,
                                 ui_action_handler_t action_handler,
                                 void *user_data);
-void screen_active_brewing_show_recipe(screen_active_brewing_t *active_brewing, const recipe_t *recipe);
+void screen_active_brewing_show_recipe(screen_active_brewing_t *active_brewing, const recipe_catalog_entry_t *recipe);
 void screen_active_brewing_update(screen_active_brewing_t *active_brewing,
                                   const status_screen_view_model_t *status_view_model,
                                   const brewing_process_view_model_t *process_view_model);

@@ -14,7 +14,7 @@ static lv_obj_t *screen_recipes_create_back_button(lv_obj_t *parent, screen_reci
 static lv_obj_t *screen_recipes_create_menu_button(lv_obj_t *parent, screen_recipes_t *recipes);
 static lv_obj_t *screen_recipes_create_search_box(lv_obj_t *parent);
 static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
-                                                  const recipe_t *recipe,
+                                                  const recipe_catalog_entry_t *recipe,
                                                   screen_recipes_button_context_t *context,
                                                   ui_action_handler_t action_handler,
                                                   void *user_data);
@@ -167,7 +167,7 @@ static lv_obj_t *screen_recipes_create_search_box(lv_obj_t *parent)
  * descriptions belong on the detail screen, where there is enough vertical room for them.
  */
 static lv_obj_t *screen_recipes_create_recipe_row(lv_obj_t *parent,
-                                                  const recipe_t *recipe,
+                                                  const recipe_catalog_entry_t *recipe,
                                                   screen_recipes_button_context_t *context,
                                                   ui_action_handler_t action_handler,
                                                   void *user_data)

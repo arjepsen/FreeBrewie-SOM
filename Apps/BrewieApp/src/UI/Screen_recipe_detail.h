@@ -46,6 +46,6 @@ typedef struct
 void screen_recipe_detail_init(screen_recipe_detail_t *detail,
                                ui_action_handler_t action_handler,
                                void *user_data);
-void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const recipe_t *recipe);
+void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const recipe_catalog_entry_t *recipe);
 
 #endif

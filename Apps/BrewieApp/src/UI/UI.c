@@ -133,7 +133,7 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
  ****************************************************************************************/
 static lv_obj_t *ui_show_recipe_detail_screen(ui_t *ui, uint32_t recipe_id)
 {
-    const recipe_t *recipe;
+    const recipe_catalog_entry_t *recipe;
 
     recipe = recipe_catalog_find_by_id(recipe_id);
     if (recipe == NULL)
@@ -282,7 +282,7 @@ static lv_obj_t *ui_show_recipe_section_screen(ui_t *ui,
                                                uint32_t recipe_id,
                                                recipe_section_id_t recipe_section_id)
 {
-    const recipe_t *recipe;
+    const recipe_catalog_entry_t *recipe;
 
     recipe = recipe_catalog_find_by_id(recipe_id);
     if (recipe == NULL)
@@ -305,7 +305,7 @@ static lv_obj_t *ui_show_recipe_section_screen(ui_t *ui,
  ****************************************************************************************/
 static lv_obj_t *ui_show_brew_setup_screen(ui_t *ui, uint32_t recipe_id)
 {
-    const recipe_t *recipe;
+    const recipe_catalog_entry_t *recipe;
 
     recipe = recipe_catalog_find_by_id(recipe_id);
     if (recipe == NULL)
@@ -328,7 +328,7 @@ static lv_obj_t *ui_show_brew_setup_screen(ui_t *ui, uint32_t recipe_id)
  ****************************************************************************************/
 static lv_obj_t *ui_show_brew_checklist_screen(ui_t *ui, uint32_t recipe_id)
 {
-    const recipe_t *recipe;
+    const recipe_catalog_entry_t *recipe;
 
     recipe = recipe_catalog_find_by_id(recipe_id);
     if (recipe == NULL)
@@ -351,7 +351,7 @@ static lv_obj_t *ui_show_brew_checklist_screen(ui_t *ui, uint32_t recipe_id)
  ****************************************************************************************/
 static lv_obj_t *ui_show_active_brewing_screen(ui_t *ui, uint32_t recipe_id)
 {
-    const recipe_t *recipe;
+    const recipe_catalog_entry_t *recipe;
 
     recipe = recipe_catalog_find_by_id(recipe_id);
     if (recipe == NULL)

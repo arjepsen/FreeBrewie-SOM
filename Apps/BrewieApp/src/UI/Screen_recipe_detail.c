@@ -326,7 +326,7 @@ void screen_recipe_detail_init(screen_recipe_detail_t *detail,
     screen_recipe_detail_create_brew_button(actions, &detail->brew_context);
 }
 
-void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const recipe_t *recipe)
+void screen_recipe_detail_show_recipe(screen_recipe_detail_t *detail, const recipe_catalog_entry_t *recipe)
 {
     if (detail == NULL || recipe == NULL || detail->shown_recipe_id == recipe->id)
     {

@@ -309,7 +309,7 @@ void screen_brew_checklist_init(screen_brew_checklist_t *checklist,
     screen_brew_checklist_create_start_button(container, &checklist->start_button_context);
 }
 
-void screen_brew_checklist_show_recipe(screen_brew_checklist_t *checklist, const recipe_t *recipe)
+void screen_brew_checklist_show_recipe(screen_brew_checklist_t *checklist, const recipe_catalog_entry_t *recipe)
 {
     if (checklist == NULL || recipe == NULL || checklist->shown_recipe_id == recipe->id)
     {

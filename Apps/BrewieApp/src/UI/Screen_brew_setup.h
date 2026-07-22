@@ -58,6 +58,6 @@ typedef struct screen_brew_setup_t
 void screen_brew_setup_init(screen_brew_setup_t *setup,
                             ui_action_handler_t action_handler,
                             void *user_data);
-void screen_brew_setup_show_recipe(screen_brew_setup_t *setup, const recipe_t *recipe);
+void screen_brew_setup_show_recipe(screen_brew_setup_t *setup, const recipe_catalog_entry_t *recipe);
 
 #endif

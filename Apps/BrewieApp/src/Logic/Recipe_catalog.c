@@ -8,7 +8,7 @@
  * Logic instead of UI also points toward the future browser/web-UI path: screens should
  * render recipe data, not own it.
  */
-static const recipe_t recipe_catalog[] = {
+static const recipe_catalog_entry_t recipe_catalog[] = {
     {
         .id = 1U,
         .name = "Hopus Pocus",
@@ -192,7 +192,7 @@ size_t recipe_catalog_count()
     return sizeof(recipe_catalog) / sizeof(recipe_catalog[0]);
 }
 
-const recipe_t *recipe_catalog_get_by_index(size_t index)
+const recipe_catalog_entry_t *recipe_catalog_get_by_index(size_t index)
 {
     if (index >= recipe_catalog_count())
     {
@@ -202,7 +202,7 @@ const recipe_t *recipe_catalog_get_by_index(size_t index)
     return &recipe_catalog[index];
 }
 
-const recipe_t *recipe_catalog_find_by_id(recipe_id_t recipe_id)
+const recipe_catalog_entry_t *recipe_catalog_find_by_id(recipe_id_t recipe_id)
 {
     size_t index;
 

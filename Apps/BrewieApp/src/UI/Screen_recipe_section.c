@@ -22,7 +22,7 @@ static lv_obj_t *screen_recipe_section_create_row(lv_obj_t *parent,
                                                   lv_obj_t **value_label);
 static const char *screen_recipe_section_title(recipe_section_id_t section_id);
 static uint32_t screen_recipe_section_fill_rows(screen_recipe_section_t *section,
-                                                const recipe_t *recipe,
+                                                const recipe_catalog_entry_t *recipe,
                                                 recipe_section_id_t section_id);
 static void screen_recipe_section_set_row(screen_recipe_section_t *section,
                                           uint32_t row_index,
@@ -182,7 +182,7 @@ static const char *screen_recipe_section_title(recipe_section_id_t section_id)
 }
 
 static uint32_t screen_recipe_section_fill_rows(screen_recipe_section_t *section,
-                                                const recipe_t *recipe,
+                                                const recipe_catalog_entry_t *recipe,
                                                 recipe_section_id_t section_id)
 {
     if (recipe == NULL)
@@ -321,7 +321,7 @@ void screen_recipe_section_init(screen_recipe_section_t *section,
 }
 
 void screen_recipe_section_show(screen_recipe_section_t *section,
-                                const recipe_t *recipe,
+                                const recipe_catalog_entry_t *recipe,
                                 recipe_section_id_t section_id)
 {
     if (section == NULL || recipe == NULL)
