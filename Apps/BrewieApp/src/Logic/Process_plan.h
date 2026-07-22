@@ -3,7 +3,7 @@
 
 /****************************************************************************************
  * @file Process_plan.h
- * @brief Ordered SOM-side process intent derived from a recipe draft.
+ * @brief Ordered SOM-side process intent derived from a selected recipe.
  *
  * Responsibility: convert friendly recipe fields into ordered brewing-process steps.
  * Owns: local process-step data used before hardware preflight and MCU target generation.
@@ -13,7 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "Recipe_draft.h"
+#include "Recipe_model.h"
 
 #define PROCESS_PLAN_MAX_STEPS 32U
 
@@ -53,13 +53,14 @@ typedef struct
     uint8_t step_count;
     /** Ordered process intent. Fixed-size to keep runtime memory predictable. */
     process_plan_step_t steps[PROCESS_PLAN_MAX_STEPS];
-    /** True when the draft was complete enough to build this first plan. */
+    /** True when the selected recipe was complete enough to build this first plan. */
     bool ready_for_preflight;
     /** Short human-readable build result for UI/debug surfaces. */
     const char *status_text;
 } process_plan_t;
 
 void process_plan_init(process_plan_t *plan);
+bool process_plan_build_from_recipe(const recipe_model_t *recipe, process_plan_t *plan);
 bool process_plan_build_from_draft(const recipe_draft_t *draft, process_plan_t *plan);
 
 #endif

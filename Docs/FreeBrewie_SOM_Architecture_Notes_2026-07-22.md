@@ -198,6 +198,8 @@ Current file set:
 - `Recipe_catalog.h`
 - `Recipe_draft.c`
 - `Recipe_draft.h`
+- `Recipe_model.c`
+- `Recipe_model.h`
 - `Recipe_types.h`
 - `Startup_logic.c`
 - `Startup_logic.h`
@@ -236,9 +238,9 @@ model is still being built.
 
 ### `Process_plan`
 Owns:
-- ordered SOM-side brewing-process intent derived from a recipe draft
+- ordered SOM-side brewing-process intent derived from a normal selected recipe
 - fixed-size process-step storage for the first preflight/build boundary
-- conversion of friendly draft fields into ordered mash, sparge, boil, hop, cooling, and
+- conversion of friendly recipe fields into ordered mash, sparge, boil, hop, cooling, and
   fermentation steps
 
 Must not own:
@@ -250,9 +252,11 @@ Must not own:
 - direct MCU commands
 
 Important current fact:
-`Process_plan` is local-only. It proves that a complete draft can become ordered process
-intent, but it does not yet produce `CONTROL_SNAPSHOT` payloads or start the machine. The
-next boundary after this is preflight and target-generation logic.
+`Process_plan` is local-only. Its stable input is now `Recipe_model`, not UI draft state.
+The remaining `process_plan_build_from_draft()` adapter is temporary scaffolding until the
+Recipe Builder has a real save/commit path into the catalog/list flow. `Process_plan` does
+not yet produce `CONTROL_SNAPSHOT` payloads or start the machine. The next boundary after
+this is preflight and target-generation logic.
 
 ### `Status_view_model`
 Owns:
@@ -278,6 +282,26 @@ The fuller recipe-model direction is documented in
 `FreeBrewie_Recipe_Model_Decisions_2026-07-22.md`. That document should be checked before
 adding recipe storage, draft editing, import/export, or brewing-plan conversion.
 
+### `Recipe_model`
+Owns:
+- the first native brewable recipe domain object
+- compact recipe identity and raw recipe section values after draft editing
+- the draft-to-recipe commit boundary used before process planning
+
+Must not own:
+- LVGL widgets
+- draft-editing state
+- recipe storage files
+- active process timing
+- hardware safety decisions
+- MCU commands
+
+Important current fact:
+`Recipe_model` exists so the app does not accidentally brew directly from `Recipe_draft`.
+The agreed direction is: draft editing produces or updates a normal recipe; the recipe
+appears in the normal recipe/catalog flow; process planning and preflight happen only after
+the user selects a recipe to brew.
+
 ### `Recipe_catalog`
 Owns:
 - the current read-only static recipe list
@@ -302,7 +326,8 @@ values, but does not own the available style catalog. Recipe Builder and draft s
 should render/edit this model instead of owning recipe values themselves. It also exposes
 the first lightweight completeness check used by the draft menu to tell the user which
 recipe section still needs data. This check is not hardware safety validation; real brew
-start still needs app-level preflight, machine state, fault state, and MCU readiness.
+start still needs a committed/selected recipe, app-level preflight, machine state, fault
+state, and MCU readiness.
 
 ### `Style_catalog`
 Owns:

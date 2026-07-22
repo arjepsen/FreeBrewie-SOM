@@ -53,6 +53,16 @@ storage changes, web UI reuse, and MCU command generation harder later.
 
 FreeBrewie should keep those responsibilities separate from the start.
 
+Additional structure lesson from the old flow:
+- creating a recipe made it part of the recipe list/catalog first
+- a selected active recipe was then copied into an active brewing/session object
+- the active brewing/session object generated runtime instructions from the recipe
+
+This direction is worth keeping, but not the old implementation style. FreeBrewie should not
+brew directly from a draft edit screen. A draft should commit into a normal recipe, the user
+should choose that recipe from the normal recipe flow, and only then should preflight and
+process planning begin.
+
 ---
 
 ## Lessons from other brewing projects
@@ -138,6 +148,11 @@ Likely fields:
 This layer should use compact C structs and fixed practical limits. Avoid heap allocation
 unless a clear need appears.
 
+Current implementation:
+`Logic/Recipe_model` is the first native brewable recipe object. It is intentionally small,
+but it establishes that process planning should consume a normal recipe rather than
+temporary draft-editing state.
+
 ### 2. Recipe draft
 A draft is the editable in-progress version of a recipe.
 
@@ -157,7 +172,8 @@ Current implementation:
 `Logic/Recipe_draft` owns the bounded recipe-builder name buffer, the first draft Details
 fields, the first fixed-size Fermentables/Hops ingredient arrays, and the first
 brewing-process fields. The module is intentionally small for now, but it is the right place
-to add bounded draft fields as the builder grows.
+to add bounded draft fields as the builder grows. Drafts are not the long-term brew-start
+input; they should commit into `Recipe_model` and then into the normal recipe/catalog flow.
 
 ### 3. Recipe catalog
 The catalog is a list/index of saved or built-in recipes.
@@ -195,6 +211,10 @@ The runtime plan is not the same as the recipe file:
 
 The SOM should step through the runtime plan and send only the current target state to the
 MCU.
+
+Current implementation:
+`Logic/Process_plan` now builds from `Recipe_model` as the stable path. Its draft adapter is
+temporary scaffolding until draft save/commit and catalog persistence exist.
 
 ### 6. Normal editor and advanced process editor
 The current draft Brewing fields should be treated as a **normal/simple recipe editor**,
@@ -332,7 +352,9 @@ Do not implement filesystem recipe storage yet.
 
 Implemented first:
 - added `Logic/Recipe_draft.c/.h`
-- added `Logic/Process_plan.c/.h` as the first local-only draft-to-process-plan boundary
+- added `Logic/Recipe_model.c/.h` as the first normal recipe object between draft editing
+  and process planning
+- added `Logic/Process_plan.c/.h` as the first local-only recipe-to-process-plan boundary
 - moved the temporary draft name out of `Screen_recipe_builder`
 - made Recipe Builder, draft menu, draft Details, and draft Ingredients read from the draft model
 - added the first RAM-only draft Details fields for style and calculated values
@@ -345,10 +367,14 @@ Implemented first:
   which recipe-data section still needs attention before future preflight
 - added ordered local process-plan steps for mash-in, mash rests, sparge, boil, hop
   additions, cooling, fermentation notes, and completion
+- agreed that the long-term path is `Recipe_draft -> Recipe_model -> Recipe_catalog /
+  selected recipe -> Process_plan -> preflight -> active runner -> CONTROL_SNAPSHOT`
 - kept the draft in memory only
 - kept all MCU output disabled
 
 Next code steps:
+- add a real draft save/commit path into the normal recipe flow before treating any recipe
+  as brewable from the UI
 - define the first process-plan-to-machine-target conversion boundary before
   hardware-affecting brewing starts
 - expand validation when the process-plan and hardware preflight boundaries are defined

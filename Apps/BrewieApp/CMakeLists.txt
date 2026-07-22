@@ -12,6 +12,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Logic/Process_plan.c
     src/Logic/Recipe_catalog.c
     src/Logic/Recipe_draft.c
+    src/Logic/Recipe_model.c
     src/Logic/Startup_logic.c
     src/Logic/Status_view_model.c
     src/Logic/Style_catalog.c
