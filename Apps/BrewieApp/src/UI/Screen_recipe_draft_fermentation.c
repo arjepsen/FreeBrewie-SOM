@@ -217,7 +217,7 @@ static void screen_recipe_draft_fermentation_init_edit_contexts(
         return;
     }
 
-    for (index = 0U; index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS; ++index)
+    for (index = 0U; index < RECIPE_MAX_FERMENTATION_STEPS; ++index)
     {
         fermentation->temperature_contexts[index].fermentation = fermentation;
         fermentation->temperature_contexts[index].step_index = index;
@@ -281,7 +281,7 @@ static void screen_recipe_draft_fermentation_rebuild_body(
     lv_obj_clean(fermentation->body);
 
     for (index = 0U;
-         index < draft->fermentation.step_count && index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS;
+         index < draft->fermentation.step_count && index < RECIPE_MAX_FERMENTATION_STEPS;
          ++index)
     {
         group = screen_recipe_draft_fermentation_create_group(fermentation->body,

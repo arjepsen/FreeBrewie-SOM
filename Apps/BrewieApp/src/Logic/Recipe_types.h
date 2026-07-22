@@ -7,13 +7,118 @@
  *
  * Responsibility: define plain recipe data structures that can be used by embedded UI,
  * future storage, and a future web/API interface.
- * Owns: stable recipe identifiers and read-only recipe metadata shapes.
+ * Owns: stable recipe identifiers, shared recipe section shapes, and read-only catalog
+ * preview metadata shapes.
  * Must not own: LVGL widgets, file storage, brewing start side effects, or web transport.
  ****************************************************************************************/
 
 #include <stdint.h>
 
+#define RECIPE_NAME_MAX_LENGTH 40U
+#define RECIPE_MAX_FERMENTABLES 8U
+#define RECIPE_MAX_HOPS 8U
+#define RECIPE_MAX_MASH_STEPS 6U
+#define RECIPE_MAX_FERMENTATION_STEPS 6U
+
 typedef uint32_t recipe_id_t;
+
+typedef struct
+{
+    /** Ingredient name. Points to stable string storage in this first scaffold. */
+    const char *name;
+    /** Addition amount in grams. */
+    uint16_t amount_g;
+} recipe_fermentable_t;
+
+typedef struct
+{
+    /** Hop name. Points to stable string storage in this first scaffold. */
+    const char *name;
+    /** Addition amount in grams. */
+    uint16_t amount_g;
+    /** Boil time in minutes before flameout/end of boil. */
+    uint16_t boil_time_min;
+} recipe_hop_t;
+
+typedef struct
+{
+    /** Target mash step temperature in degrees C. */
+    uint8_t temperature_c;
+    /** Step hold time in minutes. */
+    uint16_t time_min;
+} recipe_mash_step_t;
+
+typedef struct
+{
+    /** Mash-in water amount in deciliters. */
+    uint16_t mash_in_water_dl;
+    /** Mash-in target temperature in degrees C. */
+    uint8_t mash_in_temperature_c;
+    /** Number of active mash steps in mash_steps[]. */
+    uint8_t mash_step_count;
+    /** Ordered mash steps. */
+    recipe_mash_step_t mash_steps[RECIPE_MAX_MASH_STEPS];
+    /** Sparge water amount in deciliters. */
+    uint16_t sparge_water_dl;
+    /** Sparge water temperature in degrees C. */
+    uint8_t sparge_temperature_c;
+    /** Sparge duration in minutes. */
+    uint16_t sparge_time_min;
+    /** Total boil time in minutes. */
+    uint16_t boil_time_min;
+    /** Delayed hopping time in minutes. */
+    uint16_t delayed_hopping_min;
+    /** Cooling target temperature in degrees C. */
+    uint8_t cooling_target_c;
+} recipe_brewing_t;
+
+typedef struct
+{
+    /** Step name shown in the normal recipe editor, for example Primary. */
+    const char *name;
+    /** Target fermentation temperature in degrees C. */
+    uint8_t temperature_c;
+    /** Step duration in days. */
+    uint16_t duration_days;
+} recipe_fermentation_step_t;
+
+typedef struct
+{
+    /** Number of active fermentation steps in steps[]. */
+    uint8_t step_count;
+    /** Ordered fermentation schedule. */
+    recipe_fermentation_step_t steps[RECIPE_MAX_FERMENTATION_STEPS];
+} recipe_fermentation_t;
+
+typedef struct
+{
+    /** Display name of the selected beer style, or placeholder text when none is selected. */
+    const char *style_name;
+    /** BJCP or style-guide number text. Kept as text because external systems vary here. */
+    const char *style_number;
+    /** Style category text. */
+    const char *style_category;
+    /** Style type text, for example Ale or Lager. */
+    const char *style_type;
+} recipe_style_t;
+
+typedef struct
+{
+    /** Expected brewhouse efficiency in whole percent. */
+    uint8_t efficiency_percent;
+    /** Batch size in deciliters, so 200 means 20.0 L without floating point. */
+    uint16_t batch_size_dl;
+    /** Estimated alcohol in tenths of a percent, so 52 means 5.2%. */
+    uint16_t estimated_abv_tenths;
+    /** Estimated color in whole SRM for now. */
+    uint16_t estimated_srm;
+    /** Estimated bitterness in whole IBU. */
+    uint16_t estimated_ibu;
+    /** Estimated original gravity as gravity points, so 1050 means 1.050. */
+    uint16_t estimated_og_points;
+    /** Estimated final gravity as gravity points, so 1011 means 1.011. */
+    uint16_t estimated_fg_points;
+} recipe_calculated_t;
 
 typedef struct
 {

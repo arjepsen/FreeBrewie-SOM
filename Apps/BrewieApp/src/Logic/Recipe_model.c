@@ -39,7 +39,7 @@ static bool recipe_model_has_complete_fermentation_basics(const recipe_model_t *
     }
 
     for (index = 0U;
-         index < recipe->fermentation.step_count && index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS;
+         index < recipe->fermentation.step_count && index < RECIPE_MAX_FERMENTATION_STEPS;
          ++index)
     {
         if (recipe->fermentation.steps[index].temperature_c == 0U ||
@@ -75,14 +75,14 @@ bool recipe_model_from_draft(const recipe_draft_t *draft, recipe_model_t *recipe
 {
     recipe_draft_validation_t validation;
 
-    if (recipe == NULL)
+    if (draft == NULL || recipe == NULL)
     {
         return false;
     }
 
     recipe_model_init(recipe);
     recipe_draft_validate(draft, &validation);
-    if (draft == NULL || !validation.can_brew)
+    if (!validation.can_brew)
     {
         return false;
     }

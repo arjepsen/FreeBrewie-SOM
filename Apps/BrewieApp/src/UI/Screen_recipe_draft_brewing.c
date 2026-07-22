@@ -519,7 +519,7 @@ static void screen_recipe_draft_brewing_rebuild_body(screen_recipe_draft_brewing
     {
         screen_recipe_draft_brewing_create_value_row(mash_group, "No mash steps", "--", false);
     }
-    for (index = 0U; index < draft->brewing.mash_step_count && index < RECIPE_DRAFT_MAX_MASH_STEPS; ++index)
+    for (index = 0U; index < draft->brewing.mash_step_count && index < RECIPE_MAX_MASH_STEPS; ++index)
     {
         snprintf(step_name, sizeof(step_name), "Step %u", (unsigned int)(index + 1U));
         snprintf(value_text,

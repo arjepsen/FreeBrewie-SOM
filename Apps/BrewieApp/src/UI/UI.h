@@ -68,10 +68,14 @@ struct ui_t
     screen_recipe_draft_ingredients_t recipe_draft_ingredients;
     /** True after the local-only draft Ingredients screen has been created. */
     bool recipe_draft_ingredients_created;
-    /** Safe selected-recipe detail screen. */
+    /** Safe selected-recipe detail screen, lazy-created on first selected-recipe visit. */
     screen_recipe_detail_t recipe_detail;
-    /** Safe selected-recipe section screen. */
+    /** True after the selected-recipe detail screen has been created. */
+    bool recipe_detail_created;
+    /** Safe selected-recipe section screen, lazy-created on first subsection visit. */
     screen_recipe_section_t recipe_section;
+    /** True after the selected-recipe section screen has been created. */
+    bool recipe_section_created;
     /** Safe brew setup scaffold, lazy-created on first use. */
     screen_brew_setup_t brew_setup;
     /** True after the Brew Setup scaffold has been created. */

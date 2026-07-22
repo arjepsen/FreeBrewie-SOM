@@ -273,10 +273,17 @@ toward raw values and screen-specific dirty widget updates.
 ### `Recipe_types`
 Owns:
 - plain recipe-domain data types and stable recipe IDs
+- shared raw recipe section shapes such as style, calculated values, fermentables, hops,
+  brewing values, and fermentation steps
 - current read-only recipe metadata fields rendered by the recipe screens
 
 This is intentionally not tied to LVGL. The embedded UI, future recipe storage, and future
 web/API interface should be able to share these plain recipe data shapes.
+
+Important current fact:
+The committed `Recipe_model` and editable `Recipe_draft` both use these shared section
+types. This prevents the recipe model, future storage, and future import/export work from
+depending on draft-editor types.
 
 The fuller recipe-model direction is documented in
 `FreeBrewie_Recipe_Model_Decisions_2026-07-22.md`. That document should be checked before
@@ -320,7 +327,8 @@ Owns:
 
 Current fact:
 `Recipe_draft` owns the temporary draft recipe name, first Details values, and first
-Fermentables/Hops arrays, establishing the correct boundary before storage, keyboard input,
+Fermentables/Hops arrays, while the shared raw section types themselves live in
+`Recipe_types`. That establishes the correct boundary before storage, keyboard input,
 BeerXML/BeerJSON mapping, or Brewfather API sync is added. It stores the selected style
 values, but does not own the available style catalog. Recipe Builder and draft screens
 should render/edit this model instead of owning recipe values themselves. It also exposes
@@ -429,11 +437,12 @@ Current file set:
 ### `UI.c`
 Owns:
 - top-level UI init/update
-- selecting which screens/components are active
+- selecting which screens/components are active through an action-route table and small
+  per-screen show helpers
 - keeping the UI layer together
 - owning button callback contexts for UI navigation
 - deferring navigation requested from LVGL event callbacks until normal `ui_update()`
-- lazy-creating optional placeholder screens that are not needed at startup
+- lazy-creating optional workflow screens that are not needed at startup
 
 Must not own:
 - serial I/O
@@ -443,8 +452,9 @@ Must not own:
 Important current fact:
 The target LVGL build uses the built-in allocator with `LV_MEM_SIZE` set to 256 KB. The
 old-style navigation shell exceeded LVGL's default 64 KB heap when too many screens were
-created during boot. New optional screens should therefore be created lazily unless they
-are required for the first visible Home path.
+created during boot. Current policy is to keep common navigation/status screens warm and
+lazy-create optional workflow screens. Do not destroy/recreate every screen during normal
+navigation unless measured memory pressure proves that the extra complexity is needed.
 
 ### `Screen_status`
 Owns:

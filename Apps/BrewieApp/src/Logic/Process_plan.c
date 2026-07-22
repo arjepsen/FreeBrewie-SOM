@@ -46,7 +46,7 @@ static void process_plan_append_mash_steps(const recipe_model_t *recipe, process
                                   .source_index = 0U});
 
     for (index = 0U;
-         index < recipe->brewing.mash_step_count && index < RECIPE_DRAFT_MAX_MASH_STEPS;
+         index < recipe->brewing.mash_step_count && index < RECIPE_MAX_MASH_STEPS;
          ++index)
     {
         (void)process_plan_append(plan,
@@ -106,7 +106,7 @@ static void process_plan_append_boil_steps(const recipe_model_t *recipe, process
                                   .boil_elapsed_min = 0U,
                                   .source_index = 0U});
 
-    for (index = 0U; index < recipe->hop_count && index < RECIPE_DRAFT_MAX_HOPS; ++index)
+    for (index = 0U; index < recipe->hop_count && index < RECIPE_MAX_HOPS; ++index)
     {
         uint16_t boil_elapsed_min;
 
@@ -158,7 +158,7 @@ static void process_plan_append_fermentation_steps(const recipe_model_t *recipe,
     uint8_t index;
 
     for (index = 0U;
-         index < recipe->fermentation.step_count && index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS;
+         index < recipe->fermentation.step_count && index < RECIPE_MAX_FERMENTATION_STEPS;
          ++index)
     {
         (void)process_plan_append(plan,

@@ -62,9 +62,9 @@ typedef struct screen_recipe_draft_fermentation_t
     /** Reusable number editor shared by every editable Fermentation value row. */
     ui_number_editor_t number_editor;
     /** Stable callback contexts for temperature rows. */
-    screen_recipe_draft_fermentation_edit_context_t temperature_contexts[RECIPE_DRAFT_MAX_FERMENTATION_STEPS];
+    screen_recipe_draft_fermentation_edit_context_t temperature_contexts[RECIPE_MAX_FERMENTATION_STEPS];
     /** Stable callback contexts for duration rows. */
-    screen_recipe_draft_fermentation_edit_context_t duration_contexts[RECIPE_DRAFT_MAX_FERMENTATION_STEPS];
+    screen_recipe_draft_fermentation_edit_context_t duration_contexts[RECIPE_MAX_FERMENTATION_STEPS];
     /** Step currently being edited by number_editor. */
     uint8_t active_step_index;
     /** Field currently being edited by number_editor. */

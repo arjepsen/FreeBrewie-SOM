@@ -151,7 +151,9 @@ unless a clear need appears.
 Current implementation:
 `Logic/Recipe_model` is the first native brewable recipe object. It is intentionally small,
 but it establishes that process planning should consume a normal recipe rather than
-temporary draft-editing state.
+temporary draft-editing state. Its raw recipe sections use shared types from
+`Logic/Recipe_types`, so future storage/import/export code does not need to depend on the
+draft editor.
 
 ### 2. Recipe draft
 A draft is the editable in-progress version of a recipe.
@@ -171,9 +173,11 @@ The draft should not own:
 Current implementation:
 `Logic/Recipe_draft` owns the bounded recipe-builder name buffer, the first draft Details
 fields, the first fixed-size Fermentables/Hops ingredient arrays, and the first
-brewing-process fields. The module is intentionally small for now, but it is the right place
-to add bounded draft fields as the builder grows. Drafts are not the long-term brew-start
-input; they should commit into `Recipe_model` and then into the normal recipe/catalog flow.
+brewing-process fields. The shared raw section shapes live in `Logic/Recipe_types`; the
+draft only owns the editable in-progress instance of those values. The module is
+intentionally small for now, but it is the right place to add bounded draft fields as the
+builder grows. Drafts are not the long-term brew-start input; they should commit into
+`Recipe_model` and then into the normal recipe/catalog flow.
 
 ### 3. Recipe catalog
 The catalog is a list/index of saved or built-in recipes.

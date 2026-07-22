@@ -274,7 +274,7 @@ static void screen_recipe_draft_ingredients_rebuild_fermentables(
         return;
     }
 
-    for (index = 0U; index < draft->fermentable_count && index < RECIPE_DRAFT_MAX_FERMENTABLES; ++index)
+    for (index = 0U; index < draft->fermentable_count && index < RECIPE_MAX_FERMENTABLES; ++index)
     {
         snprintf(amount_text, sizeof(amount_text), "%u g", (unsigned int)draft->fermentables[index].amount_g);
         screen_recipe_draft_ingredients_create_value_row(ingredients->fermentables_group,
@@ -309,7 +309,7 @@ static void screen_recipe_draft_ingredients_rebuild_hops(screen_recipe_draft_ing
         return;
     }
 
-    for (index = 0U; index < draft->hop_count && index < RECIPE_DRAFT_MAX_HOPS; ++index)
+    for (index = 0U; index < draft->hop_count && index < RECIPE_MAX_HOPS; ++index)
     {
         snprintf(amount_text,
                  sizeof(amount_text),

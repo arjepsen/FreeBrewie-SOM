@@ -296,7 +296,7 @@ void ui_text_editor_init(ui_text_editor_t *editor, lv_obj_t *parent)
     lv_obj_set_width(editor->textarea, lv_pct(100));
     lv_obj_set_height(editor->textarea, 56);
     lv_textarea_set_one_line(editor->textarea, true);
-    lv_textarea_set_max_length(editor->textarea, RECIPE_DRAFT_NAME_MAX_LENGTH - 1U);
+    lv_textarea_set_max_length(editor->textarea, RECIPE_NAME_MAX_LENGTH - 1U);
     lv_obj_set_style_text_color(editor->textarea, lv_color_hex(UI_TEXT_EDITOR_COLOR_TEXT), 0);
     lv_obj_set_style_text_font(editor->textarea, &lv_font_montserrat_20, 0);
     lv_obj_set_style_bg_color(editor->textarea, lv_color_hex(UI_TEXT_EDITOR_COLOR_FIELD), 0);
@@ -307,7 +307,7 @@ void ui_text_editor_init(ui_text_editor_t *editor, lv_obj_t *parent)
     lv_obj_set_style_pad_right(editor->textarea, 12, 0);
 
     limit_label = lv_label_create(panel);
-    lv_label_set_text_fmt(limit_label, "1 - %u characters", (unsigned int)(RECIPE_DRAFT_NAME_MAX_LENGTH - 1U));
+    lv_label_set_text_fmt(limit_label, "1 - %u characters", (unsigned int)(RECIPE_NAME_MAX_LENGTH - 1U));
     lv_obj_set_width(limit_label, lv_pct(100));
     lv_obj_set_style_text_color(limit_label, lv_color_hex(UI_TEXT_EDITOR_COLOR_TEXT_MUTED), 0);
 

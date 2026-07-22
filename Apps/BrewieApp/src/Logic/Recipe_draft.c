@@ -47,13 +47,13 @@ static void recipe_draft_clear_ingredients(recipe_draft_t *draft)
 
     draft->fermentable_count = 0U;
     draft->hop_count = 0U;
-    for (index = 0U; index < RECIPE_DRAFT_MAX_FERMENTABLES; ++index)
+    for (index = 0U; index < RECIPE_MAX_FERMENTABLES; ++index)
     {
         draft->fermentables[index].name = RECIPE_DRAFT_PLACEHOLDER_TEXT;
         draft->fermentables[index].amount_g = 0U;
     }
 
-    for (index = 0U; index < RECIPE_DRAFT_MAX_HOPS; ++index)
+    for (index = 0U; index < RECIPE_MAX_HOPS; ++index)
     {
         draft->hops[index].name = RECIPE_DRAFT_PLACEHOLDER_TEXT;
         draft->hops[index].amount_g = 0U;
@@ -81,7 +81,7 @@ static void recipe_draft_clear_brewing(recipe_draft_t *draft)
     draft->brewing.delayed_hopping_min = 0U;
     draft->brewing.cooling_target_c = 0U;
 
-    for (index = 0U; index < RECIPE_DRAFT_MAX_MASH_STEPS; ++index)
+    for (index = 0U; index < RECIPE_MAX_MASH_STEPS; ++index)
     {
         draft->brewing.mash_steps[index].temperature_c = 0U;
         draft->brewing.mash_steps[index].time_min = 0U;
@@ -103,7 +103,7 @@ static void recipe_draft_clear_fermentation(recipe_draft_t *draft)
     draft->fermentation.steps[0].name = "Primary";
     draft->fermentation.steps[1].name = "Secondary";
     draft->fermentation.steps[2].name = "Conditioning";
-    for (index = 0U; index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS; ++index)
+    for (index = 0U; index < RECIPE_MAX_FERMENTATION_STEPS; ++index)
     {
         if (draft->fermentation.steps[index].name == NULL)
         {
@@ -139,7 +139,7 @@ static bool recipe_draft_has_complete_fermentation_basics(const recipe_draft_t *
     }
 
     for (index = 0U;
-         index < draft->fermentation.step_count && index < RECIPE_DRAFT_MAX_FERMENTATION_STEPS;
+         index < draft->fermentation.step_count && index < RECIPE_MAX_FERMENTATION_STEPS;
          ++index)
     {
         if (draft->fermentation.steps[index].temperature_c == 0U ||
@@ -204,9 +204,9 @@ void recipe_draft_set_name(recipe_draft_t *draft, const char *name)
     }
 
     name_length = strlen(name);
-    if (name_length >= RECIPE_DRAFT_NAME_MAX_LENGTH)
+    if (name_length >= RECIPE_NAME_MAX_LENGTH)
     {
-        name_length = RECIPE_DRAFT_NAME_MAX_LENGTH - 1U;
+        name_length = RECIPE_NAME_MAX_LENGTH - 1U;
     }
 
     memcpy(draft->name, name, name_length);
