@@ -32,8 +32,7 @@ typedef struct
 {
     lv_obj_t *screen;
     lv_obj_t *mcu_value;
-    /** Last link text shown on Home, used to avoid unchanged label updates. */
-    const char *shown_link_text;
+    const char *shown_link_text;  // Last link text shown on Home, used to avoid unchanged label updates.
     char mcu_text[16];
     screen_home_button_context_t menu_button_context;
     screen_home_button_context_t brew_button_context;

@@ -75,10 +75,8 @@ struct ui_t
     bool manual_created;
     screen_settings_t settings;
     bool settings_created;
-    /** Screen currently loaded into LVGL. */
-    ui_screen_id_t current_screen;
-    /** Deferred navigation request, applied outside the LVGL event callback. */
-    ui_screen_id_t pending_screen;
+    ui_screen_id_t current_screen;  // Screen currently loaded into LVGL.
+    ui_screen_id_t pending_screen;  // Deferred navigation request.
     uint32_t pending_value;
     recipe_section_id_t pending_recipe_section;
     bool has_pending_screen;

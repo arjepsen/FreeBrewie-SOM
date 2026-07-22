@@ -16,8 +16,7 @@
 
 typedef struct
 {
-    /** LVGL display/input state and selected backend details. */
-    display_t display;
+    display_t display;  // LVGL display/input state and selected backend details.
 } platform_t;
 
 bool platform_init(platform_t *platform);

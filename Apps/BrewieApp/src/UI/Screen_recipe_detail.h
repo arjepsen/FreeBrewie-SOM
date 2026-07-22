@@ -33,8 +33,7 @@ typedef struct
     lv_obj_t *screen;
     lv_obj_t *name_label;
     lv_obj_t *style_label;
-    /** Recipe currently shown, used to avoid unchanged label updates. */
-    recipe_id_t shown_recipe_id;
+    recipe_id_t shown_recipe_id;  // Recipe currently shown, used to avoid unchanged label updates.
     screen_recipe_detail_button_context_t back_button_context;
     screen_recipe_detail_button_context_t menu_button_context;
     screen_recipe_detail_button_context_t details_context;

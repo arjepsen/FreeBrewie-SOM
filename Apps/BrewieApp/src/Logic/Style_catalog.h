@@ -18,14 +18,10 @@
 
 typedef struct
 {
-    /** Display name shown in the style picker and copied into a selected draft. */
-    const char *style_name;
-    /** BJCP-style short code. Kept as text because external style systems differ. */
-    const char *style_number;
-    /** Human-readable category shown under the style name. */
-    const char *style_category;
-    /** Broad fermentation family, for example Ale or Lager. */
-    const char *style_type;
+    const char *style_name;     // Display name shown in the style picker and copied into a selected draft.
+    const char *style_number;   // BJCP-style short code. Kept as text because external style systems differ.
+    const char *style_category; // Human-readable category shown under the style name.
+    const char *style_type;     // Broad fermentation family, for example Ale or Lager.
 } style_catalog_style_t;
 
 bool style_catalog_init();

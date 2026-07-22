@@ -29,13 +29,11 @@ typedef struct
     lv_obj_t *title_label;
     lv_obj_t *value_label;
     lv_obj_t *unit_label;
-    /** Current working value in caller-defined units. */
-    uint16_t value;
+    uint16_t value;  // Current working value in caller-defined units.
     uint16_t minimum;
     uint16_t maximum;
     uint16_t step;
-    /** True when value should display as deciliters with one decimal liter. */
-    bool show_as_liters;
+    bool show_as_liters;  // True when value should display as deciliters with one decimal liter.
     ui_number_editor_commit_handler_t commit_handler;
     void *commit_user_data;
 } ui_number_editor_t;

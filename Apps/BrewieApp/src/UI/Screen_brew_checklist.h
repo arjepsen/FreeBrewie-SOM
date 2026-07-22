@@ -53,10 +53,8 @@ typedef struct screen_brew_checklist_t
     screen_brew_checklist_nav_context_t back_button_context;
     screen_brew_checklist_nav_context_t start_button_context;
     screen_brew_checklist_item_context_t item_contexts[SCREEN_BREW_CHECKLIST_ITEM_COUNT];
-    /** Recipe currently shown, used to avoid unchanged label updates. */
-    recipe_id_t shown_recipe_id;
-    /** Display-only until app-level validation exists. */
-    bool item_checked[SCREEN_BREW_CHECKLIST_ITEM_COUNT];
+    recipe_id_t shown_recipe_id;  // Recipe currently shown, used to avoid unchanged label updates.
+    bool item_checked[SCREEN_BREW_CHECKLIST_ITEM_COUNT];  // Display-only until app-level validation exists.
 } screen_brew_checklist_t;
 
 void screen_brew_checklist_init(screen_brew_checklist_t *checklist,

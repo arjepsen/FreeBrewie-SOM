@@ -21,20 +21,13 @@
 
 typedef struct
 {
-    /** Linux/display/input resources owned by the process. */
-    platform_t platform;
-    /** Serial protocol state for the MCU link. */
-    comms_t comms;
-    /** Diagnostic/status presentation model. This can move behind App_orchestrator later. */
-    status_view_model_t status_view_model;
-    /** Read-only presentation model for the current Active Brewing scaffold. */
-    brewing_process_view_model_t brewing_process_view_model;
-    /** LVGL screen objects and navigation state. */
-    ui_t ui;
-    /** Last time the human-readable UI labels were refreshed. */
-    uint64_t last_ui_update_ms;
-    /** False when display setup failed, allowing comms-only bring-up. */
-    bool display_enabled;
+    platform_t platform;  // Linux/display/input resources owned by the process.
+    comms_t comms;  // Serial protocol state for the MCU link.
+    status_view_model_t status_view_model;  // Diagnostic/status presentation model.
+    brewing_process_view_model_t brewing_process_view_model;  // Active Brewing scaffold model.
+    ui_t ui;  // LVGL screen objects and navigation state.
+    uint64_t last_ui_update_ms;  // Last refresh of human-readable UI labels.
+    bool display_enabled;  // False allows comms-only bring-up after display init failure.
 } app_t;
 
 bool app_init(app_t *app);

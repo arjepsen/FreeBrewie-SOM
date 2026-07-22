@@ -50,13 +50,11 @@ typedef struct screen_recipe_draft_ingredients_t
     lv_obj_t *hops_button;
     lv_obj_t *fermentables_body;
     lv_obj_t *hops_body;
-    /** Rebuilt from the draft model when the screen is shown. */
-    lv_obj_t *fermentables_group;
+    lv_obj_t *fermentables_group;  // Rebuilt from the draft model when the screen is shown.
     lv_obj_t *hops_group;
     screen_recipe_draft_ingredients_nav_context_t back_button_context;
     screen_recipe_draft_ingredients_tab_context_t tab_contexts[2];
-    /** Last shown draft name, used to avoid unchanged label writes. */
-    const char *shown_name;
+    const char *shown_name;  // Last shown draft name, used to avoid unchanged label writes.
     screen_recipe_draft_ingredients_tab_t active_tab;
 } screen_recipe_draft_ingredients_t;
 

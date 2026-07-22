@@ -15,12 +15,9 @@
 
 typedef enum
 {
-    /** The Linux serial device could not be opened. */
-    COMMS_LINK_DOWN = 0,
-    /** The serial device is open, but the MCU has not sent a recent valid frame. */
-    COMMS_LINK_WAITING,
-    /** A valid MCU frame arrived recently, so the SOM considers the link alive. */
-    COMMS_LINK_OK
+    COMMS_LINK_DOWN = 0,  // Serial device could not be opened.
+    COMMS_LINK_WAITING,  // Serial is open, but no recent valid MCU frame arrived.
+    COMMS_LINK_OK  // A valid MCU frame arrived recently.
 } comms_link_state_t;
 
 /**

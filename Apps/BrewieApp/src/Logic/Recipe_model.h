@@ -18,8 +18,7 @@
 
 typedef struct
 {
-    /** Stable recipe id once catalog/storage exists. Zero means unsaved/not assigned yet. */
-    recipe_id_t id;
+    recipe_id_t id;  // Stable recipe id once catalog/storage exists. Zero means unsaved/not assigned yet.
     char name[RECIPE_NAME_MAX_LENGTH];
     recipe_style_t style;
     recipe_calculated_t calculated;

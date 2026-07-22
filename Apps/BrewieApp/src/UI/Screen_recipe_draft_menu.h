@@ -56,8 +56,7 @@ typedef struct screen_recipe_draft_menu_t
     screen_recipe_draft_menu_nav_context_t menu_button_context;
     screen_recipe_draft_menu_section_context_t section_contexts[4];
     ui_dialog_t section_dialog;
-    /** Last shown draft name, used to avoid unchanged label writes. */
-    const char *shown_name;
+    const char *shown_name;  // Last shown draft name, used to avoid unchanged label writes.
 } screen_recipe_draft_menu_t;
 
 void screen_recipe_draft_menu_init(screen_recipe_draft_menu_t *draft_menu,

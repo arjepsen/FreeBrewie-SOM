@@ -71,8 +71,7 @@ typedef struct
 
 typedef struct
 {
-    /** UI-ready diagnostic/status text built from the latest comms snapshot. */
-    status_screen_view_model_t values;
+    status_screen_view_model_t values;  // UI-ready diagnostic/status text built from the latest comms snapshot.
     /*
      * Backing storage for formatted UI strings.
      *

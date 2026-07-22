@@ -31,32 +31,21 @@ typedef enum
 
 typedef struct
 {
-    /** Step type. This tells the future runner how to interpret the remaining fields. */
-    process_plan_step_kind_t kind;
-    /** Short stable display/debug label. */
-    const char *label;
-    /** Target temperature in degrees C, or zero when the step has no temperature target. */
-    uint8_t target_temperature_c;
-    /** Water amount in deciliters, or zero when the step does not add water. */
-    uint16_t water_amount_dl;
-    /** Step duration in minutes, or zero for an instant/action marker. */
-    uint16_t duration_min;
-    /** Time from the start of boil, used by hop additions. */
-    uint16_t boil_elapsed_min;
-    /** Original draft array index when the step came from a repeated draft section. */
-    uint8_t source_index;
+    process_plan_step_kind_t kind;  // Tells the future runner how to interpret the step.
+    const char *label;  // Stable display/debug label.
+    uint8_t target_temperature_c;  // Degrees C, or zero when not temperature-controlled.
+    uint16_t water_amount_dl;  // Deciliters, or zero when no water is added.
+    uint16_t duration_min;  // Minutes, or zero for an instant/action marker.
+    uint16_t boil_elapsed_min;  // Minutes from boil start, used by hop additions.
+    uint8_t source_index;  // Source array index for repeated recipe sections.
 } process_plan_step_t;
 
 typedef struct
 {
-    /** Number of active entries in steps[]. */
-    uint8_t step_count;
-    /** Ordered process intent. Fixed-size to keep runtime memory predictable. */
-    process_plan_step_t steps[PROCESS_PLAN_MAX_STEPS];
-    /** True when the selected recipe was complete enough to build this first plan. */
-    bool ready_for_preflight;
-    /** Short human-readable build result for UI/debug surfaces. */
-    const char *status_text;
+    uint8_t step_count;  // Active entries in steps[].
+    process_plan_step_t steps[PROCESS_PLAN_MAX_STEPS];  // Fixed-size for predictable memory.
+    bool ready_for_preflight;  // Recipe was complete enough to build this plan.
+    const char *status_text;  // Short build result for UI/debug surfaces.
 } process_plan_t;
 
 void process_plan_init(process_plan_t *plan);

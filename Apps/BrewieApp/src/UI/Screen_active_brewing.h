@@ -61,8 +61,7 @@ typedef struct screen_active_brewing_t
     screen_active_brewing_nav_context_t back_button_context;
     screen_active_brewing_nav_context_t menu_button_context;
     screen_active_brewing_tab_context_t tab_contexts[SCREEN_ACTIVE_BREWING_TAB_COUNT];
-    /** Recipe currently shown, used to avoid unchanged label updates. */
-    recipe_id_t shown_recipe_id;
+    recipe_id_t shown_recipe_id;  // Recipe currently shown, used to avoid unchanged label updates.
     screen_active_brewing_tab_id_t selected_tab_id;
     status_machine_snapshot_t shown_machine;
     brewing_process_view_model_t shown_process;

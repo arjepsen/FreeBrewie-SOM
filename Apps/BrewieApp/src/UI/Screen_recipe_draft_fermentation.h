@@ -60,8 +60,7 @@ typedef struct screen_recipe_draft_fermentation_t
     uint8_t active_step_index;
     screen_recipe_draft_fermentation_edit_kind_t active_edit_kind;
     screen_recipe_draft_fermentation_nav_context_t back_button_context;
-    /** Last shown draft name, used to avoid unchanged label writes. */
-    const char *shown_name;
+    const char *shown_name;  // Last shown draft name, used to avoid unchanged label writes.
 } screen_recipe_draft_fermentation_t;
 
 void screen_recipe_draft_fermentation_init(screen_recipe_draft_fermentation_t *fermentation,

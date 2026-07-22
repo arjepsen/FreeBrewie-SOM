@@ -56,16 +56,11 @@
  */
 typedef struct
 {
-    /** Kernel handle used when destroying the buffer. */
-    uint32_t handle;
-    /** Bytes per physical framebuffer row; may be wider than width * bytes_per_pixel. */
-    uint32_t pitch;
-    /** Total mapped byte size. */
-    uint64_t size;
-    /** DRM framebuffer object id used by page flip. */
-    uint32_t framebuffer_id;
-    /** CPU pointer returned by mmap(), where rotated pixels are written. */
-    uint8_t *map;
+    uint32_t handle;  // Kernel handle used when destroying the buffer.
+    uint32_t pitch;  // Bytes per physical row; may be wider than width * bpp.
+    uint64_t size;  // Total mapped byte size.
+    uint32_t framebuffer_id;  // DRM framebuffer object id used by page flip.
+    uint8_t *map;  // CPU pointer returned by mmap().
 } display_drm_buffer_t;
 
 /*
@@ -77,8 +72,7 @@ typedef struct
  */
 typedef struct
 {
-    /** File descriptor for /dev/dri/card0. */
-    int fd;
+    int fd;  // File descriptor for /dev/dri/card0.
     uint32_t connector_id;
     uint32_t crtc_id;
     drmModeModeInfo mode;

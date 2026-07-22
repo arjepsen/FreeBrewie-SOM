@@ -31,8 +31,7 @@ typedef struct screen_recipe_draft_details_t screen_recipe_draft_details_t;
 typedef struct
 {
     screen_recipe_draft_details_t *details;
-    /** Index into Style_catalog's fixed-size style cache. */
-    uint8_t option_index;
+    uint8_t option_index;  // Index into Style_catalog's fixed-size style cache.
 } screen_recipe_draft_details_style_context_t;
 
 /**
@@ -46,13 +45,11 @@ typedef struct screen_recipe_draft_details_t
 {
     lv_obj_t *screen;
     lv_obj_t *name_label;
-    /** Style value labels, updated from the draft model before the screen is shown. */
-    lv_obj_t *style_name_label;
+    lv_obj_t *style_name_label;  // Style value labels, updated from the draft model before the screen is shown.
     lv_obj_t *style_number_label;
     lv_obj_t *style_category_label;
     lv_obj_t *style_type_label;
-    /** Calculated value labels, updated from the draft model before the screen is shown. */
-    lv_obj_t *efficiency_label;
+    lv_obj_t *efficiency_label;  // Calculated value labels, updated from the draft model before the screen is shown.
     lv_obj_t *batch_size_label;
     lv_obj_t *abv_label;
     lv_obj_t *srm_label;
@@ -66,8 +63,7 @@ typedef struct screen_recipe_draft_details_t
     recipe_draft_t *draft;
     screen_recipe_draft_details_style_context_t style_option_contexts[STYLE_CATALOG_MAX_STYLES];
     screen_recipe_draft_details_nav_context_t back_button_context;
-    /** Last shown draft name, used to avoid unchanged label writes. */
-    const char *shown_name;
+    const char *shown_name;  // Last shown draft name, used to avoid unchanged label writes.
 } screen_recipe_draft_details_t;
 
 void screen_recipe_draft_details_init(screen_recipe_draft_details_t *details,

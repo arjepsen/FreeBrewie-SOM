@@ -13,28 +13,17 @@ typedef void (*screen_recipe_draft_brewing_format_handler_t)(char *buffer,
 
 typedef struct
 {
-    /** Row label shown in the Brewing overview. */
-    const char *label_text;
-    /** Title shown when the shared numeric editor opens. */
-    const char *editor_title;
-    /** Unit shown beside the numeric editor value. */
-    const char *unit_text;
-    /** Starter value used when the draft field is still unset. */
-    uint16_t default_value;
-    /** Lower editor bound. */
-    uint16_t minimum;
-    /** Upper editor bound. */
-    uint16_t maximum;
-    /** Editor increment/decrement step. */
-    uint16_t step;
-    /** True when the stored value is deciliters and should be displayed as liters. */
-    bool show_as_liters;
-    /** Reads the current raw draft value. */
-    screen_recipe_draft_brewing_read_handler_t read_handler;
-    /** Writes the committed raw draft value. */
-    screen_recipe_draft_brewing_write_handler_t write_handler;
-    /** Formats the row value shown on the overview screen. */
-    screen_recipe_draft_brewing_format_handler_t format_handler;
+    const char *label_text;  // Row label shown in the Brewing overview.
+    const char *editor_title;  // Title shown when the shared numeric editor opens.
+    const char *unit_text;  // Unit shown beside the numeric editor value.
+    uint16_t default_value;  // Starter value used when the draft field is still unset.
+    uint16_t minimum;  // Lower editor bound.
+    uint16_t maximum;  // Upper editor bound.
+    uint16_t step;  // Editor increment/decrement step.
+    bool show_as_liters;  // True when the stored value is deciliters and should be displayed as liters.
+    screen_recipe_draft_brewing_read_handler_t read_handler;  // Reads the current raw draft value.
+    screen_recipe_draft_brewing_write_handler_t write_handler;  // Writes the committed raw draft value.
+    screen_recipe_draft_brewing_format_handler_t format_handler;  // Formats the row value shown on the overview screen.
 } screen_recipe_draft_brewing_field_descriptor_t;
 
 static void screen_recipe_draft_brewing_set_static(lv_obj_t *object);

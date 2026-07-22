@@ -8,8 +8,7 @@
 
 typedef struct
 {
-    /** Draft-owned copies point at these stable bounded buffers. */
-    char style_name[STYLE_CATALOG_TEXT_MAX_LENGTH];
+    char style_name[STYLE_CATALOG_TEXT_MAX_LENGTH];  // Draft-owned copies point at these stable bounded buffers.
     char style_number[STYLE_CATALOG_TEXT_MAX_LENGTH];
     char style_category[STYLE_CATALOG_TEXT_MAX_LENGTH];
     char style_type[STYLE_CATALOG_TEXT_MAX_LENGTH];

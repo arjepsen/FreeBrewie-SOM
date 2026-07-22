@@ -10,8 +10,8 @@
 /**
  * One row in the event-to-screen navigation table.
  *
- * `recipe_section_id` is only meaningful for `UI_SCREEN_RECIPE_SECTION`; other rows keep
- * the default details value so the table can stay uniform.
+ * `recipe_section_id` is only meaningful for `UI_SCREEN_RECIPE_SECTION`.
+ * Other rows keep the default details value so the table can stay uniform.
  */
 typedef struct
 {

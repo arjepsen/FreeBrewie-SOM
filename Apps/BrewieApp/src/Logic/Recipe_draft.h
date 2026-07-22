@@ -20,8 +20,7 @@
 
 typedef struct
 {
-    /** Bounded draft-owned name buffer; storage/catalog can copy from here later. */
-    char name[RECIPE_NAME_MAX_LENGTH];
+    char name[RECIPE_NAME_MAX_LENGTH];  // Bounded draft-owned name buffer; storage/catalog can copy from here later.
     bool has_name;
     recipe_style_t style;
     recipe_calculated_t calculated;

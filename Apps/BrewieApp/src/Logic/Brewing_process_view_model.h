@@ -26,18 +26,12 @@ typedef enum
 
 typedef struct
 {
-    /** Current stage highlighted in the Active Brewing process strip. */
-    brewing_process_stage_t current_stage;
-    /** Product-facing short state text. */
-    const char *state_text;
-    /** Product-facing secondary detail text. */
-    const char *detail_text;
-    /** Current process progress shown in the circular progress readout. */
-    uint8_t progress_percent;
-    /** True when Pause should be presented as available. This remains false for now. */
-    bool pause_enabled;
-    /** True when Stop should be presented as available. This remains false for now. */
-    bool stop_enabled;
+    brewing_process_stage_t current_stage;  // Current stage highlighted in the Active Brewing process strip.
+    const char *state_text;  // Product-facing short state text.
+    const char *detail_text;  // Product-facing secondary detail text.
+    uint8_t progress_percent;  // Current process progress shown in the circular progress readout.
+    bool pause_enabled;  // True when Pause should be presented as available. This remains false for now.
+    bool stop_enabled;  // True when Stop should be presented as available. This remains false for now.
 } brewing_process_view_model_t;
 
 void brewing_process_view_model_init(brewing_process_view_model_t *view_model);

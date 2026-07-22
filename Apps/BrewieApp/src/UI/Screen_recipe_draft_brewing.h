@@ -63,8 +63,7 @@ typedef struct screen_recipe_draft_brewing_t
     screen_recipe_draft_brewing_edit_context_t edit_contexts[SCREEN_RECIPE_DRAFT_BREWING_EDIT_COUNT];
     screen_recipe_draft_brewing_edit_field_t active_edit_field;
     screen_recipe_draft_brewing_nav_context_t back_button_context;
-    /** Last shown draft name, used to avoid unchanged label writes. */
-    const char *shown_name;
+    const char *shown_name;  // Last shown draft name, used to avoid unchanged label writes.
 } screen_recipe_draft_brewing_t;
 
 void screen_recipe_draft_brewing_init(screen_recipe_draft_brewing_t *brewing,

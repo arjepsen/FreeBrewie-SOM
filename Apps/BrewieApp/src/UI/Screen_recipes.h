@@ -17,8 +17,7 @@
 typedef struct
 {
     ui_action_t action;
-    /** Recipe row callbacks use this as recipe_id; simple navigation leaves it zero. */
-    uint32_t value;
+    uint32_t value;  // Recipe row callbacks use this as recipe_id; simple navigation leaves it zero.
     ui_action_handler_t handler;
     void *user_data;
 } screen_recipes_button_context_t;

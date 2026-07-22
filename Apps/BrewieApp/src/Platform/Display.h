@@ -18,12 +18,9 @@
 
 typedef struct
 {
-    /** True after LVGL and the selected display backend have initialized successfully. */
-    bool ready;
-    /** True when running in the desktop SDL simulator rather than on the SOM display. */
-    bool simulator;
-    /** Last monotonic time passed to LVGL, used to advance LVGL by real elapsed time. */
-    uint64_t last_tick_ms;
+    bool ready;  // LVGL and selected backend initialized successfully.
+    bool simulator;  // Running in the desktop SDL simulator.
+    uint64_t last_tick_ms;  // Last monotonic time passed to LVGL.
 } display_t;
 
 bool display_init(display_t *display);

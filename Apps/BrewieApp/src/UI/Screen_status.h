@@ -20,8 +20,7 @@ typedef struct
 {
     lv_obj_t *screen;
     lv_obj_t *title_label;
-    /** Value labels updated from status_screen_view_model_t. */
-    lv_obj_t *display_value;
+    lv_obj_t *display_value;  // Value labels updated from status_screen_view_model_t.
     lv_obj_t *serial_value;
     lv_obj_t *heartbeat_value;
     lv_obj_t *last_rx_value;
@@ -34,16 +33,12 @@ typedef struct
     lv_obj_t *fault_value;
     lv_obj_t *touch_value;
     lv_obj_t *button_value;
-    /** Navigation callback used by the Home button. */
-    ui_action_handler_t action_handler;
+    ui_action_handler_t action_handler;  // Navigation callback used by the Home button.
     void *action_user_data;
-    /** Temporary counters used while proving touch input on the real panel. */
-    uint32_t touch_event_count;
+    uint32_t touch_event_count;  // Temporary counters used while proving touch input on the real panel.
     uint32_t button_click_count;
-    /** Last heartbeat count written to the visible label. */
-    uint32_t shown_heartbeat_count;
-    /** Stable text storage for the formatted heartbeat count. */
-    char heartbeat_count_text[16];
+    uint32_t shown_heartbeat_count;  // Last heartbeat count written to the visible label.
+    char heartbeat_count_text[16];  // Stable text storage for the formatted heartbeat count.
 } screen_status_t;
 
 void screen_status_init(screen_status_t *status, ui_action_handler_t action_handler, void *user_data);

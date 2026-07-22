@@ -51,10 +51,8 @@ typedef struct screen_brew_setup_t
     screen_brew_setup_nav_context_t back_button_context;
     screen_brew_setup_nav_context_t checklist_button_context;
     screen_brew_setup_option_context_t option_contexts[SCREEN_BREW_SETUP_OPTION_COUNT];
-    /** Recipe currently shown, used to avoid unchanged label updates. */
-    recipe_id_t shown_recipe_id;
-    /** Display-only until app-level safety routing exists. */
-    bool option_enabled[SCREEN_BREW_SETUP_OPTION_COUNT];
+    recipe_id_t shown_recipe_id;  // Recipe currently shown, used to avoid unchanged label updates.
+    bool option_enabled[SCREEN_BREW_SETUP_OPTION_COUNT];  // Display-only until app-level safety routing exists.
 } screen_brew_setup_t;
 
 void screen_brew_setup_init(screen_brew_setup_t *setup,
