@@ -1,8 +1,10 @@
 #include "Process_plan.h"
 
+#include <stdbool.h>
 #include <string.h>
 
 static bool process_plan_append(process_plan_t *plan, const process_plan_step_t *step);
+static void process_plan_append_complete_step(process_plan_t *plan);
 static void process_plan_append_mash_steps(const recipe_model_t *recipe, process_plan_t *plan);
 static void process_plan_append_sparge_step(const recipe_model_t *recipe, process_plan_t *plan);
 static void process_plan_append_boil_steps(const recipe_model_t *recipe, process_plan_t *plan);
@@ -29,7 +31,25 @@ static bool process_plan_append(process_plan_t *plan, const process_plan_step_t 
 }
 
 /****************************************************************************************
- * @brief Add mash-in and mash-rest intent from the friendly draft fields.
+ * @brief Add the explicit end marker used by later runners and debug views.
+ ****************************************************************************************/
+static void process_plan_append_complete_step(process_plan_t *plan)
+{
+    (void)process_plan_append(plan,
+                              &(process_plan_step_t){
+                                  .kind = PROCESS_PLAN_STEP_COMPLETE,
+                                  .label = "Complete",
+                                  .targets = {0},
+                                  .exit = {.conditions = PROCESS_PLAN_EXIT_IMMEDIATE},
+                                  .source_index = 0U});
+}
+
+/****************************************************************************************
+ * @brief Add mash-in and mash-rest target segments from the friendly recipe fields.
+ *
+ * The mash-in segment demonstrates the process-plan direction: it asks for a fill volume
+ * and a temperature, then exits when both are satisfied. The runtime/control layer later
+ * decides exactly how to open valves, settle sensors, and avoid overshoot.
  ****************************************************************************************/
 static void process_plan_append_mash_steps(const recipe_model_t *recipe, process_plan_t *plan)
 {
@@ -37,12 +57,24 @@ static void process_plan_append_mash_steps(const recipe_model_t *recipe, process
 
     (void)process_plan_append(plan,
                               &(process_plan_step_t){
-                                  .kind = PROCESS_PLAN_STEP_MASH_IN,
+                                  .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
                                   .label = "Mash in",
-                                  .target_temperature_c = recipe->brewing.mash_in_temperature_c,
-                                  .water_amount_dl = recipe->brewing.mash_in_water_dl,
-                                  .duration_min = 0U,
-                                  .boil_elapsed_min = 0U,
+                                  .targets =
+                                      {
+                                          .set_mash_fill_volume = true,
+                                          .mash_fill_volume_dl = recipe->brewing.mash_in_water_dl,
+                                          .set_mash_temperature = true,
+                                          .mash_temperature_c =
+                                              recipe->brewing.mash_in_temperature_c,
+                                      },
+                                  .exit =
+                                      {
+                                          .conditions = PROCESS_PLAN_EXIT_MASH_VOLUME |
+                                                        PROCESS_PLAN_EXIT_MASH_TEMPERATURE,
+                                          .mash_volume_dl = recipe->brewing.mash_in_water_dl,
+                                          .mash_temperature_c =
+                                              recipe->brewing.mash_in_temperature_c,
+                                      },
                                   .source_index = 0U});
 
     for (index = 0U;
@@ -51,13 +83,20 @@ static void process_plan_append_mash_steps(const recipe_model_t *recipe, process
     {
         (void)process_plan_append(plan,
                                   &(process_plan_step_t){
-                                      .kind = PROCESS_PLAN_STEP_MASH_REST,
+                                      .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
                                       .label = "Mash rest",
-                                      .target_temperature_c =
-                                          recipe->brewing.mash_steps[index].temperature_c,
-                                      .water_amount_dl = 0U,
-                                      .duration_min = recipe->brewing.mash_steps[index].time_min,
-                                      .boil_elapsed_min = 0U,
+                                      .targets =
+                                          {
+                                              .set_mash_temperature = true,
+                                              .mash_temperature_c =
+                                                  recipe->brewing.mash_steps[index].temperature_c,
+                                          },
+                                      .exit =
+                                          {
+                                              .conditions = PROCESS_PLAN_EXIT_DURATION,
+                                              .duration_min =
+                                                  recipe->brewing.mash_steps[index].time_min,
+                                          },
                                       .source_index = index});
     }
 }
@@ -76,72 +115,164 @@ static void process_plan_append_sparge_step(const recipe_model_t *recipe, proces
 
     (void)process_plan_append(plan,
                               &(process_plan_step_t){
-                                  .kind = PROCESS_PLAN_STEP_SPARGE,
+                                  .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
                                   .label = "Sparge",
-                                  .target_temperature_c = recipe->brewing.sparge_temperature_c,
-                                  .water_amount_dl = recipe->brewing.sparge_water_dl,
-                                  .duration_min = recipe->brewing.sparge_time_min,
-                                  .boil_elapsed_min = 0U,
+                                  .targets =
+                                      {
+                                          .set_mash_fill_volume = true,
+                                          .mash_fill_volume_dl = recipe->brewing.sparge_water_dl,
+                                          .set_mash_temperature = true,
+                                          .mash_temperature_c =
+                                              recipe->brewing.sparge_temperature_c,
+                                      },
+                                  .exit =
+                                      {
+                                          .conditions = PROCESS_PLAN_EXIT_DURATION,
+                                          .duration_min = recipe->brewing.sparge_time_min,
+                                      },
                                   .source_index = 0U});
 }
 
 /****************************************************************************************
- * @brief Add boil and hop-addition markers.
+ * @brief Add boil target segments and hop-addition prompts.
  *
  * Hop times in the draft are stored as "minutes before end of boil", matching normal recipe
- * notation. The process plan stores "minutes from start of boil" because that is easier for
- * a future runner to compare against elapsed boil time.
+ * notation. The generated process segments turn those into "wait this long while keeping the
+ * boil target active, then prompt for this addition."
  ****************************************************************************************/
 static void process_plan_append_boil_steps(const recipe_model_t *recipe, process_plan_t *plan)
 {
     uint8_t index;
+    uint8_t emitted_count;
+    bool emitted[RECIPE_MAX_HOPS];
+    uint16_t previous_elapsed_min;
 
     (void)process_plan_append(plan,
                               &(process_plan_step_t){
-                                  .kind = PROCESS_PLAN_STEP_BOIL,
-                                  .label = "Boil",
-                                  .target_temperature_c = 100U,
-                                  .water_amount_dl = 0U,
-                                  .duration_min = recipe->brewing.boil_time_min,
-                                  .boil_elapsed_min = 0U,
+                                  .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
+                                  .label = "Boil heat",
+                                  .targets =
+                                      {
+                                          .set_boil_temperature = true,
+                                          .boil_temperature_c = 100U,
+                                      },
+                                  .exit =
+                                      {
+                                          .conditions = PROCESS_PLAN_EXIT_BOIL_TEMPERATURE,
+                                          .boil_temperature_c = 100U,
+                                      },
                                   .source_index = 0U});
 
-    for (index = 0U; index < recipe->hop_count && index < RECIPE_MAX_HOPS; ++index)
-    {
-        uint16_t boil_elapsed_min;
+    memset(emitted, 0, sizeof(emitted));
+    previous_elapsed_min = 0U;
+    emitted_count = 0U;
 
-        boil_elapsed_min = 0U;
-        if (recipe->hops[index].boil_time_min < recipe->brewing.boil_time_min)
+    while (emitted_count < recipe->hop_count && emitted_count < RECIPE_MAX_HOPS)
+    {
+        uint8_t next_index;
+        uint16_t next_elapsed_min;
+        bool found_next;
+
+        next_index = 0U;
+        next_elapsed_min = recipe->brewing.boil_time_min;
+        found_next = false;
+
+        for (index = 0U; index < recipe->hop_count && index < RECIPE_MAX_HOPS; ++index)
         {
-            boil_elapsed_min =
-                (uint16_t)(recipe->brewing.boil_time_min - recipe->hops[index].boil_time_min);
+            uint16_t boil_elapsed_min;
+
+            if (emitted[index])
+            {
+                continue;
+            }
+
+            boil_elapsed_min = 0U;
+            if (recipe->hops[index].boil_time_min < recipe->brewing.boil_time_min)
+            {
+                boil_elapsed_min =
+                    (uint16_t)(recipe->brewing.boil_time_min - recipe->hops[index].boil_time_min);
+            }
+
+            if (!found_next || boil_elapsed_min < next_elapsed_min)
+            {
+                next_index = index;
+                next_elapsed_min = boil_elapsed_min;
+                found_next = true;
+            }
+        }
+
+        if (!found_next)
+        {
+            break;
+        }
+
+        if (next_elapsed_min > previous_elapsed_min)
+        {
+            (void)process_plan_append(plan,
+                                      &(process_plan_step_t){
+                                          .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
+                                          .label = "Boil wait",
+                                          .targets = {0},
+                                          .exit =
+                                              {
+                                                  .conditions = PROCESS_PLAN_EXIT_DURATION,
+                                                  .duration_min =
+                                                      (uint16_t)(next_elapsed_min -
+                                                                 previous_elapsed_min),
+                                              },
+                                          .source_index = 0U});
         }
 
         (void)process_plan_append(plan,
                                   &(process_plan_step_t){
-                                      .kind = PROCESS_PLAN_STEP_HOP_ADDITION,
-                                      .label = recipe->hops[index].name,
-                                      .target_temperature_c = 0U,
-                                      .water_amount_dl = 0U,
-                                      .duration_min = 0U,
-                                      .boil_elapsed_min = boil_elapsed_min,
-                                      .source_index = index});
+                                      .kind = PROCESS_PLAN_STEP_PROMPT,
+                                      .label = recipe->hops[next_index].name,
+                                      .targets = {0},
+                                      .exit = {.conditions = PROCESS_PLAN_EXIT_USER_CONFIRM},
+                                      .source_index = next_index});
+
+        emitted[next_index] = true;
+        emitted_count++;
+        previous_elapsed_min = next_elapsed_min;
+    }
+
+    if (recipe->brewing.boil_time_min > previous_elapsed_min)
+    {
+        (void)process_plan_append(plan,
+                                  &(process_plan_step_t){
+                                      .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
+                                      .label = "Boil finish",
+                                      .targets = {0},
+                                      .exit =
+                                          {
+                                              .conditions = PROCESS_PLAN_EXIT_DURATION,
+                                              .duration_min =
+                                                  (uint16_t)(recipe->brewing.boil_time_min -
+                                                             previous_elapsed_min),
+                                          },
+                                      .source_index = 0U});
     }
 }
 
 /****************************************************************************************
- * @brief Add cooling intent from the friendly draft cooling target.
+ * @brief Add cooling target from the friendly recipe cooling target.
  ****************************************************************************************/
 static void process_plan_append_cooling_step(const recipe_model_t *recipe, process_plan_t *plan)
 {
     (void)process_plan_append(plan,
                               &(process_plan_step_t){
-                                  .kind = PROCESS_PLAN_STEP_COOL,
+                                  .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
                                   .label = "Cool",
-                                  .target_temperature_c = recipe->brewing.cooling_target_c,
-                                  .water_amount_dl = 0U,
-                                  .duration_min = 0U,
-                                  .boil_elapsed_min = 0U,
+                                  .targets =
+                                      {
+                                          .set_cooling_temperature = true,
+                                          .cooling_temperature_c = recipe->brewing.cooling_target_c,
+                                      },
+                                  .exit =
+                                      {
+                                          .conditions = PROCESS_PLAN_EXIT_COOLING_TEMPERATURE,
+                                          .cooling_temperature_c = recipe->brewing.cooling_target_c,
+                                      },
                                   .source_index = 0U});
 }
 
@@ -161,17 +292,19 @@ static void process_plan_append_fermentation_steps(const recipe_model_t *recipe,
          index < recipe->fermentation.step_count && index < RECIPE_MAX_FERMENTATION_STEPS;
          ++index)
     {
+        uint16_t duration_min;
+
+        duration_min = (uint16_t)(recipe->fermentation.steps[index].duration_days * 24U * 60U);
         (void)process_plan_append(plan,
                                   &(process_plan_step_t){
-                                      .kind = PROCESS_PLAN_STEP_FERMENTATION,
+                                      .kind = PROCESS_PLAN_STEP_TARGET_SEGMENT,
                                       .label = recipe->fermentation.steps[index].name,
-                                      .target_temperature_c =
-                                          recipe->fermentation.steps[index].temperature_c,
-                                      .water_amount_dl = 0U,
-                                      .duration_min =
-                                          (uint16_t)(recipe->fermentation.steps[index].duration_days *
-                                                     24U * 60U),
-                                      .boil_elapsed_min = 0U,
+                                      .targets = {0},
+                                      .exit =
+                                          {
+                                              .conditions = PROCESS_PLAN_EXIT_DURATION,
+                                              .duration_min = duration_min,
+                                          },
                                       .source_index = index});
     }
 }
@@ -216,15 +349,7 @@ bool process_plan_build_from_recipe(const recipe_model_t *recipe, process_plan_t
     process_plan_append_boil_steps(recipe, plan);
     process_plan_append_cooling_step(recipe, plan);
     process_plan_append_fermentation_steps(recipe, plan);
-    (void)process_plan_append(plan,
-                              &(process_plan_step_t){
-                                  .kind = PROCESS_PLAN_STEP_COMPLETE,
-                                  .label = "Complete",
-                                  .target_temperature_c = 0U,
-                                  .water_amount_dl = 0U,
-                                  .duration_min = 0U,
-                                  .boil_elapsed_min = 0U,
-                                  .source_index = 0U});
+    process_plan_append_complete_step(plan);
 
     plan->ready_for_preflight = true;
     plan->status_text = "Process plan ready";
