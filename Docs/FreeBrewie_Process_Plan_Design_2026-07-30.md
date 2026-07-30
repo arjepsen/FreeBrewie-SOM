@@ -198,3 +198,17 @@ Recipe_model -> Process_plan_builder -> Process_plan
 Future expert editing should produce the same `process_plan_t`, either directly or through a
 very thin validation/conversion layer.
 
+`Logic/Process_runner` is the first runtime holder for a prepared process plan. It carries
+the current step index and the current `Machine_targets` image. It is intentionally passive
+today: it can start a plan and apply target segments, but it does not yet advance from real
+time/sensor conditions or send MCU snapshots.
+
+`Logic/Machine_targets` is the current bridge from process-plan target changes to the MCU's
+16-byte `CONTROL_SNAPSHOT` payload. Some planned target fields, such as cooling target and
+heater duty limit, are held SOM-side only until the shared SOM-MCU protocol grows matching
+fields.
+
+Valve targets need one more shared protocol decision before expert valve control is enabled:
+the MCU supervisor currently treats valve-command byte `0` as "no valve move", while the
+lower-level MCU valve enum also names `0` as open. The SOM target layer therefore does not
+map future valve open/close masks into snapshot bytes yet.

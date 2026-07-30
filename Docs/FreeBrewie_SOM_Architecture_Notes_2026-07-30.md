@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-07-22_
+_Date: 2026-07-30_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -8,7 +8,8 @@ It is meant to keep file ownership, module boundaries, and subsystem responsibil
 
 It should be read together with:
 - `FreeBrewie_UI_Current_Status_2026-07-22.md`
-- `FreeBrewie_Recipe_Model_Decisions_2026-07-22.md`
+- `FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
+- `FreeBrewie_Process_Plan_Design_2026-07-30.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
 - `Brewie_SOM_Platform_Notes_2026-07-22.md`
 - `Brewie_SOM_MCU_Protocol_2026-04-01.md`
@@ -194,6 +195,8 @@ Current file set:
 - `Machine_targets.h`
 - `Process_plan.c`
 - `Process_plan.h`
+- `Process_runner.c`
+- `Process_runner.h`
 - `Recipe_catalog.c`
 - `Recipe_catalog.h`
 - `Recipe_draft.c`
@@ -255,8 +258,29 @@ Important current fact:
 `Process_plan` is local-only. Its stable input is now `Recipe_model`, not UI draft state.
 The remaining `process_plan_build_from_draft()` adapter is temporary scaffolding until the
 Recipe Builder has a real save/commit path into the catalog/list flow. `Process_plan` does
-not yet produce `CONTROL_SNAPSHOT` payloads or start the machine. The next boundary after
-this is preflight and target-generation logic.
+not start the machine. Its steps are now consumed by `Process_runner`, which applies target
+segments to `Machine_targets`.
+
+### `Process_runner`
+Owns:
+- current active process-plan position
+- carried machine targets that persist between process-plan steps
+- runner state such as running, waiting for user, complete, or error
+
+Must not own:
+- recipe editing
+- LVGL widgets
+- serial transport
+- ACK/NACK handling
+- hard safety and fault policy
+
+Important current fact:
+`Process_runner` is passive scaffolding. It can start a prepared process plan, apply target
+segments to `Machine_targets`, and stop at prompts or completion. It does not yet advance
+based on timers or sensor readings, and it does not yet send control snapshots. That later
+work belongs behind `App_orchestrator`, so start-brew requests can be checked against
+startup state, fault state, machine state, and workflow permissions before any target reaches
+the MCU.
 
 ### `Status_view_model`
 Owns:
@@ -286,7 +310,7 @@ types. This prevents the recipe model, future storage, and future import/export 
 depending on draft-editor types.
 
 The fuller recipe-model direction is documented in
-`FreeBrewie_Recipe_Model_Decisions_2026-07-22.md`. That document should be checked before
+`FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`. That document should be checked before
 adding recipe storage, draft editing, import/export, or brewing-plan conversion.
 
 ### `Recipe_model`
@@ -365,6 +389,16 @@ Owns:
 ### `Machine_targets`
 Owns:
 - current target-state representation that the SOM wants to hold/send
+- today's 16-byte `CONTROL_SNAPSHOT` payload shape
+- SOM-only carried targets that the current protocol does not encode yet
+
+Important current fact:
+`Machine_targets` is the first bridge between process-plan intent and the MCU snapshot
+shape. It can encode today's 16-byte payload, but it does not send it. Fields that the
+current protocol cannot carry, such as cooling target and heater duty limit, remain SOM-only
+until the shared protocol is deliberately extended. Valve open/close masks are also not
+encoded yet because byte `0` currently acts as "no valve move" in the MCU supervisor while
+also being named as open in the lower-level MCU valve enum.
 
 ### `Startup_logic`
 Owns:

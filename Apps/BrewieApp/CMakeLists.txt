@@ -10,6 +10,7 @@ set(BREWIE_APP_COMMON_SOURCES
     src/Logic/Machine_state.c
     src/Logic/Machine_targets.c
     src/Logic/Process_plan.c
+    src/Logic/Process_runner.c
     src/Logic/Recipe_catalog.c
     src/Logic/Recipe_draft.c
     src/Logic/Recipe_model.c

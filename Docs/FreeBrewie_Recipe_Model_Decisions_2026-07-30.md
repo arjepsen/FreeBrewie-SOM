@@ -1,5 +1,5 @@
 # FreeBrewie Recipe Model Decisions
-_Date: 2026-07-22_
+_Date: 2026-07-30_
 
 ## Purpose
 This document records the current direction for how FreeBrewie should model recipes.
@@ -205,20 +205,25 @@ Examples:
 View models may contain formatted strings, but the core recipe/draft model should keep raw
 values.
 
-### 5. Brewing plan/runtime
-Starting a recipe should produce a runtime brewing plan owned by SOM logic.
+### 5. Process plan and runtime runner
+Starting a recipe should produce a process plan owned by SOM logic, then a runtime runner
+state that walks that plan.
 
-The runtime plan is not the same as the recipe file:
+The process plan and runner are not the same as the recipe file:
 - recipe = user intent and brewing instructions
-- runtime plan = current active execution state derived from the selected recipe
+- process plan = ordered executable intent derived from the selected recipe
+- process runner = current active position plus carried machine targets
 - control snapshot = compact current target state sent to the MCU
 
-The SOM should step through the runtime plan and send only the current target state to the
-MCU.
+The SOM should step through the process plan, carry forward unchanged targets between steps,
+and send only the current machine target snapshot to the MCU once the real preflight/start
+workflow exists.
 
 Current implementation:
 `Logic/Process_plan` now builds from `Recipe_model` as the stable path. Its draft adapter is
-temporary scaffolding until draft save/commit and catalog persistence exist.
+temporary scaffolding until draft save/commit and catalog persistence exist. `Logic/Process_runner`
+can start a prepared plan and apply target segments to `Logic/Machine_targets`, but it does
+not yet send MCU control snapshots or advance from real sensor/timer exits.
 
 ### 6. Normal editor and advanced process editor
 The current draft Brewing fields should be treated as a **normal/simple recipe editor**,
@@ -241,12 +246,31 @@ This means the architecture should keep two editing paths open:
 
 Both paths must feed one canonical process plan. The recipe must not permanently hold a
 separate "basic brewing plan" and "advanced process plan" that can diverge. If the UI needs
-to remember friendly editor inputs, those should be draft/editor state or derived summaries,
-not competing recipe truth.
+to remember friendly editor inputs, those should be draft/editor state, recipe summaries, or
+import/export metadata, not competing execution truth.
 
 The SOM then uses the process plan to create runtime execution state before anything becomes
 MCU protocol traffic. The MCU still should not receive a whole recipe or a whole process script
 unless the shared protocol is deliberately redesigned later.
+
+### 7. Expert recipe direction
+Expert recipes should be understood as process-plan authoring, not as a separate recipe type.
+
+The expert editor should eventually expose lower-level target segments and exit conditions:
+- set pump targets
+- set valve targets
+- set heater temperature or duty limits
+- wait for time, volume, temperature, or user confirmation
+- allow several target changes to run at the same time
+
+That still does not mean bypassing execution safety. Fault handling, interlocks, dry-heater
+prevention, and electrical limits belong below the recipe model, in the app workflow,
+machine-target layer, and MCU firmware.
+
+Near-term rule:
+Keep `Recipe_model` as the user/domain recipe and `Process_plan` as the canonical executable
+intent. Do not add another permanent "expert recipe struct" unless it is clearly an editor
+draft or storage/import format that converts into the same process plan.
 
 ---
 
