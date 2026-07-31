@@ -213,7 +213,18 @@ still does not transmit a `CONTROL_SNAPSHOT`.
 heater duty limit, are held SOM-side only until the shared SOM-MCU protocol grows matching
 fields.
 
-Valve targets need one more shared protocol decision before expert valve control is enabled:
-the MCU supervisor currently treats valve-command byte `0` as "no valve move", while the
-lower-level MCU valve enum also names `0` as open. The SOM target layer therefore does not
-map future valve open/close masks into snapshot bytes yet.
+The shared protocol can now represent valve targets without ambiguity:
+
+```text
+0 = no requested valve target
+1 = open
+2 = close
+3 = close hard
+4 = sparge open
+5 = sparge close
+```
+
+The SOM target layer still does not map process-plan valve masks into snapshot bytes yet.
+That is now a process ownership decision, not a wire-format limitation: we still need to
+define exactly which process-plan fields are allowed to command valves before expert valve
+control is enabled.

@@ -397,8 +397,9 @@ Important current fact:
 shape. It can encode today's 16-byte payload, but it does not send it. Fields that the
 current protocol cannot carry, such as cooling target and heater duty limit, remain SOM-only
 until the shared protocol is deliberately extended. Valve open/close masks are also not
-encoded yet because byte `0` currently acts as "no valve move" in the MCU supervisor while
-also being named as open in the lower-level MCU valve enum.
+encoded yet, but the wire ambiguity itself is now resolved: valve command byte `0` means
+"no requested valve target", while byte `1` means "open". The remaining work is deciding
+which process-plan valve fields may become real MCU targets.
 
 ### `Startup_logic`
 Owns:

@@ -49,10 +49,8 @@ void machine_targets_init(machine_targets_t *targets)
 /****************************************************************************************
  * @brief Clear all requested targets.
  *
- * The current MCU supervisor treats valve-command byte 0 as "no valve move" even though
- * the lower-level MCU valve enum also uses 0 for VALVE_POSITION_OPEN. The SOM therefore
- * names the snapshot value 0 as NO_COMMAND and leaves explicit valve-open support for a
- * deliberate shared protocol cleanup.
+ * A cleared valve command byte means "no requested valve target" on the shared wire
+ * protocol. Explicit open/close requests use the named MACHINE_TARGET_VALVE_* values.
  ****************************************************************************************/
 void machine_targets_clear(machine_targets_t *targets)
 {
@@ -105,9 +103,9 @@ void machine_targets_apply_process_step(machine_targets_t *targets,
     machine_targets_apply_pump_masks(targets, changes->pump_on_mask, changes->pump_off_mask);
 
     /*
-     * valve_open_mask and valve_close_mask are intentionally not encoded yet. The MCU's
-     * current 16-byte snapshot has an ambiguous valve-open/no-command value, so mapping masks
-     * here would risk making later expert behavior hard to reason about.
+     * Valve masks are intentionally not mapped into the snapshot yet. The protocol can now
+     * represent open and close safely, but the process-plan-to-valve ownership rules still
+     * need to be locked down before the SOM starts sending real valve targets.
      */
 }
 
