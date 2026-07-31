@@ -23,6 +23,7 @@ typedef struct
 static bool ui_find_action_route(ui_action_t action,
                                  ui_screen_id_t *screen_id,
                                  recipe_section_id_t *recipe_section_id);
+static bool ui_request_workflow_permission(ui_t *ui, ui_action_t action, uint32_t value);
 static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data);
 static lv_obj_t *ui_show_recipe_detail_screen(ui_t *ui, uint32_t recipe_id);
 static lv_obj_t *ui_show_recipe_builder_screen(ui_t *ui);
@@ -103,6 +104,29 @@ static bool ui_find_action_route(ui_action_t action,
 }
 
 /****************************************************************************************
+ * @brief Ask app logic before navigation enters a workflow-sensitive screen.
+ *
+ * Screen widgets still only emit UI actions. This is the narrow bridge where the UI shell
+ * lets the app/orchestrator prepare or start recipe workflow state before the visible screen
+ * changes. A false result simply leaves the user on the current screen for now; later we can
+ * show a proper validation dialog through the same boundary.
+ ****************************************************************************************/
+static bool ui_request_workflow_permission(ui_t *ui, ui_action_t action, uint32_t value)
+{
+    if (ui == NULL || ui->workflow_handler == NULL)
+    {
+        return true;
+    }
+
+    if (action == UI_ACTION_SHOW_BREW_CHECKLIST || action == UI_ACTION_SHOW_ACTIVE_BREWING)
+    {
+        return ui->workflow_handler(action, (recipe_id_t)value, ui->workflow_user_data);
+    }
+
+    return true;
+}
+
+/****************************************************************************************
  * @brief Queue navigation requested by a screen widget.
  *
  * LVGL allows many operations from event callbacks, but changing screens while the current
@@ -118,6 +142,11 @@ static void ui_handle_action(ui_action_t action, uint32_t value, void *user_data
 
     ui = user_data;
     if (ui == NULL || !ui_find_action_route(action, &screen_id, &recipe_section_id))
+    {
+        return;
+    }
+
+    if (!ui_request_workflow_permission(ui, action, value))
     {
         return;
     }
@@ -497,7 +526,7 @@ static void ui_show_screen(ui_t *ui,
     lv_screen_load(screen);
 }
 
-void ui_init(ui_t *ui)
+void ui_init(ui_t *ui, ui_workflow_handler_t workflow_handler, void *workflow_user_data)
 {
     if (ui == NULL)
     {
@@ -505,6 +534,8 @@ void ui_init(ui_t *ui)
     }
 
     memset(ui, 0, sizeof(*ui));
+    ui->workflow_handler = workflow_handler;
+    ui->workflow_user_data = workflow_user_data;
     recipe_draft_init(&ui->recipe_draft);
     ui_theme_init();
     screen_home_init(&ui->home, ui_handle_action, ui);

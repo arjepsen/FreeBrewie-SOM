@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "Comms/Comms.h"
+#include "Logic/App_orchestrator.h"
 #include "Logic/Brewing_process_view_model.h"
 #include "Logic/Status_view_model.h"
 #include "Platform/Platform.h"
@@ -23,6 +24,7 @@ typedef struct
 {
     platform_t platform;  // Linux/display/input resources owned by the process.
     comms_t comms;  // Serial protocol state for the MCU link.
+    app_orchestrator_t orchestrator;  // App-level recipe/process workflow coordinator.
     status_view_model_t status_view_model;  // Diagnostic/status presentation model.
     brewing_process_view_model_t brewing_process_view_model;  // Active Brewing scaffold model.
     ui_t ui;  // LVGL screen objects and navigation state.

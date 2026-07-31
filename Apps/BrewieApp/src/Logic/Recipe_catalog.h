@@ -11,12 +11,15 @@
  * Must not own: screen widgets, brewing execution, or MCU commands.
  ****************************************************************************************/
 
+#include <stdbool.h>
 #include <stddef.h>
 
+#include "Recipe_model.h"
 #include "Recipe_types.h"
 
 size_t recipe_catalog_count();
 const recipe_catalog_entry_t *recipe_catalog_get_by_index(size_t index);
 const recipe_catalog_entry_t *recipe_catalog_find_by_id(recipe_id_t recipe_id);
+bool recipe_catalog_build_model(recipe_id_t recipe_id, recipe_model_t *recipe);
 
 #endif

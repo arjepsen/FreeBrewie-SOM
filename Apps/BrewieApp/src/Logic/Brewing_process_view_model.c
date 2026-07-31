@@ -28,7 +28,8 @@ void brewing_process_view_model_init(brewing_process_view_model_t *view_model)
  * shows that the UI has live MCU data and keeps process controls disabled.
  ****************************************************************************************/
 void brewing_process_view_model_update(brewing_process_view_model_t *view_model,
-                                       const status_screen_view_model_t *status_view_model)
+                                       const status_screen_view_model_t *status_view_model,
+                                       const process_runner_t *process_runner)
 {
     if (view_model == NULL || status_view_model == NULL)
     {
@@ -40,7 +41,15 @@ void brewing_process_view_model_update(brewing_process_view_model_t *view_model,
     view_model->pause_enabled = false;
     view_model->stop_enabled = false;
 
-    if (status_view_model->machine.mcu_status_valid)
+    if (process_runner != NULL && process_runner_is_active(process_runner))
+    {
+        const process_plan_step_t *step;
+
+        step = process_runner_current_step(process_runner);
+        view_model->state_text = "Process prepared";
+        view_model->detail_text = (step != NULL && step->label != NULL) ? step->label : "Waiting";
+    }
+    else if (status_view_model->machine.mcu_status_valid)
     {
         view_model->state_text = "MCU live";
         view_model->detail_text = "Ready for process state";

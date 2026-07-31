@@ -9,6 +9,42 @@
 #define APP_LOOP_SLEEP_US 10000
 #define APP_UI_REFRESH_PERIOD_MS 250U
 
+static bool app_handle_ui_workflow_request(ui_action_t action,
+                                           recipe_id_t recipe_id,
+                                           void *user_data);
+
+/****************************************************************************************
+ * @brief Route workflow-sensitive UI actions into app logic.
+ *
+ * This is deliberately not a hardware-control function. It only prepares or starts the
+ * passive recipe/process state so the UI can show the next scaffold screen. Real MCU
+ * snapshot sending will be added later behind explicit preflight and safety checks.
+ ****************************************************************************************/
+static bool app_handle_ui_workflow_request(ui_action_t action,
+                                           recipe_id_t recipe_id,
+                                           void *user_data)
+{
+    app_t *app;
+
+    app = user_data;
+    if (app == NULL)
+    {
+        return false;
+    }
+
+    if (action == UI_ACTION_SHOW_BREW_CHECKLIST)
+    {
+        return app_orchestrator_prepare_recipe(&app->orchestrator, recipe_id);
+    }
+
+    if (action == UI_ACTION_SHOW_ACTIVE_BREWING)
+    {
+        return app_orchestrator_start_prepared_process(&app->orchestrator, recipe_id);
+    }
+
+    return true;
+}
+
 /****************************************************************************************
  * @brief Bring the SOM application online.
  *
@@ -31,10 +67,12 @@ bool app_init(app_t *app)
         return false;
     }
 
+    app_orchestrator_init(&app->orchestrator);
+
     app->display_enabled = display_init(&app->platform.display);
     if (app->display_enabled)
     {
-        ui_init(&app->ui);
+        ui_init(&app->ui, app_handle_ui_workflow_request, app);
     }
 
     status_view_model_init(&app->status_view_model);
@@ -82,7 +120,9 @@ void app_update(app_t *app)
         {
             status_view_model_update(&app->status_view_model, comms_get_status(&app->comms));
             brewing_process_view_model_update(&app->brewing_process_view_model,
-                                              &app->status_view_model.values);
+                                              &app->status_view_model.values,
+                                              app_orchestrator_get_process_runner(
+                                                  &app->orchestrator));
             ui_update(&app->ui,
                       &app->status_view_model.values,
                       &app->brewing_process_view_model);

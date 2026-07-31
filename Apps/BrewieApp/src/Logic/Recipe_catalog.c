@@ -1,5 +1,70 @@
 #include "Recipe_catalog.h"
 
+#include <stdio.h>
+
+static void recipe_catalog_fill_model_from_entry(const recipe_catalog_entry_t *entry,
+                                                 recipe_model_t *recipe);
+
+/****************************************************************************************
+ * @brief Build the first brewable model from a static catalog entry.
+ *
+ * The current catalog entries are still mostly browse/detail strings. This adapter gives
+ * the runtime path realistic complete recipe data while storage/import work is still
+ * absent. Later, saved recipes should already be stored as `recipe_model_t` or a directly
+ * convertible shape, and this adapter can shrink or disappear.
+ ****************************************************************************************/
+static void recipe_catalog_fill_model_from_entry(const recipe_catalog_entry_t *entry,
+                                                 recipe_model_t *recipe)
+{
+    recipe_model_init(recipe);
+
+    recipe->id = entry->id;
+    (void)snprintf(recipe->name, sizeof(recipe->name), "%s", entry->name);
+    recipe->style.style_name = entry->style;
+    recipe->style.style_number = "sample";
+    recipe->style.style_category = entry->style;
+    recipe->style.style_type = "Ale";
+
+    recipe->calculated.efficiency_percent = 72U;
+    recipe->calculated.batch_size_dl = 200U;
+    recipe->calculated.estimated_abv_tenths = 52U;
+    recipe->calculated.estimated_srm = 7U;
+    recipe->calculated.estimated_ibu = 32U;
+    recipe->calculated.estimated_og_points = 1050U;
+    recipe->calculated.estimated_fg_points = 1011U;
+
+    recipe->fermentable_count = 2U;
+    recipe->fermentables[0].name = "Base malt";
+    recipe->fermentables[0].amount_g = 4200U;
+    recipe->fermentables[1].name = "Specialty malt";
+    recipe->fermentables[1].amount_g = 350U;
+
+    recipe->hop_count = 2U;
+    recipe->hops[0].name = "Bittering hops";
+    recipe->hops[0].amount_g = 25U;
+    recipe->hops[0].boil_time_min = 60U;
+    recipe->hops[1].name = "Late hops";
+    recipe->hops[1].amount_g = 20U;
+    recipe->hops[1].boil_time_min = 10U;
+
+    recipe->brewing.mash_in_water_dl = 120U;
+    recipe->brewing.mash_in_temperature_c = 66U;
+    recipe->brewing.mash_step_count = 1U;
+    recipe->brewing.mash_steps[0].temperature_c = 66U;
+    recipe->brewing.mash_steps[0].time_min = 60U;
+    recipe->brewing.sparge_water_dl = 80U;
+    recipe->brewing.sparge_temperature_c = 78U;
+    recipe->brewing.sparge_time_min = 15U;
+    recipe->brewing.boil_time_min = 60U;
+    recipe->brewing.delayed_hopping_min = 0U;
+    recipe->brewing.cooling_target_c = 20U;
+
+    recipe->fermentation.step_count = 1U;
+    recipe->fermentation.steps[0].name = "Primary";
+    recipe->fermentation.steps[0].temperature_c = 19U;
+    recipe->fermentation.steps[0].duration_days = 12U;
+}
+
 /*
  * Temporary read-only recipe catalog.
  *
@@ -215,4 +280,27 @@ const recipe_catalog_entry_t *recipe_catalog_find_by_id(recipe_id_t recipe_id)
     }
 
     return NULL;
+}
+
+/****************************************************************************************
+ * @brief Convert one catalog entry into the first native brewable recipe model.
+ ****************************************************************************************/
+bool recipe_catalog_build_model(recipe_id_t recipe_id, recipe_model_t *recipe)
+{
+    const recipe_catalog_entry_t *entry;
+
+    if (recipe == NULL)
+    {
+        return false;
+    }
+
+    entry = recipe_catalog_find_by_id(recipe_id);
+    if (entry == NULL)
+    {
+        recipe_model_init(recipe);
+        return false;
+    }
+
+    recipe_catalog_fill_model_from_entry(entry, recipe);
+    return recipe_model_is_complete_for_process_plan(recipe);
 }

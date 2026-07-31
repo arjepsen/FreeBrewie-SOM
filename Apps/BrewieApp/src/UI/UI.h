@@ -33,6 +33,7 @@
 #include "UI_types.h"
 
 typedef struct ui_t ui_t;
+typedef bool (*ui_workflow_handler_t)(ui_action_t action, recipe_id_t recipe_id, void *user_data);
 
 /**
  * Top-level UI state owned by the app.
@@ -79,10 +80,12 @@ struct ui_t
     ui_screen_id_t pending_screen;  // Deferred navigation request.
     uint32_t pending_value;
     recipe_section_id_t pending_recipe_section;
+    ui_workflow_handler_t workflow_handler;
+    void *workflow_user_data;
     bool has_pending_screen;
 };
 
-void ui_init(ui_t *ui);
+void ui_init(ui_t *ui, ui_workflow_handler_t workflow_handler, void *workflow_user_data);
 void ui_update(ui_t *ui,
                const status_screen_view_model_t *status_view_model,
                const brewing_process_view_model_t *process_view_model);

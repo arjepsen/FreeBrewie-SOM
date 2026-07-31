@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "Process_runner.h"
 #include "Status_view_model.h"
 
 typedef enum
@@ -36,6 +37,7 @@ typedef struct
 
 void brewing_process_view_model_init(brewing_process_view_model_t *view_model);
 void brewing_process_view_model_update(brewing_process_view_model_t *view_model,
-                                       const status_screen_view_model_t *status_view_model);
+                                       const status_screen_view_model_t *status_view_model,
+                                       const process_runner_t *process_runner);
 
 #endif
