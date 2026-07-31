@@ -19,7 +19,7 @@
 #include "Process_plan.h"
 
 #define MACHINE_TARGET_CONTROL_SNAPSHOT_SIZE 16U
-#define MACHINE_TARGET_VALVE_COUNT           11U
+#define MACHINE_TARGET_VALVE_COUNT 11U
 
 typedef enum
 {
@@ -44,8 +44,8 @@ typedef struct
     uint8_t boil_pump_setpoint;
     uint8_t solenoid_state_bits;
     uint8_t valve_command[MACHINE_TARGET_VALVE_COUNT];
-    uint8_t cooling_target_c;  // SOM-only for now; the current MCU snapshot has no byte for this.
-    uint8_t heater_duty_limit_percent;  // SOM-only until the shared protocol grows this field.
+    uint8_t cooling_target_c;          // SOM-only for now; the current MCU snapshot has no byte for this.
+    uint8_t heater_duty_limit_percent; // SOM-only until the shared protocol grows this field.
 } machine_targets_t;
 
 void machine_targets_init(machine_targets_t *targets);

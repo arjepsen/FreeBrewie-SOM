@@ -35,6 +35,7 @@ Still pending:
 - final portrait-oriented home/status/fault UI polish
 - simulator/local UI build cleanup
 - real manual-service, cleaning, and brewing workflows
+- real preflight/start-brew routing through the process runner and MCU snapshot sender
 
 ## Repository structure
 
@@ -153,13 +154,16 @@ The `brewie` user is the correct runtime identity for the application because it
 
 ## Immediate next steps
 
-1. Keep the current service/comms/display path as the known-good baseline.
-2. Keep `Screen_status` focused as the live status/debug screen.
+1. Keep the current service/comms/display/touch path as the known-good baseline.
+2. Keep `Screen_status` focused as the scrollable live diagnostics screen.
 3. Keep any future animated boot/splash screen separate from the long-lived status screen.
-4. Keep the product-shaped home/navigation shell as the normal user-facing starting point.
-5. Keep `Screen_status` available as a scrollable live diagnostic screen.
-6. Grow Recipes, Extras, Settings, and later manual-service flows only after the navigation
-   shell and safety boundaries are clear.
+4. Keep the old-Brewie-inspired UI flow moving, but do not put hardware actions directly
+   in screen callbacks.
+5. Route real brew-start behavior through recipe commit/selection, process-plan building,
+   `Process_runner`, `Machine_targets`, preflight checks, and then controlled MCU snapshot
+   sending.
+6. Resolve the current valve-command protocol ambiguity before implementing expert/manual
+   valve-open control.
 
 ## Documentation policy
 
@@ -168,12 +172,14 @@ At this stage, keep documentation compact and practical.
 The current useful SOM doc set is:
 
 - `README.md`
-- `Docs/README_2026-07-22.md`
+- `Docs/README_2026-07-31.md`
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-22.md`
 - `Docs/Brewie_SOM_Service_Autostart_2026-06-25.md`
 - `Docs/FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-22.md`
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-31.md`
+- `Docs/FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
+- `Docs/FreeBrewie_Process_Plan_Design_2026-07-30.md`
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-22.md`
 - `Docs/UI_Design/FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
 - `Docs/UI_Design/FreeBrewie_Old_UI_Map_2026-07-05.html`
@@ -182,7 +188,7 @@ The current useful SOM doc set is:
 
 Use them as follows:
 
-- `Docs/README_2026-07-22.md`
+- `Docs/README_2026-07-31.md`
   Short index of the SOM-side document set.
 - `Docs/Brewie_SOM_Platform_Notes_2026-07-22.md`
   Hardware/platform facts for the SOM target.
@@ -192,8 +198,12 @@ Use them as follows:
   Development host, toolchain, build environment, and workflow notes.
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
   Practical SOM↔MCU integration notes and serial/protocol direction.
-- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-22.md`
+- `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-31.md`
   SOM-side software structure, top-level groups, and intended file responsibilities.
+- `Docs/FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
+  Recipe/domain model direction, draft/catalog boundary, and process-plan relationship.
+- `Docs/FreeBrewie_Process_Plan_Design_2026-07-30.md`
+  Shared process-plan direction for basic, advanced, and future expert recipe editing.
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-22.md`
   Current SOM/UI bring-up status and immediate next milestone.
 - `Docs/UI_Design/FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
@@ -209,6 +219,6 @@ Use them as follows:
   checklist, and 272x480 visual mockups close to the UI we intend to build in LVGL.
 
 For the shared SOM-MCU protocol truth, use
-`FreeBrewie-MCU/Documentation/Brewie_SOM_MCU_Protocol_2026-04-01.md`.
+`FreeBrewie-MCU/Documentation/Brewie_SOM_MCU_Protocol_2026-07-31.md`.
 
 Anything beyond this should be added only when it serves an active need.

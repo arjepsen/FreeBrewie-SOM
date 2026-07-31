@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-07-30_
+_Date: 2026-07-31_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -12,7 +12,7 @@ It should be read together with:
 - `FreeBrewie_Process_Plan_Design_2026-07-30.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
 - `Brewie_SOM_Platform_Notes_2026-07-22.md`
-- `Brewie_SOM_MCU_Protocol_2026-04-01.md`
+- `Brewie_SOM_MCU_Protocol_2026-07-31.md`
 
 ---
 
