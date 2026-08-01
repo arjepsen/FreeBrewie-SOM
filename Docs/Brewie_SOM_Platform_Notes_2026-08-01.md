@@ -1,5 +1,5 @@
 # Brewie SOM Platform Notes
-_Date: 2026-07-22_
+_Date: 2026-08-01_
 
 ## Purpose
 This document captures the current practical SOM platform facts for the FreeBrewie project.
@@ -106,6 +106,52 @@ Current proven behavior:
 - `FAULT_REPORT` can also be received
 
 This serial baseline has been re-proven after the current SOM code restructuring.
+
+---
+
+## Current Brewie-specific GPIO facts
+The current Olimex Bullseye image does not create the original Brewie `/dev/brewie-*`
+aliases by itself. The old Brewie Linux installation used these aliases:
+
+| Old alias | Old sysfs target | Current interpretation |
+|---|---|---|
+| `/dev/brewie-button2` | `/sys/class/gpio/gpio2_pb15` | old drain/second button input |
+| `/dev/brewie-buzzer` | `/sys/class/gpio/gpio5_pb2` | old buzzer output |
+| `/dev/brewie-hold-power` | `/sys/class/gpio/gpio3_pb4` | old hold-power output |
+| `/dev/brewie-lcd-backlight` | `/sys/class/gpio/gpio1_pb3` | LCD backlight, A13 `PB3`, Linux `gpio35` |
+| `/dev/brewie-lcd-pwre` | `/sys/class/gpio/gpio7_pb10` | LCD power-enable, A13 `PB10`, Linux `gpio42` |
+| `/dev/brewie-led2` | `/sys/class/gpio/gpio4_pb16` | old second LED output |
+| `/dev/brewie-mcu-reset` | `/sys/class/gpio/gpio6_pe9` | MCU reset, A13 `PE9`, Linux `gpio137` |
+| `/dev/brewie-power` | `/sys/class/gpio/gpio8_pc7` | old power-related GPIO |
+
+Current tested MCU reset line:
+- A13 pin: `PE9`
+- Linux GPIO number: `137`
+- current sysfs path after export: `/sys/class/gpio/gpio137`
+- old Brewie alias target: `/sys/class/gpio/gpio6_pe9`
+
+The current kernel pinctrl dump showed `PE9` as unclaimed before export, and exporting
+`gpio137` worked:
+
+```text
+gpio-137 (                    |sysfs               ) out lo
+```
+
+Observed reset behavior on 2026-08-01:
+- driving `gpio137` high briefly and then low resets the MCU
+- after reset, the MCU returns to `STANDBY`
+- the power-button LED turns off
+- the SOM Status screen can show `last rx = none` because current MCU firmware only sends
+  periodic `STATUS_REPORT` frames after the startup path reaches `ACTIVE`
+- pressing the physical Brewie power button moves the MCU through startup again, after
+  which `last rx` resumes and sequence numbers increase
+
+Practical rule:
+- do not use `/dev/brewie-mcu-reset` on the current image unless we deliberately recreate
+  that compatibility alias
+- for current manual testing, use `/sys/class/gpio/gpio137` after exporting it
+- any future MCU flashing helper must stop `brewie.service`, control `gpio137`, run
+  `avrdude` on `/dev/ttyS1`, and then restore the app/service path cleanly
 
 ---
 

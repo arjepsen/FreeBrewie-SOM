@@ -1,5 +1,5 @@
 # Brewie SOM-MCU Integration Notes
-_Date: 2026-07-02_
+_Date: 2026-08-01_
 
 ## Purpose
 This document defines the **practical integration approach** between the Brewie SOM and the ATmega2560 MCU.
@@ -49,6 +49,26 @@ That is the intended Linux device for the Brewie SOM↔MCU serial protocol.
 
 This should be treated as the real integration path.
 A PC serial test tool is useful for smoke testing, but it is not the final intended architecture.
+
+Known SOM-side MCU reset endpoint:
+- old Brewie Linux alias: `/dev/brewie-mcu-reset`
+- old alias target: `/sys/class/gpio/gpio6_pe9`
+- current Olimex Bullseye sysfs GPIO after export: `/sys/class/gpio/gpio137`
+- A13 pin name: `PE9`
+
+The old alias is not present on the current Olimex image. The current tested path is
+`gpio137`.
+
+Observed 2026-08-01 reset behavior:
+- setting `gpio137` high briefly and then low resets the ATmega2560
+- after reset the MCU returns to `STANDBY`
+- the power-button LED turns off
+- current MCU firmware does not emit normal periodic `STATUS_REPORT` frames in `STANDBY`
+- pressing the physical Brewie power button moves startup forward and `STATUS_REPORT`
+  reception resumes on the SOM
+
+This means `last rx = none` after an MCU reset is not automatically a serial failure. It can
+also mean the MCU is alive but waiting in `STANDBY`.
 
 ---
 
