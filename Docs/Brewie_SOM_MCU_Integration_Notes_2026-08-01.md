@@ -72,6 +72,73 @@ also mean the MCU is alive but waiting in `STANDBY`.
 
 ---
 
+## Manual MCU flashing path
+The original Brewie software flashed the ATmega2560 from the SOM using `avrdude`, the MCU
+UART on `/dev/ttyS1`, and the SOM-controlled MCU reset line. The current project keeps this
+as an explicit admin operation first, not an in-app feature.
+
+This path requires the Brewie-compatible ATmega2560/STK500v2 bootloader. If the MCU
+was last flashed through USBasp/ISP and the bootloader was erased or bypassed, UART
+flashing from the SOM will fail because there is no bootloader listening on `/dev/ttyS1`
+after reset.
+
+MCU-side recovery testing on 2026-08-02 showed the working state is the old
+Brewie-carried STK500v2 bootloader image, `hfuse=0xD8`, and `lock=0x3F`. The stock
+final lock byte `0x0F` made the FreeBrewie app fail to start on this board.
+
+Tracked helper:
+
+```text
+Deploy/Admin/flash_mcu_from_som.sh
+```
+
+Install `avrdude` on the SOM before first use:
+
+```bash
+sudo apt update
+sudo apt install avrdude
+```
+
+Copy the helper and the MCU firmware hex to the SOM:
+
+```bash
+scp Deploy/Admin/flash_mcu_from_som.sh admin@192.168.1.130:/home/admin/flash_mcu_from_som.sh
+scp ../FreeBrewie-MCU/.pio/build/mega2560_bare/firmware.hex admin@192.168.1.130:/home/admin/freebrewie_mcu.hex
+```
+
+Run the flash from the SOM:
+
+```bash
+chmod +x /home/admin/flash_mcu_from_som.sh
+sudo /home/admin/flash_mcu_from_som.sh /home/admin/freebrewie_mcu.hex
+```
+
+The helper does the following:
+- requires root
+- checks that the hex file, `avrdude`, and `/dev/ttyS1` exist
+- exports and prepares `gpio137`
+- stops `brewie.service` if it is running, so BrewieApp releases `/dev/ttyS1`
+- pulses MCU reset high then low
+- runs:
+
+```bash
+avrdude -v -p atmega2560 -c wiring -P /dev/ttyS1 -b 115200 -D -U flash:w:<hex-file>:i
+```
+
+- leaves `gpio137` low, the observed released state
+- restarts `brewie.service` if it was running before the flash attempt
+
+If `avrdude` reports `stk500v2_getsync(): timeout communicating with programmer`, treat that
+as a real error. The most likely cause is a missing ATmega2560 bootloader after USBasp/ISP
+flashing. Restore the Brewie-compatible bootloader with USBasp, then return to SOM-side flashing as
+the normal workflow.
+
+After a successful flash, remember that the MCU may be in `STANDBY`. If the SOM status
+screen shows `last rx = none`, press the physical Brewie power button and confirm that
+`STATUS_REPORT` reception resumes.
+
+---
+
 ## Protocol direction summary
 The shared framed protocol uses:
 
