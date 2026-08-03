@@ -179,7 +179,7 @@ The current useful SOM doc set is:
 - `Docs/Brewie_SOM_MCU_Integration_Notes_2026-07-02.md`
 - `Docs/FreeBrewie_SOM_Architecture_Notes_2026-07-31.md`
 - `Docs/FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
-- `Docs/FreeBrewie_Process_Plan_Design_2026-07-31.md`
+- `Docs/FreeBrewie_Process_Plan_Design_2026-08-03.md`
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-22.md`
 - `Docs/UI_Design/FreeBrewie_UI_UX_Philosophy_2026-07-04.md`
 - `Docs/UI_Design/FreeBrewie_Old_UI_Map_2026-07-05.html`
@@ -202,7 +202,7 @@ Use them as follows:
   SOM-side software structure, top-level groups, and intended file responsibilities.
 - `Docs/FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
   Recipe/domain model direction, draft/catalog boundary, and process-plan relationship.
-- `Docs/FreeBrewie_Process_Plan_Design_2026-07-31.md`
+- `Docs/FreeBrewie_Process_Plan_Design_2026-08-03.md`
   Shared process-plan direction for basic, advanced, and future expert recipe editing.
 - `Docs/FreeBrewie_UI_Current_Status_2026-07-22.md`
   Current SOM/UI bring-up status and immediate next milestone.

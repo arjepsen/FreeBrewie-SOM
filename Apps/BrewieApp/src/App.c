@@ -34,7 +34,7 @@ static bool app_handle_ui_workflow_request(ui_action_t action,
 
     if (action == UI_ACTION_SHOW_BREW_CHECKLIST)
     {
-        return app_orchestrator_prepare_recipe(&app->orchestrator, recipe_id);
+        return app_orchestrator_enter_preflight(&app->orchestrator, recipe_id);
     }
 
     if (action == UI_ACTION_SHOW_ACTIVE_BREWING)
@@ -121,6 +121,8 @@ void app_update(app_t *app)
             status_view_model_update(&app->status_view_model, comms_get_status(&app->comms));
             brewing_process_view_model_update(&app->brewing_process_view_model,
                                               &app->status_view_model.values,
+                                              app_orchestrator_get_state(&app->orchestrator),
+                                              app_orchestrator_get_status_text(&app->orchestrator),
                                               app_orchestrator_get_process_runner(
                                                   &app->orchestrator));
             ui_update(&app->ui,

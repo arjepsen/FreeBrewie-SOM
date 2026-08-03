@@ -16,6 +16,7 @@ void app_orchestrator_init(app_orchestrator_t *orchestrator)
     process_plan_init(&orchestrator->process_plan);
     process_runner_init(&orchestrator->process_runner);
     orchestrator->selected_recipe_id = 0U;
+    orchestrator->state = APP_ORCHESTRATOR_STATE_IDLE;
     orchestrator->status_text = "No recipe prepared";
     orchestrator->has_selected_recipe = false;
     orchestrator->has_process_plan = false;
@@ -45,11 +46,13 @@ bool app_orchestrator_prepare_recipe(app_orchestrator_t *orchestrator, recipe_id
     process_plan_init(&orchestrator->process_plan);
     process_runner_init(&orchestrator->process_runner);
     orchestrator->selected_recipe_id = 0U;
+    orchestrator->state = APP_ORCHESTRATOR_STATE_IDLE;
     orchestrator->has_selected_recipe = false;
     orchestrator->has_process_plan = false;
 
     if (!recipe_catalog_build_model(recipe_id, &orchestrator->selected_recipe))
     {
+        orchestrator->state = APP_ORCHESTRATOR_STATE_ERROR;
         orchestrator->status_text = "Recipe incomplete";
         return false;
     }
@@ -60,12 +63,32 @@ bool app_orchestrator_prepare_recipe(app_orchestrator_t *orchestrator, recipe_id
     if (!process_plan_build_from_recipe(&orchestrator->selected_recipe,
                                         &orchestrator->process_plan))
     {
+        orchestrator->state = APP_ORCHESTRATOR_STATE_ERROR;
         orchestrator->status_text = orchestrator->process_plan.status_text;
         return false;
     }
 
     orchestrator->has_process_plan = true;
+    orchestrator->state = APP_ORCHESTRATOR_STATE_RECIPE_PREPARED;
     orchestrator->status_text = "Process plan ready";
+    return true;
+}
+
+/****************************************************************************************
+ * @brief Prepare a recipe and mark it as being reviewed in preflight.
+ *
+ * The checklist/preflight screen is the first user-visible safety gate. It means a plan
+ * exists and the user is reviewing setup requirements, but no process step is running yet.
+ ****************************************************************************************/
+bool app_orchestrator_enter_preflight(app_orchestrator_t *orchestrator, recipe_id_t recipe_id)
+{
+    if (!app_orchestrator_prepare_recipe(orchestrator, recipe_id))
+    {
+        return false;
+    }
+
+    orchestrator->state = APP_ORCHESTRATOR_STATE_PREFLIGHT;
+    orchestrator->status_text = "Preflight checklist";
     return true;
 }
 
@@ -91,12 +114,40 @@ bool app_orchestrator_start_prepared_process(app_orchestrator_t *orchestrator,
 
     if (!process_runner_start(&orchestrator->process_runner, &orchestrator->process_plan))
     {
+        orchestrator->state = APP_ORCHESTRATOR_STATE_ERROR;
         orchestrator->status_text = "Process start failed";
         return false;
     }
 
+    orchestrator->state = APP_ORCHESTRATOR_STATE_RUNNING;
     orchestrator->status_text = orchestrator->process_runner.status_text;
     return true;
+}
+
+/****************************************************************************************
+ * @brief Return the current high-level workflow state.
+ ****************************************************************************************/
+app_orchestrator_state_t app_orchestrator_get_state(const app_orchestrator_t *orchestrator)
+{
+    if (orchestrator == NULL)
+    {
+        return APP_ORCHESTRATOR_STATE_ERROR;
+    }
+
+    return orchestrator->state;
+}
+
+/****************************************************************************************
+ * @brief Return short workflow text for status/debug presentation.
+ ****************************************************************************************/
+const char *app_orchestrator_get_status_text(const app_orchestrator_t *orchestrator)
+{
+    if (orchestrator == NULL || orchestrator->status_text == NULL)
+    {
+        return "Workflow unavailable";
+    }
+
+    return orchestrator->status_text;
 }
 
 /****************************************************************************************

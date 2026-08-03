@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-08-01_
+_Date: 2026-08-03_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -9,7 +9,7 @@ It is meant to keep file ownership, module boundaries, and subsystem responsibil
 It should be read together with:
 - `FreeBrewie_UI_Current_Status_2026-07-22.md`
 - `FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
-- `FreeBrewie_Process_Plan_Design_2026-07-31.md`
+- `FreeBrewie_Process_Plan_Design_2026-08-03.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
 - `Brewie_SOM_Platform_Notes_2026-08-01.md`
 - `Brewie_SOM_MCU_Protocol_2026-08-01.md`
@@ -215,17 +215,20 @@ Current file set:
 
 ### `App_orchestrator`
 Owns:
-- future high-level app state coherence
-- future routing of MCU facts and user requests through the right logic modules
-- future workflow and allowed-action coordination
+- high-level app state coherence
+- routing workflow-sensitive UI requests through the right logic modules
+- selected recipe state, prepared process-plan state, and passive process-runner state
+- current workflow state such as idle, recipe prepared, preflight, running, or error
 
-At the current stage, `App_orchestrator` is deliberately reserved and has no active public
-state. The current UI only performs screen navigation, and the diagnostic status screen has
-its own `Status_view_model` module. Do not put presentation-only data in `App_orchestrator`
-just to make it active.
+At the current stage, `App_orchestrator` is the narrow app-level boundary between UI intent
+and process workflow. Entering the brew checklist prepares the selected catalog recipe into
+`Recipe_model` and `Process_plan`, then marks the workflow as preflight. Pressing START
+starts the passive `Process_runner`.
 
-The first real use of `App_orchestrator` should be a user request that needs to be checked
-against fault state, startup state, machine state, or workflow permissions.
+This is still not hardware authority. `App_orchestrator` must not send serial frames or
+directly control hardware. Future real brewing start must add startup state, fault state,
+machine state, and preflight checks here before any target snapshot is allowed to leave the
+SOM.
 
 ### `Brewing_process_view_model`
 Owns:
@@ -235,9 +238,9 @@ Owns:
 - displayed Pause/Stop availability flags
 
 Important current fact:
-`Brewing_process_view_model` is not real brewing workflow logic yet. It provides a small
-stable shape for the Active Brewing screen to render while the real process/orchestrator
-model is still being built.
+`Brewing_process_view_model` is not real brewing workflow logic. It translates current
+workflow/runner facts into compact display text and flags for the Active Brewing screen.
+It must not decide whether brewing is allowed.
 
 ### `Process_plan`
 Owns:

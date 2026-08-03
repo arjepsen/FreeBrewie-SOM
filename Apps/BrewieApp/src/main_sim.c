@@ -64,7 +64,11 @@ int main()
 
         if ((now_ms - last_ui_update_ms) >= SIM_UI_REFRESH_PERIOD_MS)
         {
-            brewing_process_view_model_update(&brewing_process_vm, &vm, NULL);
+            brewing_process_view_model_update(&brewing_process_vm,
+                                              &vm,
+                                              APP_ORCHESTRATOR_STATE_IDLE,
+                                              "Simulator",
+                                              NULL);
             ui_update(&ui, &vm, &brewing_process_vm);
             last_ui_update_ms = now_ms;
         }

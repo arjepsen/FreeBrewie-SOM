@@ -29,6 +29,8 @@ void brewing_process_view_model_init(brewing_process_view_model_t *view_model)
  ****************************************************************************************/
 void brewing_process_view_model_update(brewing_process_view_model_t *view_model,
                                        const status_screen_view_model_t *status_view_model,
+                                       app_orchestrator_state_t orchestrator_state,
+                                       const char *orchestrator_status_text,
                                        const process_runner_t *process_runner)
 {
     if (view_model == NULL || status_view_model == NULL)
@@ -41,13 +43,32 @@ void brewing_process_view_model_update(brewing_process_view_model_t *view_model,
     view_model->pause_enabled = false;
     view_model->stop_enabled = false;
 
-    if (process_runner != NULL && process_runner_is_active(process_runner))
+    if (orchestrator_state == APP_ORCHESTRATOR_STATE_PREFLIGHT)
+    {
+        view_model->state_text = "Preflight";
+        view_model->detail_text = "Checklist ready";
+    }
+    else if (process_runner != NULL && process_runner_is_active(process_runner))
     {
         const process_plan_step_t *step;
 
         step = process_runner_current_step(process_runner);
-        view_model->state_text = "Process prepared";
+        view_model->state_text = (orchestrator_status_text != NULL) ?
+                                     orchestrator_status_text :
+                                     "Process active";
         view_model->detail_text = (step != NULL && step->label != NULL) ? step->label : "Waiting";
+    }
+    else if (orchestrator_state == APP_ORCHESTRATOR_STATE_RECIPE_PREPARED)
+    {
+        view_model->state_text = "Recipe prepared";
+        view_model->detail_text = "Ready for checklist";
+    }
+    else if (orchestrator_state == APP_ORCHESTRATOR_STATE_ERROR)
+    {
+        view_model->state_text = "Workflow error";
+        view_model->detail_text = (orchestrator_status_text != NULL) ?
+                                      orchestrator_status_text :
+                                      "Recipe or process invalid";
     }
     else if (status_view_model->machine.mcu_status_valid)
     {

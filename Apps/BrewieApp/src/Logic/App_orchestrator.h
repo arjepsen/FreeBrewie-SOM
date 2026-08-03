@@ -18,12 +18,23 @@
 #include "Recipe_model.h"
 #include "Recipe_types.h"
 
+typedef enum
+{
+    APP_ORCHESTRATOR_STATE_IDLE = 0,
+    APP_ORCHESTRATOR_STATE_RECIPE_PREPARED,
+    APP_ORCHESTRATOR_STATE_PREFLIGHT,
+    APP_ORCHESTRATOR_STATE_RUNNING,
+    APP_ORCHESTRATOR_STATE_COMPLETE,
+    APP_ORCHESTRATOR_STATE_ERROR
+} app_orchestrator_state_t;
+
 typedef struct
 {
     recipe_model_t selected_recipe;
     process_plan_t process_plan;
     process_runner_t process_runner;
     recipe_id_t selected_recipe_id;
+    app_orchestrator_state_t state;
     const char *status_text;  // Short app-level workflow status for debug/presentation.
     bool has_selected_recipe;
     bool has_process_plan;
@@ -31,8 +42,11 @@ typedef struct
 
 void app_orchestrator_init(app_orchestrator_t *orchestrator);
 bool app_orchestrator_prepare_recipe(app_orchestrator_t *orchestrator, recipe_id_t recipe_id);
+bool app_orchestrator_enter_preflight(app_orchestrator_t *orchestrator, recipe_id_t recipe_id);
 bool app_orchestrator_start_prepared_process(app_orchestrator_t *orchestrator,
                                              recipe_id_t recipe_id);
+app_orchestrator_state_t app_orchestrator_get_state(const app_orchestrator_t *orchestrator);
+const char *app_orchestrator_get_status_text(const app_orchestrator_t *orchestrator);
 const process_runner_t *app_orchestrator_get_process_runner(const app_orchestrator_t *orchestrator);
 
 #endif

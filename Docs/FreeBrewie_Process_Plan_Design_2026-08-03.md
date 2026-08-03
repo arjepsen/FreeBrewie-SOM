@@ -1,5 +1,5 @@
 # FreeBrewie Process Plan Design
-_Date: 2026-07-31_
+_Date: 2026-08-03_
 
 ## Purpose
 This document defines the direction for FreeBrewie's process plan model.
@@ -203,10 +203,16 @@ the current step index and the current `Machine_targets` image. It is intentiona
 today: it can start a plan and apply target segments, but it does not yet advance from real
 time/sensor conditions or send MCU snapshots.
 
-The first app-level wiring now runs through `Logic/App_orchestrator`: entering the selected
-recipe checklist prepares a catalog recipe into `Recipe_model` and `Process_plan`, and
-pressing START starts the passive `Process_runner`. This is still not hardware authority and
-still does not transmit a `CONTROL_SNAPSHOT`.
+The first app-level wiring now runs through `Logic/App_orchestrator`:
+
+- entering the selected recipe checklist prepares a catalog recipe into `Recipe_model` and
+  `Process_plan`
+- the orchestrator marks that workflow state as preflight
+- pressing START starts the passive `Process_runner`
+- `Brewing_process_view_model` turns the orchestrator/runner state into Active Brewing
+  screen text
+
+This is still not hardware authority and still does not transmit a `CONTROL_SNAPSHOT`.
 
 `Logic/Machine_targets` is the current bridge from process-plan target changes to the MCU's
 16-byte `CONTROL_SNAPSHOT` payload. Some planned target fields, such as cooling target and
