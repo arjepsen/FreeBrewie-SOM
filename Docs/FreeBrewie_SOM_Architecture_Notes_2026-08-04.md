@@ -230,12 +230,16 @@ This is still not hardware authority. `App_orchestrator` must not send serial fr
 directly control hardware. When the passive runner starts, it now builds a 16-byte
 `CONTROL_SNAPSHOT` preview from `Machine_targets`. The top-level `App` layer now sends that
 first snapshot once through `Comms` when the user presses START. Future real brewing start
-must add startup state, fault state, machine state, ACK/NACK handling, repeated snapshot
-updates, and stronger preflight checks before this becomes a full control loop.
+must add startup state, fault state, machine state, repeated snapshot updates, and stronger
+preflight checks before this becomes a full control loop.
 
-The Status screen has a read-only `ctrl` row that shows the first bytes of this snapshot
-payload. That row is diagnostic only; it is there to inspect the process-to-snapshot bridge
-while the send path is still in early bring-up.
+The Status screen has read-only diagnostic rows for:
+- `ctrl`: the first bytes of the snapshot payload
+- `ack`: the latest MCU ACK/NACK summary
+
+Those rows are there to inspect the process-to-snapshot bridge while the send path is still
+in early bring-up. The SOM decodes the latest ACK/NACK, but full command correlation,
+retry/timeout policy, and user-facing error handling are still future work.
 
 ### `Brewing_process_view_model`
 Owns:

@@ -302,6 +302,7 @@ void screen_status_init(screen_status_t *status, ui_action_handler_t action_hand
     screen_status_create_row(container, "inlets", status, &status->solenoid_value);
     screen_status_create_row(container, "faults", status, &status->fault_value);
     screen_status_create_row(container, "ctrl", status, &status->control_snapshot_value);
+    screen_status_create_row(container, "ack", status, &status->command_response_value);
     screen_status_create_row(container, "touch", status, &status->touch_value);
     lv_label_set_text(status->touch_value, "tap screen");
 
@@ -327,6 +328,8 @@ void screen_status_update(screen_status_t *status, const status_screen_view_mode
     screen_status_set_label_text(status->fault_value, view_model->fault_text);
     screen_status_set_label_text(status->control_snapshot_value,
                                  view_model->control_snapshot_text);
+    screen_status_set_label_text(status->command_response_value,
+                                 view_model->command_response_text);
 
     /*
      * The heartbeat count normally changes once per second, while screen_status_update()

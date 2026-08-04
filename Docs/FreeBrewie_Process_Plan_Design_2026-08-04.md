@@ -216,9 +216,9 @@ The first app-level wiring now runs through `Logic/App_orchestrator`:
   screen text
 
 This is still early bring-up, not a full hardware-control loop. The Status screen shows a
-short read-only `ctrl` diagnostic row for the snapshot bytes so the bridge can be checked on
-the appliance while ACK/NACK handling, repeated snapshot updates, and stricter safety gates
-are added.
+short read-only `ctrl` diagnostic row for the snapshot bytes and an `ack` row for the latest
+MCU ACK/NACK summary. Repeated snapshot updates, ACK/NACK timeout/retry policy, and stricter
+safety gates are still future work.
 
 `Logic/Machine_targets` is the current bridge from process-plan target changes to the MCU's
 16-byte `CONTROL_SNAPSHOT` payload. Some planned target fields, such as cooling target and

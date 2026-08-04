@@ -12,6 +12,8 @@
 #define COMMS_CONTROL_SNAPSHOT_PAYLOAD_LEN 16U
 #define COMMS_STATUS_REPORT_PAYLOAD_LEN 27U
 #define COMMS_FAULT_REPORT_PAYLOAD_LEN 5U
+#define COMMS_ACK_PAYLOAD_LEN 2U
+#define COMMS_NACK_PAYLOAD_LEN 3U
 
 /*
  * The comms layer owns the SOM side of the serial protocol. It deliberately exposes only
@@ -23,6 +25,8 @@ static void comms_send_heartbeat(comms_t *comms, uint64_t now_ms);
 static void comms_decode_frame(comms_t *comms, const protocol_frame_t *frame);
 static bool comms_decode_status_report(comms_mcu_status_report_t *report, const protocol_frame_t *frame);
 static bool comms_decode_fault_report(comms_mcu_fault_report_t *report, const protocol_frame_t *frame);
+static bool comms_decode_ack(comms_mcu_command_response_t *response, const protocol_frame_t *frame);
+static bool comms_decode_nack(comms_mcu_command_response_t *response, const protocol_frame_t *frame);
 static uint16_t comms_decode_u16_le(const uint8_t *data);
 static int16_t comms_decode_i16_le(const uint8_t *data);
 
@@ -242,6 +246,22 @@ static void comms_decode_frame(comms_t *comms, const protocol_frame_t *frame)
             log_errorf("rx: bad FAULT_REPORT len=%u", (unsigned int)frame->len);
         }
     }
+    else if (frame->type == PROTOCOL_MSG_ACK)
+    {
+        if (!comms_decode_ack(&comms->status.command_response, frame))
+        {
+            comms->status.command_response.valid = false;
+            log_errorf("rx: bad ACK len=%u", (unsigned int)frame->len);
+        }
+    }
+    else if (frame->type == PROTOCOL_MSG_NACK)
+    {
+        if (!comms_decode_nack(&comms->status.command_response, frame))
+        {
+            comms->status.command_response.valid = false;
+            log_errorf("rx: bad NACK len=%u", (unsigned int)frame->len);
+        }
+    }
     /*
      * Unknown frame types are ignored for now. As the protocol grows, each accepted message
      * should get an explicit branch here so unsupported traffic stays harmless.
@@ -300,6 +320,47 @@ static bool comms_decode_fault_report(comms_mcu_fault_report_t *report, const pr
     report->latched_fault_flags = comms_decode_u16_le(&frame->data[2]);
     report->primary_reason = frame->data[4];
     report->valid = true;
+    return true;
+}
+
+static bool comms_decode_ack(comms_mcu_command_response_t *response, const protocol_frame_t *frame)
+{
+    if (response == NULL || frame == NULL || frame->len != COMMS_ACK_PAYLOAD_LEN)
+    {
+        return false;
+    }
+
+    response->valid = true;
+    response->accepted = true;
+    response->response_seq = frame->seq;
+    response->referenced_type = frame->data[0];
+    response->referenced_seq = frame->data[1];
+    response->nack_reason = 0U;
+
+    log_infof("rx: ACK type=%u seq=%u",
+              (unsigned int)response->referenced_type,
+              (unsigned int)response->referenced_seq);
+    return true;
+}
+
+static bool comms_decode_nack(comms_mcu_command_response_t *response, const protocol_frame_t *frame)
+{
+    if (response == NULL || frame == NULL || frame->len != COMMS_NACK_PAYLOAD_LEN)
+    {
+        return false;
+    }
+
+    response->valid = true;
+    response->accepted = false;
+    response->response_seq = frame->seq;
+    response->referenced_type = frame->data[0];
+    response->referenced_seq = frame->data[1];
+    response->nack_reason = frame->data[2];
+
+    log_errorf("rx: NACK type=%u seq=%u reason=%u",
+               (unsigned int)response->referenced_type,
+               (unsigned int)response->referenced_seq,
+               (unsigned int)response->nack_reason);
     return true;
 }
 

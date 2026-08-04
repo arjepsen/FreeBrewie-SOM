@@ -60,6 +60,17 @@ typedef struct
     uint8_t primary_reason;
 } comms_mcu_fault_report_t;
 
+/** Latest ACK/NACK returned by the MCU for a SOM command frame. */
+typedef struct
+{
+    bool valid;
+    bool accepted;
+    uint8_t response_seq;
+    uint8_t referenced_type;
+    uint8_t referenced_seq;
+    uint8_t nack_reason;
+} comms_mcu_command_response_t;
+
 /**
  * Public communications status shared with app logic and UI.
  *
@@ -78,6 +89,7 @@ typedef struct
     uint8_t last_rx_len;
     comms_mcu_status_report_t mcu_status;
     comms_mcu_fault_report_t mcu_faults;
+    comms_mcu_command_response_t command_response;
 } comms_status_t;
 
 #endif

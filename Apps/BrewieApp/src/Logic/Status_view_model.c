@@ -14,12 +14,16 @@ static bool status_view_model_status_report_matches(const comms_mcu_status_repor
                                                     const comms_mcu_status_report_t *right);
 static bool status_view_model_fault_report_matches(const comms_mcu_fault_report_t *left,
                                                    const comms_mcu_fault_report_t *right);
+static bool status_view_model_command_response_matches(const comms_mcu_command_response_t *left,
+                                                       const comms_mcu_command_response_t *right);
 static void status_view_model_update_last_rx_text(status_view_model_t *model, const comms_status_t *comms_status);
 static void status_view_model_update_mcu_status_text(status_view_model_t *model,
                                                      const comms_mcu_status_report_t *mcu_status);
 static void status_view_model_update_fault_text(status_view_model_t *model,
                                                 const comms_mcu_status_report_t *mcu_status,
                                                 const comms_mcu_fault_report_t *mcu_faults);
+static void status_view_model_update_command_response_text(status_view_model_t *model,
+                                                           const comms_mcu_command_response_t *response);
 static void status_view_model_update_machine_snapshot(status_view_model_t *model,
                                                        const comms_mcu_status_report_t *mcu_status);
 static void status_view_model_format_control_snapshot(status_view_model_t *model,
@@ -85,6 +89,25 @@ static bool status_view_model_fault_report_matches(const comms_mcu_fault_report_
            left->active_fault_flags == right->active_fault_flags &&
            left->latched_fault_flags == right->latched_fault_flags &&
            left->primary_reason == right->primary_reason;
+}
+
+/****************************************************************************************
+ * @brief Compare two decoded ACK/NACK summaries field by field.
+ ****************************************************************************************/
+static bool status_view_model_command_response_matches(const comms_mcu_command_response_t *left,
+                                                       const comms_mcu_command_response_t *right)
+{
+    if (left == NULL || right == NULL)
+    {
+        return false;
+    }
+
+    return left->valid == right->valid &&
+           left->accepted == right->accepted &&
+           left->response_seq == right->response_seq &&
+           left->referenced_type == right->referenced_type &&
+           left->referenced_seq == right->referenced_seq &&
+           left->nack_reason == right->nack_reason;
 }
 
 /****************************************************************************************
@@ -229,6 +252,39 @@ static void status_view_model_update_fault_text(status_view_model_t *model,
 }
 
 /****************************************************************************************
+ * @brief Rebuild compact ACK/NACK text for the latest SOM command.
+ ****************************************************************************************/
+static void status_view_model_update_command_response_text(status_view_model_t *model,
+                                                           const comms_mcu_command_response_t *response)
+{
+    if (!response->valid)
+    {
+        model->values.command_response_text = "none";
+        return;
+    }
+
+    if (response->accepted)
+    {
+        snprintf(model->command_response_text,
+                 sizeof(model->command_response_text),
+                 "ACK type=%u seq=%u",
+                 (unsigned int)response->referenced_type,
+                 (unsigned int)response->referenced_seq);
+    }
+    else
+    {
+        snprintf(model->command_response_text,
+                 sizeof(model->command_response_text),
+                 "NACK type=%u seq=%u r=%u",
+                 (unsigned int)response->referenced_type,
+                 (unsigned int)response->referenced_seq,
+                 (unsigned int)response->nack_reason);
+    }
+
+    model->values.command_response_text = model->command_response_text;
+}
+
+/****************************************************************************************
  * @brief Format the CONTROL_SNAPSHOT payload preview in readable terms.
  *
  * The preview payload uses the same field order as the MCU wire message:
@@ -283,6 +339,7 @@ void status_screen_view_model_init(status_screen_view_model_t *view_model)
     view_model->solenoid_text = "brew off / cool off";
     view_model->fault_text = "none";
     view_model->control_snapshot_text = "not started";
+    view_model->command_response_text = "none";
 }
 
 /****************************************************************************************
@@ -323,9 +380,11 @@ void status_view_model_update(status_view_model_t *model, const comms_status_t *
 {
     const comms_mcu_status_report_t *mcu_status;
     const comms_mcu_fault_report_t *mcu_faults;
+    const comms_mcu_command_response_t *command_response;
     bool last_rx_changed;
     bool mcu_status_changed;
     bool mcu_faults_changed;
+    bool command_response_changed;
 
     if (model == NULL || comms_status == NULL)
     {
@@ -334,6 +393,7 @@ void status_view_model_update(status_view_model_t *model, const comms_status_t *
 
     mcu_status = &comms_status->mcu_status;
     mcu_faults = &comms_status->mcu_faults;
+    command_response = &comms_status->command_response;
 
     /*
      * Cheap direct fields are still updated only when they change. The saving is small, but
@@ -390,6 +450,15 @@ void status_view_model_update(status_view_model_t *model, const comms_status_t *
     {
         status_view_model_update_fault_text(model, mcu_status, mcu_faults);
         model->cached_mcu_faults = *mcu_faults;
+    }
+
+    command_response_changed =
+        !status_view_model_command_response_matches(&model->cached_command_response,
+                                                    command_response);
+    if (command_response_changed)
+    {
+        status_view_model_update_command_response_text(model, command_response);
+        model->cached_command_response = *command_response;
     }
 }
 

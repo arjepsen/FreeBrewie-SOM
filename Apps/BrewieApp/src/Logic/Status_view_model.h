@@ -22,6 +22,7 @@
 #define STATUS_VIEW_MODEL_SOLENOID_TEXT_SIZE  64U
 #define STATUS_VIEW_MODEL_FAULT_TEXT_SIZE     64U
 #define STATUS_VIEW_MODEL_CONTROL_TEXT_SIZE   72U
+#define STATUS_VIEW_MODEL_COMMAND_TEXT_SIZE   48U
 
 typedef struct
 {
@@ -67,6 +68,7 @@ typedef struct
     const char *solenoid_text;
     const char *fault_text;
     const char *control_snapshot_text;
+    const char *command_response_text;
     uint32_t heartbeat_count;
     status_machine_snapshot_t machine;
 } status_screen_view_model_t;
@@ -88,6 +90,7 @@ typedef struct
     char solenoid_text[STATUS_VIEW_MODEL_SOLENOID_TEXT_SIZE];
     char fault_text[STATUS_VIEW_MODEL_FAULT_TEXT_SIZE];
     char control_snapshot_text[STATUS_VIEW_MODEL_CONTROL_TEXT_SIZE];
+    char command_response_text[STATUS_VIEW_MODEL_COMMAND_TEXT_SIZE];
     /*
      * Last comms values used to build the view model.
      *
@@ -105,6 +108,7 @@ typedef struct
     uint8_t cached_last_rx_len;
     comms_mcu_status_report_t cached_mcu_status;
     comms_mcu_fault_report_t cached_mcu_faults;
+    comms_mcu_command_response_t cached_command_response;
     uint8_t cached_control_snapshot_payload[16];
     uint8_t cached_control_snapshot_size;
     bool cached_control_snapshot_valid;
