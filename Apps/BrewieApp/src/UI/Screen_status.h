@@ -31,6 +31,7 @@ typedef struct
     lv_obj_t *pump_value;
     lv_obj_t *solenoid_value;
     lv_obj_t *fault_value;
+    lv_obj_t *control_snapshot_value;
     lv_obj_t *touch_value;
     lv_obj_t *button_value;
     ui_action_handler_t action_handler;  // Navigation callback used by the Home button.

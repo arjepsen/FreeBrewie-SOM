@@ -232,6 +232,10 @@ directly control hardware. When the passive runner starts, it now builds a 16-by
 real brewing start must add startup state, fault state, machine state, and preflight checks
 here before any target snapshot is allowed to leave the SOM.
 
+The Status screen has a read-only `ctrl` row that shows the first bytes of this local
+preview. That row is diagnostic only; it is there to inspect the process-to-snapshot bridge
+before transmission is enabled.
+
 ### `Brewing_process_view_model`
 Owns:
 - read-only Active Brewing presentation state

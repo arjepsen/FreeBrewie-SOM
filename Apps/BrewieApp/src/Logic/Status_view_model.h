@@ -21,6 +21,7 @@
 #define STATUS_VIEW_MODEL_PUMP_TEXT_SIZE      64U
 #define STATUS_VIEW_MODEL_SOLENOID_TEXT_SIZE  64U
 #define STATUS_VIEW_MODEL_FAULT_TEXT_SIZE     64U
+#define STATUS_VIEW_MODEL_CONTROL_TEXT_SIZE   72U
 
 typedef struct
 {
@@ -65,6 +66,7 @@ typedef struct
     const char *pump_text;
     const char *solenoid_text;
     const char *fault_text;
+    const char *control_snapshot_text;
     uint32_t heartbeat_count;
     status_machine_snapshot_t machine;
 } status_screen_view_model_t;
@@ -85,6 +87,7 @@ typedef struct
     char pump_text[STATUS_VIEW_MODEL_PUMP_TEXT_SIZE];
     char solenoid_text[STATUS_VIEW_MODEL_SOLENOID_TEXT_SIZE];
     char fault_text[STATUS_VIEW_MODEL_FAULT_TEXT_SIZE];
+    char control_snapshot_text[STATUS_VIEW_MODEL_CONTROL_TEXT_SIZE];
     /*
      * Last comms values used to build the view model.
      *
@@ -102,11 +105,18 @@ typedef struct
     uint8_t cached_last_rx_len;
     comms_mcu_status_report_t cached_mcu_status;
     comms_mcu_fault_report_t cached_mcu_faults;
+    uint8_t cached_control_snapshot_payload[16];
+    uint8_t cached_control_snapshot_size;
+    bool cached_control_snapshot_valid;
 } status_view_model_t;
 
 void status_screen_view_model_init(status_screen_view_model_t *view_model);
 void status_view_model_init(status_view_model_t *model);
 void status_view_model_set_serial_ready(status_view_model_t *model, bool serial_ready);
 void status_view_model_update(status_view_model_t *model, const comms_status_t *comms_status);
+void status_view_model_update_control_snapshot(status_view_model_t *model,
+                                               const uint8_t *payload,
+                                               uint8_t payload_size,
+                                               bool valid);
 
 #endif

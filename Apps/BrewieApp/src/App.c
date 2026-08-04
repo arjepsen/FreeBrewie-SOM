@@ -99,6 +99,7 @@ bool app_init(app_t *app)
 void app_update(app_t *app)
 {
     uint64_t now_ms;
+    const app_control_snapshot_preview_t *snapshot_preview;
 
     if (app == NULL)
     {
@@ -119,6 +120,16 @@ void app_update(app_t *app)
         if ((now_ms - app->last_ui_update_ms) >= APP_UI_REFRESH_PERIOD_MS)
         {
             status_view_model_update(&app->status_view_model, comms_get_status(&app->comms));
+            snapshot_preview =
+                app_orchestrator_get_control_snapshot_preview(&app->orchestrator);
+            if (snapshot_preview != NULL)
+            {
+                status_view_model_update_control_snapshot(
+                    &app->status_view_model,
+                    snapshot_preview->payload,
+                    (uint8_t)snapshot_preview->payload_size,
+                    snapshot_preview->valid);
+            }
             brewing_process_view_model_update(&app->brewing_process_view_model,
                                               &app->status_view_model.values,
                                               app_orchestrator_get_state(&app->orchestrator),

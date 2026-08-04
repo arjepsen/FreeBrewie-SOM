@@ -215,6 +215,8 @@ The first app-level wiring now runs through `Logic/App_orchestrator`:
   screen text
 
 This is still not hardware authority and still does not transmit a `CONTROL_SNAPSHOT`.
+The Status screen shows a short read-only `ctrl` diagnostic row for the preview bytes so the
+bridge can be checked on the appliance before any send path is added.
 
 `Logic/Machine_targets` is the current bridge from process-plan target changes to the MCU's
 16-byte `CONTROL_SNAPSHOT` payload. Some planned target fields, such as cooling target and

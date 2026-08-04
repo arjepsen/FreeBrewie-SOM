@@ -22,6 +22,9 @@ static void status_view_model_update_fault_text(status_view_model_t *model,
                                                 const comms_mcu_fault_report_t *mcu_faults);
 static void status_view_model_update_machine_snapshot(status_view_model_t *model,
                                                        const comms_mcu_status_report_t *mcu_status);
+static void status_view_model_format_control_snapshot(status_view_model_t *model,
+                                                      const uint8_t *payload,
+                                                      uint8_t payload_size);
 
 /****************************************************************************************
  * @brief Compare two decoded MCU status reports field by field.
@@ -226,6 +229,35 @@ static void status_view_model_update_fault_text(status_view_model_t *model,
 }
 
 /****************************************************************************************
+ * @brief Format the first local-only CONTROL_SNAPSHOT preview bytes.
+ *
+ * The Status screen only needs enough detail to prove the process-runner-to-snapshot bridge
+ * is producing stable bytes. Full protocol inspection belongs in a future debug tool or log
+ * view, not in a tiny portrait status row.
+ ****************************************************************************************/
+static void status_view_model_format_control_snapshot(status_view_model_t *model,
+                                                      const uint8_t *payload,
+                                                      uint8_t payload_size)
+{
+    if (payload == NULL || payload_size < 5U)
+    {
+        model->values.control_snapshot_text = "not ready";
+        return;
+    }
+
+    snprintf(model->control_snapshot_text,
+             sizeof(model->control_snapshot_text),
+             "len %u: %02X %02X %02X %02X %02X...",
+             (unsigned int)payload_size,
+             (unsigned int)payload[0],
+             (unsigned int)payload[1],
+             (unsigned int)payload[2],
+             (unsigned int)payload[3],
+             (unsigned int)payload[4]);
+    model->values.control_snapshot_text = model->control_snapshot_text;
+}
+
+/****************************************************************************************
  * @brief Fill the status view model with safe startup text.
  *
  * This gives every label something meaningful to show before the first MCU report arrives.
@@ -248,6 +280,7 @@ void status_screen_view_model_init(status_screen_view_model_t *view_model)
     view_model->pump_text = "mash off / boil off";
     view_model->solenoid_text = "brew off / cool off";
     view_model->fault_text = "none";
+    view_model->control_snapshot_text = "not ready";
 }
 
 /****************************************************************************************
@@ -356,4 +389,53 @@ void status_view_model_update(status_view_model_t *model, const comms_status_t *
         status_view_model_update_fault_text(model, mcu_status, mcu_faults);
         model->cached_mcu_faults = *mcu_faults;
     }
+}
+
+/****************************************************************************************
+ * @brief Update the diagnostic text for the local-only CONTROL_SNAPSHOT preview.
+ *
+ * This is intentionally separate from comms status updates because the preview is app logic,
+ * not data received from the MCU. The payload is never transmitted here.
+ ****************************************************************************************/
+void status_view_model_update_control_snapshot(status_view_model_t *model,
+                                               const uint8_t *payload,
+                                               uint8_t payload_size,
+                                               bool valid)
+{
+    if (model == NULL)
+    {
+        return;
+    }
+
+    if (!valid)
+    {
+        if (model->cached_control_snapshot_valid || model->values.control_snapshot_text == NULL)
+        {
+            model->values.control_snapshot_text = "not ready";
+            model->cached_control_snapshot_valid = false;
+            model->cached_control_snapshot_size = 0U;
+        }
+        return;
+    }
+
+    if (payload == NULL || payload_size == 0U ||
+        payload_size > sizeof(model->cached_control_snapshot_payload))
+    {
+        model->values.control_snapshot_text = "invalid preview";
+        model->cached_control_snapshot_valid = false;
+        model->cached_control_snapshot_size = 0U;
+        return;
+    }
+
+    if (model->cached_control_snapshot_valid &&
+        model->cached_control_snapshot_size == payload_size &&
+        memcmp(model->cached_control_snapshot_payload, payload, payload_size) == 0)
+    {
+        return;
+    }
+
+    memcpy(model->cached_control_snapshot_payload, payload, payload_size);
+    model->cached_control_snapshot_size = payload_size;
+    model->cached_control_snapshot_valid = true;
+    status_view_model_format_control_snapshot(model, payload, payload_size);
 }
