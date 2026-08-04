@@ -1,5 +1,5 @@
 # FreeBrewie SOM Architecture Notes
-_Date: 2026-08-03_
+_Date: 2026-08-04_
 
 ## Purpose
 This document defines the current target architecture for the Brewie SOM application.
@@ -9,7 +9,7 @@ It is meant to keep file ownership, module boundaries, and subsystem responsibil
 It should be read together with:
 - `FreeBrewie_UI_Current_Status_2026-07-22.md`
 - `FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
-- `FreeBrewie_Process_Plan_Design_2026-08-03.md`
+- `FreeBrewie_Process_Plan_Design_2026-08-04.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
 - `Brewie_SOM_Platform_Notes_2026-08-01.md`
 - `Brewie_SOM_MCU_Protocol_2026-08-01.md`
@@ -218,6 +218,7 @@ Owns:
 - high-level app state coherence
 - routing workflow-sensitive UI requests through the right logic modules
 - selected recipe state, prepared process-plan state, and passive process-runner state
+- local-only `CONTROL_SNAPSHOT` payload preview produced from current runner targets
 - current workflow state such as idle, recipe prepared, preflight, running, or error
 
 At the current stage, `App_orchestrator` is the narrow app-level boundary between UI intent
@@ -226,9 +227,10 @@ and process workflow. Entering the brew checklist prepares the selected catalog 
 starts the passive `Process_runner`.
 
 This is still not hardware authority. `App_orchestrator` must not send serial frames or
-directly control hardware. Future real brewing start must add startup state, fault state,
-machine state, and preflight checks here before any target snapshot is allowed to leave the
-SOM.
+directly control hardware. When the passive runner starts, it now builds a 16-byte
+`CONTROL_SNAPSHOT` preview from `Machine_targets`, but that preview is local-only. Future
+real brewing start must add startup state, fault state, machine state, and preflight checks
+here before any target snapshot is allowed to leave the SOM.
 
 ### `Brewing_process_view_model`
 Owns:

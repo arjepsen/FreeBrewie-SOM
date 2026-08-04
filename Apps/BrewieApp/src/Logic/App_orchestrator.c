@@ -2,6 +2,59 @@
 
 #include "Recipe_catalog.h"
 
+static void app_orchestrator_clear_control_snapshot_preview(app_orchestrator_t *orchestrator);
+static bool app_orchestrator_refresh_control_snapshot_preview(app_orchestrator_t *orchestrator);
+
+/****************************************************************************************
+ * @brief Mark the current would-be MCU snapshot as unavailable.
+ ****************************************************************************************/
+static void app_orchestrator_clear_control_snapshot_preview(app_orchestrator_t *orchestrator)
+{
+    if (orchestrator == NULL)
+    {
+        return;
+    }
+
+    orchestrator->control_snapshot_preview.payload_size = 0U;
+    orchestrator->control_snapshot_preview.valid = false;
+}
+
+/****************************************************************************************
+ * @brief Build a local-only CONTROL_SNAPSHOT preview from the current runner targets.
+ *
+ * This deliberately stops at payload bytes. The comms layer is still the only place that
+ * may frame and transmit protocol messages, and later safety checks must happen before
+ * this preview is allowed to become real serial traffic.
+ ****************************************************************************************/
+static bool app_orchestrator_refresh_control_snapshot_preview(app_orchestrator_t *orchestrator)
+{
+    const machine_targets_t *targets;
+
+    if (orchestrator == NULL)
+    {
+        return false;
+    }
+
+    app_orchestrator_clear_control_snapshot_preview(orchestrator);
+    targets = process_runner_current_targets(&orchestrator->process_runner);
+    if (!process_runner_is_active(&orchestrator->process_runner) || targets == NULL)
+    {
+        return false;
+    }
+
+    if (!machine_targets_encode_control_snapshot(
+            targets,
+            orchestrator->control_snapshot_preview.payload,
+            sizeof(orchestrator->control_snapshot_preview.payload)))
+    {
+        return false;
+    }
+
+    orchestrator->control_snapshot_preview.payload_size = MACHINE_TARGET_CONTROL_SNAPSHOT_SIZE;
+    orchestrator->control_snapshot_preview.valid = true;
+    return true;
+}
+
 /****************************************************************************************
  * @brief Reset the app workflow coordinator to idle.
  ****************************************************************************************/
@@ -15,6 +68,7 @@ void app_orchestrator_init(app_orchestrator_t *orchestrator)
     recipe_model_init(&orchestrator->selected_recipe);
     process_plan_init(&orchestrator->process_plan);
     process_runner_init(&orchestrator->process_runner);
+    app_orchestrator_clear_control_snapshot_preview(orchestrator);
     orchestrator->selected_recipe_id = 0U;
     orchestrator->state = APP_ORCHESTRATOR_STATE_IDLE;
     orchestrator->status_text = "No recipe prepared";
@@ -45,6 +99,7 @@ bool app_orchestrator_prepare_recipe(app_orchestrator_t *orchestrator, recipe_id
     recipe_model_init(&orchestrator->selected_recipe);
     process_plan_init(&orchestrator->process_plan);
     process_runner_init(&orchestrator->process_runner);
+    app_orchestrator_clear_control_snapshot_preview(orchestrator);
     orchestrator->selected_recipe_id = 0U;
     orchestrator->state = APP_ORCHESTRATOR_STATE_IDLE;
     orchestrator->has_selected_recipe = false;
@@ -115,7 +170,15 @@ bool app_orchestrator_start_prepared_process(app_orchestrator_t *orchestrator,
     if (!process_runner_start(&orchestrator->process_runner, &orchestrator->process_plan))
     {
         orchestrator->state = APP_ORCHESTRATOR_STATE_ERROR;
+        app_orchestrator_clear_control_snapshot_preview(orchestrator);
         orchestrator->status_text = "Process start failed";
+        return false;
+    }
+
+    if (!app_orchestrator_refresh_control_snapshot_preview(orchestrator))
+    {
+        orchestrator->state = APP_ORCHESTRATOR_STATE_ERROR;
+        orchestrator->status_text = "Snapshot preview failed";
         return false;
     }
 
@@ -161,4 +224,18 @@ const process_runner_t *app_orchestrator_get_process_runner(const app_orchestrat
     }
 
     return &orchestrator->process_runner;
+}
+
+/****************************************************************************************
+ * @brief Return the current local-only CONTROL_SNAPSHOT payload preview.
+ ****************************************************************************************/
+const app_control_snapshot_preview_t *
+app_orchestrator_get_control_snapshot_preview(const app_orchestrator_t *orchestrator)
+{
+    if (orchestrator == NULL)
+    {
+        return NULL;
+    }
+
+    return &orchestrator->control_snapshot_preview;
 }

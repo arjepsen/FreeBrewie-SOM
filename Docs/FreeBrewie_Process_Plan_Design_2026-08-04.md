@@ -1,5 +1,5 @@
 # FreeBrewie Process Plan Design
-_Date: 2026-08-03_
+_Date: 2026-08-04_
 
 ## Purpose
 This document defines the direction for FreeBrewie's process plan model.
@@ -209,6 +209,8 @@ The first app-level wiring now runs through `Logic/App_orchestrator`:
   `Process_plan`
 - the orchestrator marks that workflow state as preflight
 - pressing START starts the passive `Process_runner`
+- the orchestrator builds a local-only 16-byte `CONTROL_SNAPSHOT` preview from the current
+  `Machine_targets`
 - `Brewing_process_view_model` turns the orchestrator/runner state into Active Brewing
   screen text
 
