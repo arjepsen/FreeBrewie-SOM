@@ -54,8 +54,9 @@ mega2560_recovery_usbasp -> Custom -> Restore Bootloader USBasp
 
 Then return to SOM-side flashing as the normal workflow.
 
-## Buzzer GPIO probe
-`probe_buzzer_gpio.sh` is a cautious manual probe for the buzzer on the SOM carrier board.
+## Buzzer/audio note
+`probe_buzzer_gpio.sh` is kept only as a cautious generic GPIO pulse helper. It should
+not be treated as the current buzzer bring-up path.
 
 The old Brewie Linux image exposed:
 
@@ -63,20 +64,37 @@ The old Brewie Linux image exposed:
 /dev/brewie-buzzer -> /sys/class/gpio/gpio5_pb2
 ```
 
-On the current A13 Bullseye image, the suspected Linux sysfs GPIO number for A13 `PB2` is
-`gpio34`. This has not yet been proven on the current image.
+On the current A13 Bullseye image, the original alias does not map safely to a normal GPIO.
+The first suspected Linux sysfs GPIO number, `gpio34`, is A13 `PB2`, but current kernel
+debug output shows PB2 muxed to the PWM controller and requested by the display backlight.
+It must not be used for buzzer probing:
+- normal probing produced no buzzer sound
+- inverted probing affected the display
+- `/sys/kernel/debug/pwm` showed `pwm-0 (backlight)`
+
+Later hardware tracing showed that the black round sounder is driven through an
+ST TS4871-style audio amplifier from the SOM `HPOUTL`/`HPCOM` audio pins. The old GUI
+also used `aplay /usr/share/beep.wav` for button feedback. Treat sound feedback as an
+ALSA/audio feature, not as a direct GPIO output.
+
+Current hardware status:
+- the amplifier IC was damaged during live probing and has been removed
+- the carrier `+5V` rail no longer appears hard-shorted with the IC removed
+- buzzer/audio feedback is deferred until the amplifier/sounder hardware is repaired
 
 Copy the helper to the SOM and run:
 
 ```bash
-sudo /home/admin/probe_buzzer_gpio.sh
+sudo /home/admin/probe_buzzer_gpio.sh --gpio <verified-gpio-number>
 ```
 
-If there is no sound, try the inverted polarity once:
+Only after a new candidate GPIO has been checked against kernel/pinctrl state should
+inverted polarity be tried:
 
 ```bash
-sudo /home/admin/probe_buzzer_gpio.sh --active-low
+sudo /home/admin/probe_buzzer_gpio.sh --gpio <verified-gpio-number> --active-low
 ```
 
 Only after the pin and polarity are proven should the normal `brewie_app` grow a real
-platform buzzer module.
+platform GPIO-output module. Do not use this helper for the buzzer/audio path unless a
+new hardware revision proves that the sounder is actually GPIO-driven.

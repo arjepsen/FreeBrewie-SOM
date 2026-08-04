@@ -218,7 +218,7 @@ Owns:
 - high-level app state coherence
 - routing workflow-sensitive UI requests through the right logic modules
 - selected recipe state, prepared process-plan state, and passive process-runner state
-- local-only `CONTROL_SNAPSHOT` payload preview produced from current runner targets
+- current `CONTROL_SNAPSHOT` payload preview produced from current runner targets
 - current workflow state such as idle, recipe prepared, preflight, running, or error
 
 At the current stage, `App_orchestrator` is the narrow app-level boundary between UI intent
@@ -228,13 +228,14 @@ starts the passive `Process_runner`.
 
 This is still not hardware authority. `App_orchestrator` must not send serial frames or
 directly control hardware. When the passive runner starts, it now builds a 16-byte
-`CONTROL_SNAPSHOT` preview from `Machine_targets`, but that preview is local-only. Future
-real brewing start must add startup state, fault state, machine state, and preflight checks
-here before any target snapshot is allowed to leave the SOM.
+`CONTROL_SNAPSHOT` preview from `Machine_targets`. The top-level `App` layer now sends that
+first snapshot once through `Comms` when the user presses START. Future real brewing start
+must add startup state, fault state, machine state, ACK/NACK handling, repeated snapshot
+updates, and stronger preflight checks before this becomes a full control loop.
 
-The Status screen has a read-only `ctrl` row that shows the first bytes of this local
-preview. That row is diagnostic only; it is there to inspect the process-to-snapshot bridge
-before transmission is enabled.
+The Status screen has a read-only `ctrl` row that shows the first bytes of this snapshot
+payload. That row is diagnostic only; it is there to inspect the process-to-snapshot bridge
+while the send path is still in early bring-up.
 
 ### `Brewing_process_view_model`
 Owns:
@@ -286,8 +287,9 @@ Must not own:
 Important current fact:
 `Process_runner` is passive scaffolding. It can start a prepared process plan, apply target
 segments to `Machine_targets`, and stop at prompts or completion. It does not yet advance
-based on timers or sensor readings, and it does not yet send control snapshots. That later
-work belongs behind `App_orchestrator`, so start-brew requests can be checked against
+based on timers or sensor readings, and it does not send frames itself. The current one-shot
+control snapshot send is owned by top-level `App` through `Comms`. The repeated-control-loop
+work still belongs behind `App_orchestrator`, so start-brew requests can be checked against
 startup state, fault state, machine state, and workflow permissions before any target reaches
 the MCU.
 

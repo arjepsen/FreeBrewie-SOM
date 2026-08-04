@@ -209,14 +209,16 @@ The first app-level wiring now runs through `Logic/App_orchestrator`:
   `Process_plan`
 - the orchestrator marks that workflow state as preflight
 - pressing START starts the passive `Process_runner`
-- the orchestrator builds a local-only 16-byte `CONTROL_SNAPSHOT` preview from the current
+- the orchestrator builds a 16-byte `CONTROL_SNAPSHOT` preview from the current
   `Machine_targets`
+- top-level `App` sends that first snapshot once through `Comms`
 - `Brewing_process_view_model` turns the orchestrator/runner state into Active Brewing
   screen text
 
-This is still not hardware authority and still does not transmit a `CONTROL_SNAPSHOT`.
-The Status screen shows a short read-only `ctrl` diagnostic row for the preview bytes so the
-bridge can be checked on the appliance before any send path is added.
+This is still early bring-up, not a full hardware-control loop. The Status screen shows a
+short read-only `ctrl` diagnostic row for the snapshot bytes so the bridge can be checked on
+the appliance while ACK/NACK handling, repeated snapshot updates, and stricter safety gates
+are added.
 
 `Logic/Machine_targets` is the current bridge from process-plan target changes to the MCU's
 16-byte `CONTROL_SNAPSHOT` payload. Some planned target fields, such as cooling target and

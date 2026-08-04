@@ -32,5 +32,6 @@ void comms_update(comms_t *comms, uint64_t now_ms);
 void comms_shutdown(comms_t *comms);
 const comms_status_t *comms_get_status(const comms_t *comms);
 bool comms_is_serial_ready(const comms_t *comms);
+bool comms_send_control_snapshot(comms_t *comms, const uint8_t *payload, uint8_t payload_size);
 
 #endif

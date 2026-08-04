@@ -20,11 +20,11 @@ static void app_orchestrator_clear_control_snapshot_preview(app_orchestrator_t *
 }
 
 /****************************************************************************************
- * @brief Build a local-only CONTROL_SNAPSHOT preview from the current runner targets.
+ * @brief Build the current CONTROL_SNAPSHOT payload preview from runner targets.
  *
  * This deliberately stops at payload bytes. The comms layer is still the only place that
- * may frame and transmit protocol messages, and later safety checks must happen before
- * this preview is allowed to become real serial traffic.
+ * may frame and transmit protocol messages. The preview stays here so status/debug screens
+ * can show the same bytes that the top-level app sends during early bring-up.
  ****************************************************************************************/
 static bool app_orchestrator_refresh_control_snapshot_preview(app_orchestrator_t *orchestrator)
 {
@@ -188,6 +188,33 @@ bool app_orchestrator_start_prepared_process(app_orchestrator_t *orchestrator,
 }
 
 /****************************************************************************************
+ * @brief Record whether the first control snapshot was handed to the comms layer.
+ *
+ * This is still only a local workflow note. ACK/NACK handling will later turn this into a
+ * stricter "MCU accepted the snapshot" state.
+ ****************************************************************************************/
+void app_orchestrator_note_control_snapshot_send_result(app_orchestrator_t *orchestrator,
+                                                        bool sent)
+{
+    if (orchestrator == NULL)
+    {
+        return;
+    }
+
+    if (!sent)
+    {
+        orchestrator->state = APP_ORCHESTRATOR_STATE_ERROR;
+        orchestrator->status_text = "Snapshot send failed";
+        return;
+    }
+
+    if (orchestrator->state == APP_ORCHESTRATOR_STATE_RUNNING)
+    {
+        orchestrator->status_text = "Snapshot sent";
+    }
+}
+
+/****************************************************************************************
  * @brief Return the current high-level workflow state.
  ****************************************************************************************/
 app_orchestrator_state_t app_orchestrator_get_state(const app_orchestrator_t *orchestrator)
@@ -227,7 +254,7 @@ const process_runner_t *app_orchestrator_get_process_runner(const app_orchestrat
 }
 
 /****************************************************************************************
- * @brief Return the current local-only CONTROL_SNAPSHOT payload preview.
+ * @brief Return the current CONTROL_SNAPSHOT payload preview.
  ****************************************************************************************/
 const app_control_snapshot_preview_t *
 app_orchestrator_get_control_snapshot_preview(const app_orchestrator_t *orchestrator)

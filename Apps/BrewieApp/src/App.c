@@ -16,9 +16,9 @@ static bool app_handle_ui_workflow_request(ui_action_t action,
 /****************************************************************************************
  * @brief Route workflow-sensitive UI actions into app logic.
  *
- * This is deliberately not a hardware-control function. It only prepares or starts the
- * passive recipe/process state so the UI can show the next scaffold screen. Real MCU
- * snapshot sending will be added later behind explicit preflight and safety checks.
+ * This is deliberately the only bridge from UI navigation into process control. It prepares
+ * or starts the passive recipe/process state, then performs the first explicit one-shot
+ * control snapshot send when the user starts brewing.
  ****************************************************************************************/
 static bool app_handle_ui_workflow_request(ui_action_t action,
                                            recipe_id_t recipe_id,
@@ -39,7 +39,26 @@ static bool app_handle_ui_workflow_request(ui_action_t action,
 
     if (action == UI_ACTION_SHOW_ACTIVE_BREWING)
     {
-        return app_orchestrator_start_prepared_process(&app->orchestrator, recipe_id);
+        const app_control_snapshot_preview_t *snapshot_preview;
+        bool snapshot_sent;
+
+        if (!app_orchestrator_start_prepared_process(&app->orchestrator, recipe_id))
+        {
+            return false;
+        }
+
+        snapshot_preview = app_orchestrator_get_control_snapshot_preview(&app->orchestrator);
+        if (snapshot_preview == NULL || !snapshot_preview->valid)
+        {
+            app_orchestrator_note_control_snapshot_send_result(&app->orchestrator, false);
+            return false;
+        }
+
+        snapshot_sent = comms_send_control_snapshot(&app->comms,
+                                                    snapshot_preview->payload,
+                                                    (uint8_t)snapshot_preview->payload_size);
+        app_orchestrator_note_control_snapshot_send_result(&app->orchestrator, snapshot_sent);
+        return snapshot_sent;
     }
 
     return true;

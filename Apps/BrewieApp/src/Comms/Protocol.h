@@ -84,6 +84,12 @@ typedef struct
 } protocol_rx_state_t;
 
 void protocol_sender_init(protocol_sender_t *sender, uint8_t first_seq);
+size_t protocol_build_frame(protocol_sender_t *sender,
+                            uint8_t type,
+                            const uint8_t *payload,
+                            uint8_t payload_size,
+                            uint8_t *buffer,
+                            size_t buffer_size);
 size_t protocol_build_heartbeat(protocol_sender_t *sender, uint8_t *buffer, size_t buffer_size);
 void protocol_rx_init(protocol_rx_state_t *rx);
 bool protocol_rx_consume(protocol_rx_state_t *rx, uint8_t byte, protocol_frame_t *out_frame);

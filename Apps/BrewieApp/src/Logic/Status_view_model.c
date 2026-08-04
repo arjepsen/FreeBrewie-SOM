@@ -229,11 +229,11 @@ static void status_view_model_update_fault_text(status_view_model_t *model,
 }
 
 /****************************************************************************************
- * @brief Format the local-only CONTROL_SNAPSHOT preview in readable terms.
+ * @brief Format the CONTROL_SNAPSHOT payload preview in readable terms.
  *
  * The preview payload uses the same field order as the MCU wire message:
  * mash target, boil target, mash pump, boil pump, inlet bits, then 11 valve-command bytes.
- * This remains diagnostic text only; no protocol frame is built or sent here.
+ * This remains diagnostic text only; no protocol frame is built or sent in this module.
  ****************************************************************************************/
 static void status_view_model_format_control_snapshot(status_view_model_t *model,
                                                       const uint8_t *payload,
@@ -394,10 +394,10 @@ void status_view_model_update(status_view_model_t *model, const comms_status_t *
 }
 
 /****************************************************************************************
- * @brief Update the diagnostic text for the local-only CONTROL_SNAPSHOT preview.
+ * @brief Update the diagnostic text for the CONTROL_SNAPSHOT payload preview.
  *
  * This is intentionally separate from comms status updates because the preview is app logic,
- * not data received from the MCU. The payload is never transmitted here.
+ * not data received from the MCU. Transmission is handled by top-level App through Comms.
  ****************************************************************************************/
 void status_view_model_update_control_snapshot(status_view_model_t *model,
                                                const uint8_t *payload,

@@ -153,40 +153,74 @@ Practical rule:
 - any future MCU flashing helper must stop `brewie.service`, control `gpio137`, run
   `avrdude` on `/dev/ttyS1`, and then restore the app/service path cleanly
 
-### Buzzer GPIO status
-The carrier-board buzzer is documented by the old Linux alias:
+### Buzzer/audio status
+The carrier-board buzzer/speaker was originally suspected to be a GPIO-driven buzzer
+because the old Linux image exposed this alias:
 
 ```text
 /dev/brewie-buzzer -> /sys/class/gpio/gpio5_pb2
 ```
 
-Using the same A13 GPIO numbering rule proven for other pins, `PB2` maps to Linux
+Using the same A13 GPIO numbering rule proven for other pins, `PB2` appears to map to Linux
 `gpio34`:
 
 ```text
 ('B' - 'A') * 32 + 2 = 34
 ```
 
-Current status:
-- suspected current sysfs path: `/sys/class/gpio/gpio34`
+Current GPIO status:
+- `gpio34` / `PB2` is **not** available as a normal buzzer GPIO on the current image
+- kernel pinctrl shows `PB2` muxed to `1c20e00.pwm`
+- `/sys/kernel/debug/pwm` shows `pwm-0 (backlight)` with a 50 us period and inverse
+  polarity
+- testing `gpio34` produced no buzzer sound
+- testing inverted polarity on `gpio34` affected the display, matching the backlight PWM
+  ownership
+- the old GUI code did not directly toggle the buzzer alias for button sounds; it called
+  `aplay /usr/share/beep.wav`
 - helper added: `Deploy/Admin/probe_buzzer_gpio.sh`
-- not yet proven on the real Bullseye SOM image
 - not yet integrated into `brewie_app`
 
-Practical first test on the SOM:
+Current hardware/audio finding:
+- PCB tracing indicates the black round sounder is driven through an ST TS4871-style
+  audio amplifier, not directly from a SOM GPIO
+- the amplifier input traces go to SOM audio pins `HPOUTL` and `HPCOM`
+- the amplifier supply is on the carrier `+5V` rail
+- the amplifier standby pin is pulled low through 10k, so the amp is normally enabled
+- ALSA playback on the current image can drive an AC signal into the amplifier input
+- amplifier output was also observed during audio testing
+- the original sounder measured like a piezo/capacitive transducer rather than a normal
+  low-resistance speaker
+- the amplifier IC was damaged during live probing and has been removed; the `+5V` rail
+  no longer appears hard-shorted with the IC removed
+
+Repair note:
+- replacement amplifier candidate: STMicroelectronics `TS4871IST` in MiniSO-8 / MSOP-8
+- replacement sounder should be a passive speaker or passive magnetic transducer, not an
+  active DC buzzer
+- audio feedback is deferred until the carrier-board amplifier/sounder hardware is
+  repaired
+
+Practical rule:
+- do not probe `gpio34` / `PB2` again for buzzer on this image
+- treat user-interface beep feedback as an ALSA/audio feature, not as a direct GPIO output
+- do not add normal app audio feedback until the carrier hardware has been repaired and
+  audio output is re-proven
+- if a future GPIO candidate is ever investigated for another purpose, verify it against
+  kernel/pinctrl state first, then use:
 
 ```bash
-sudo /home/admin/probe_buzzer_gpio.sh
+sudo /home/admin/probe_buzzer_gpio.sh --gpio <verified-gpio-number>
 ```
 
-If there is no sound, try the inverted polarity once:
+Only after the GPIO has been checked should inverted polarity be tried:
 
 ```bash
-sudo /home/admin/probe_buzzer_gpio.sh --active-low
+sudo /home/admin/probe_buzzer_gpio.sh --gpio <verified-gpio-number> --active-low
 ```
 
-Do not add normal app buzzer behavior until the GPIO number and active polarity are proven
-on the current image.
+Do not add normal app audio feedback until the carrier-board amplifier/sounder hardware
+has been repaired and the ALSA output path has been re-tested.
 
 ---
 

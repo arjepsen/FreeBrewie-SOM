@@ -56,6 +56,8 @@ bool app_orchestrator_prepare_recipe(app_orchestrator_t *orchestrator, recipe_id
 bool app_orchestrator_enter_preflight(app_orchestrator_t *orchestrator, recipe_id_t recipe_id);
 bool app_orchestrator_start_prepared_process(app_orchestrator_t *orchestrator,
                                              recipe_id_t recipe_id);
+void app_orchestrator_note_control_snapshot_send_result(app_orchestrator_t *orchestrator,
+                                                        bool sent);
 app_orchestrator_state_t app_orchestrator_get_state(const app_orchestrator_t *orchestrator);
 const char *app_orchestrator_get_status_text(const app_orchestrator_t *orchestrator);
 const process_runner_t *app_orchestrator_get_process_runner(const app_orchestrator_t *orchestrator);

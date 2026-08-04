@@ -2,7 +2,7 @@
 
 set -eu
 
-GPIO_NUMBER=34
+GPIO_NUMBER=""
 PULSE_COUNT=3
 ON_SECONDS=0.10
 OFF_SECONDS=0.15
@@ -12,17 +12,22 @@ IDLE_VALUE=0
 usage()
 {
     cat <<EOF
-Usage: $0 [--gpio N] [--count N] [--on SECONDS] [--off SECONDS] [--active-low]
+Usage: $0 --gpio N [--count N] [--on SECONDS] [--off SECONDS] [--active-low]
 
-Probe the suspected Brewie SOM carrier buzzer GPIO.
+Pulse a verified Brewie SOM carrier GPIO for cautious manual probing.
 
 Defaults:
-  --gpio 34        A13 PB2, from the old /dev/brewie-buzzer -> gpio5_pb2 mapping
+  --gpio N         Linux sysfs GPIO number to probe
   --count 3        number of short beeps
   --on 0.10        active time for each beep
   --off 0.15       idle time between beeps
 
 This helper only uses sysfs GPIO and leaves the line idle before exiting.
+
+Important:
+  Do not use gpio34 as the default buzzer guess. Testing showed no buzzer sound, and
+  inverted probing affected the display on the current Olimex Bullseye image.
+  The current buzzer/sounder path appears to be ALSA audio through an amplifier, not GPIO.
 EOF
 }
 
@@ -60,6 +65,17 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
+if [ -z "$GPIO_NUMBER" ]; then
+    usage >&2
+    exit 2
+fi
+
+if [ "$GPIO_NUMBER" = "34" ]; then
+    echo "Refusing gpio34: it affected the display during previous buzzer probing." >&2
+    echo "Use a newly verified GPIO number instead." >&2
+    exit 2
+fi
+
 GPIO_PATH="/sys/class/gpio/gpio${GPIO_NUMBER}"
 
 if [ ! -d "$GPIO_PATH" ]; then
@@ -69,7 +85,7 @@ fi
 echo out > "${GPIO_PATH}/direction"
 echo "$IDLE_VALUE" > "${GPIO_PATH}/value"
 
-echo "Probing buzzer on gpio${GPIO_NUMBER}: active=${ACTIVE_VALUE}, idle=${IDLE_VALUE}"
+echo "Pulsing gpio${GPIO_NUMBER}: active=${ACTIVE_VALUE}, idle=${IDLE_VALUE}"
 
 INDEX=0
 while [ "$INDEX" -lt "$PULSE_COUNT" ]; do
@@ -81,4 +97,4 @@ while [ "$INDEX" -lt "$PULSE_COUNT" ]; do
 done
 
 echo "$IDLE_VALUE" > "${GPIO_PATH}/value"
-echo "Done. If there was no sound, retry with --active-low before assuming the pin is wrong."
+echo "Done. Only retry with --active-low after the pin has been checked against pinctrl/debugfs."

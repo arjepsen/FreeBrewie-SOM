@@ -41,12 +41,21 @@ void protocol_sender_init(protocol_sender_t *sender, uint8_t first_seq)
     }
 }
 
-size_t protocol_build_heartbeat(protocol_sender_t *sender, uint8_t *buffer, size_t buffer_size)
+size_t protocol_build_frame(protocol_sender_t *sender,
+                            uint8_t type,
+                            const uint8_t *payload,
+                            uint8_t payload_size,
+                            uint8_t *buffer,
+                            size_t buffer_size)
 {
     uint8_t seq;
-    uint8_t crc_input[3];
+    uint8_t crc_input[3 + PROTOCOL_MAX_DATA_SIZE];
+    size_t frame_size;
+    size_t crc_input_size;
 
-    if (sender == NULL || buffer == NULL || buffer_size < 6U)
+    frame_size = 2U + 1U + 1U + 1U + payload_size + 1U;
+    if (sender == NULL || buffer == NULL || payload_size > PROTOCOL_MAX_DATA_SIZE ||
+        buffer_size < frame_size || (payload_size > 0U && payload == NULL))
     {
         return 0U;
     }
@@ -54,21 +63,35 @@ size_t protocol_build_heartbeat(protocol_sender_t *sender, uint8_t *buffer, size
     seq = protocol_next_seq(sender);
 
     /*
-     * Heartbeat has no payload. The length byte is therefore zero, and the CRC is calculated
-     * over type, sequence, and length only.
+     * All outgoing frames share the same envelope. The CRC intentionally excludes the sync
+     * bytes, matching the MCU receiver.
      */
     buffer[0] = PROTOCOL_SYNC1;
     buffer[1] = PROTOCOL_SYNC2;
-    buffer[2] = PROTOCOL_MSG_HEARTBEAT;
+    buffer[2] = type;
     buffer[3] = seq;
-    buffer[4] = 0U;
+    buffer[4] = payload_size;
+    if (payload_size > 0U)
+    {
+        memcpy(&buffer[5], payload, payload_size);
+    }
 
     crc_input[0] = buffer[2];
     crc_input[1] = buffer[3];
     crc_input[2] = buffer[4];
-    buffer[5] = protocol_crc8_dallas_maxim(crc_input, sizeof(crc_input));
+    if (payload_size > 0U)
+    {
+        memcpy(&crc_input[3], payload, payload_size);
+    }
+    crc_input_size = 3U + payload_size;
+    buffer[5U + payload_size] = protocol_crc8_dallas_maxim(crc_input, crc_input_size);
 
-    return 6U;
+    return frame_size;
+}
+
+size_t protocol_build_heartbeat(protocol_sender_t *sender, uint8_t *buffer, size_t buffer_size)
+{
+    return protocol_build_frame(sender, PROTOCOL_MSG_HEARTBEAT, NULL, 0U, buffer, buffer_size);
 }
 
 void protocol_rx_init(protocol_rx_state_t *rx)

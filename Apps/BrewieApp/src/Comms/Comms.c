@@ -9,6 +9,7 @@
 
 #define COMMS_HEARTBEAT_PERIOD_MS 1000U
 #define COMMS_POLL_WAIT_MS 10
+#define COMMS_CONTROL_SNAPSHOT_PAYLOAD_LEN 16U
 #define COMMS_STATUS_REPORT_PAYLOAD_LEN 27U
 #define COMMS_FAULT_REPORT_PAYLOAD_LEN 5U
 
@@ -113,6 +114,49 @@ const comms_status_t *comms_get_status(const comms_t *comms)
 bool comms_is_serial_ready(const comms_t *comms)
 {
     return (comms != NULL) && comms->status.serial_ready;
+}
+
+bool comms_send_control_snapshot(comms_t *comms, const uint8_t *payload, uint8_t payload_size)
+{
+    uint8_t frame_buffer[PROTOCOL_MAX_FRAME_SIZE];
+    size_t frame_length;
+
+    if (comms == NULL || payload == NULL ||
+        payload_size != COMMS_CONTROL_SNAPSHOT_PAYLOAD_LEN)
+    {
+        return false;
+    }
+
+    if (!comms->status.serial_ready)
+    {
+        log_error("comms_send_control_snapshot: serial not ready");
+        return false;
+    }
+
+    /*
+     * The app/orchestrator decides whether a snapshot is safe to send. Comms only frames
+     * the exact payload and writes it to the MCU serial link.
+     */
+    frame_length = protocol_build_frame(&comms->protocol_sender,
+                                        PROTOCOL_MSG_CONTROL_SNAPSHOT,
+                                        payload,
+                                        payload_size,
+                                        frame_buffer,
+                                        sizeof(frame_buffer));
+    if (frame_length == 0U)
+    {
+        log_error("comms_send_control_snapshot: frame build failed");
+        return false;
+    }
+
+    if (!transport_serial_write_all(&comms->serial, frame_buffer, frame_length))
+    {
+        log_error("comms_send_control_snapshot: serial write failed");
+        return false;
+    }
+
+    log_info("tx: CONTROL_SNAPSHOT len=16");
+    return true;
 }
 
 static void comms_process_serial_rx(comms_t *comms, uint64_t now_ms)
