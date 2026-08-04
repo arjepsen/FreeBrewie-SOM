@@ -241,7 +241,7 @@ static void status_view_model_format_control_snapshot(status_view_model_t *model
 {
     if (payload == NULL || payload_size < 5U)
     {
-        model->values.control_snapshot_text = "not ready";
+        model->values.control_snapshot_text = "not started";
         return;
     }
 
@@ -280,7 +280,7 @@ void status_screen_view_model_init(status_screen_view_model_t *view_model)
     view_model->pump_text = "mash off / boil off";
     view_model->solenoid_text = "brew off / cool off";
     view_model->fault_text = "none";
-    view_model->control_snapshot_text = "not ready";
+    view_model->control_snapshot_text = "not started";
 }
 
 /****************************************************************************************
@@ -411,7 +411,7 @@ void status_view_model_update_control_snapshot(status_view_model_t *model,
     {
         if (model->cached_control_snapshot_valid || model->values.control_snapshot_text == NULL)
         {
-            model->values.control_snapshot_text = "not ready";
+            model->values.control_snapshot_text = "not started";
             model->cached_control_snapshot_valid = false;
             model->cached_control_snapshot_size = 0U;
         }

@@ -15,15 +15,22 @@
 #define SCREEN_STATUS_ROW_GAP 4
 #define SCREEN_STATUS_PANEL_PAD 8
 
-static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out);
+static lv_obj_t *screen_status_create_row(lv_obj_t *parent,
+                                          const char *label_text,
+                                          screen_status_t *status,
+                                          lv_obj_t **value_out);
 static lv_obj_t *screen_status_create_home_button(lv_obj_t *parent, screen_status_t *status);
 static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_status_t *status);
+static void screen_status_attach_touch_probe(lv_obj_t *object, screen_status_t *status);
 static void screen_status_set_label_text(lv_obj_t *label, const char *text);
 static void screen_status_home_event_cb(lv_event_t *event);
 static void screen_status_touch_event_cb(lv_event_t *event);
 static void screen_status_button_event_cb(lv_event_t *event);
 
-static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_text, lv_obj_t **value_out)
+static lv_obj_t *screen_status_create_row(lv_obj_t *parent,
+                                          const char *label_text,
+                                          screen_status_t *status,
+                                          lv_obj_t **value_out)
 {
     lv_obj_t *row;
     lv_obj_t *label;
@@ -38,6 +45,7 @@ static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_te
     lv_obj_set_style_pad_top(row, 1, 0);
     lv_obj_set_style_pad_bottom(row, 1, 0);
     lv_obj_set_style_pad_column(row, SCREEN_STATUS_ROW_GAP, 0);
+    screen_status_attach_touch_probe(row, status);
 
     label = lv_label_create(row);
     lv_label_set_text(label, label_text);
@@ -58,6 +66,25 @@ static lv_obj_t *screen_status_create_row(lv_obj_t *parent, const char *label_te
 
     *value_out = value;
     return row;
+}
+
+/****************************************************************************************
+ * @brief Add the temporary touch-coordinate probe to one status-screen object.
+ *
+ * The Status screen is scrollable and made of many child rows. Listening only on the outer
+ * container misses touches that LVGL delivers to child objects, so the probe is attached to
+ * rows/buttons as they are created.
+ ****************************************************************************************/
+static void screen_status_attach_touch_probe(lv_obj_t *object, screen_status_t *status)
+{
+    if (object == NULL || status == NULL)
+    {
+        return;
+    }
+
+    lv_obj_add_flag(object, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(object, screen_status_touch_event_cb, LV_EVENT_PRESSED, status);
+    lv_obj_add_event_cb(object, screen_status_touch_event_cb, LV_EVENT_RELEASED, status);
 }
 
 /****************************************************************************************
@@ -95,6 +122,7 @@ static lv_obj_t *screen_status_create_home_button(lv_obj_t *parent, screen_statu
     lv_obj_set_style_bg_color(button, lv_color_hex(0x4A4A4A), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 4, 0);
     lv_obj_set_style_pad_all(button, 0, 0);
+    screen_status_attach_touch_probe(button, status);
     lv_obj_add_event_cb(button, screen_status_home_event_cb, LV_EVENT_CLICKED, status);
 
     label = lv_label_create(button);
@@ -117,6 +145,7 @@ static lv_obj_t *screen_status_create_touch_button(lv_obj_t *parent, screen_stat
     lv_obj_set_style_bg_color(button, lv_color_hex(0x249B70), LV_STATE_PRESSED);
     lv_obj_set_style_radius(button, 4, 0);
     lv_obj_set_style_pad_all(button, 0, 0);
+    screen_status_attach_touch_probe(button, status);
     lv_obj_add_event_cb(button, screen_status_button_event_cb, LV_EVENT_CLICKED, status);
 
     label = lv_label_create(button);
@@ -250,9 +279,7 @@ void screen_status_init(screen_status_t *status, ui_action_handler_t action_hand
      */
     lv_obj_set_scroll_dir(container, LV_DIR_VER);
     ui_scroll_apply_gutter(container);
-    lv_obj_add_flag(container, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(container, screen_status_touch_event_cb, LV_EVENT_PRESSED, status);
-    lv_obj_add_event_cb(container, screen_status_touch_event_cb, LV_EVENT_RELEASED, status);
+    screen_status_attach_touch_probe(container, status);
 
     status->title_label = lv_label_create(container);
     lv_label_set_text(status->title_label, "STATUS");
@@ -261,21 +288,21 @@ void screen_status_init(screen_status_t *status, ui_action_handler_t action_hand
 
     screen_status_create_home_button(container, status);
     screen_status_create_touch_button(container, status);
-    screen_status_create_row(container, "button", &status->button_value);
+    screen_status_create_row(container, "button", status, &status->button_value);
     lv_label_set_text(status->button_value, "not clicked");
-    screen_status_create_row(container, "display", &status->display_value);
-    screen_status_create_row(container, "serial", &status->serial_value);
-    screen_status_create_row(container, "heartbeat", &status->heartbeat_value);
-    screen_status_create_row(container, "hb sent", &status->hb_counter_value);
-    screen_status_create_row(container, "last rx", &status->last_rx_value);
-    screen_status_create_row(container, "link", &status->link_value);
-    screen_status_create_row(container, "mcu", &status->mcu_status_value);
-    screen_status_create_row(container, "pressure", &status->pressure_value);
-    screen_status_create_row(container, "pumps", &status->pump_value);
-    screen_status_create_row(container, "inlets", &status->solenoid_value);
-    screen_status_create_row(container, "faults", &status->fault_value);
-    screen_status_create_row(container, "ctrl", &status->control_snapshot_value);
-    screen_status_create_row(container, "touch", &status->touch_value);
+    screen_status_create_row(container, "display", status, &status->display_value);
+    screen_status_create_row(container, "serial", status, &status->serial_value);
+    screen_status_create_row(container, "heartbeat", status, &status->heartbeat_value);
+    screen_status_create_row(container, "hb sent", status, &status->hb_counter_value);
+    screen_status_create_row(container, "last rx", status, &status->last_rx_value);
+    screen_status_create_row(container, "link", status, &status->link_value);
+    screen_status_create_row(container, "mcu", status, &status->mcu_status_value);
+    screen_status_create_row(container, "pressure", status, &status->pressure_value);
+    screen_status_create_row(container, "pumps", status, &status->pump_value);
+    screen_status_create_row(container, "inlets", status, &status->solenoid_value);
+    screen_status_create_row(container, "faults", status, &status->fault_value);
+    screen_status_create_row(container, "ctrl", status, &status->control_snapshot_value);
+    screen_status_create_row(container, "touch", status, &status->touch_value);
     lv_label_set_text(status->touch_value, "tap screen");
 
     log_info("screen_status: built");
