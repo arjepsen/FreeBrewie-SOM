@@ -11,7 +11,7 @@ It should be read together with:
 - `FreeBrewie_Recipe_Model_Decisions_2026-07-30.md`
 - `FreeBrewie_Process_Plan_Design_2026-08-04.md`
 - `FreeBrewie_SOM_Development_Environment_Consolidated_2026-07-22.md`
-- `Brewie_SOM_Platform_Notes_2026-08-01.md`
+- `Brewie_SOM_Platform_Notes_2026-08-04.md`
 - `Brewie_SOM_MCU_Protocol_2026-08-01.md`
 
 ---

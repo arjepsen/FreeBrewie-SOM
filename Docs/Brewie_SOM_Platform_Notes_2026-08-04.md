@@ -1,5 +1,5 @@
 # Brewie SOM Platform Notes
-_Date: 2026-08-01_
+_Date: 2026-08-04_
 
 ## Purpose
 This document captures the current practical SOM platform facts for the FreeBrewie project.
@@ -152,6 +152,41 @@ Practical rule:
 - for current manual testing, use `/sys/class/gpio/gpio137` after exporting it
 - any future MCU flashing helper must stop `brewie.service`, control `gpio137`, run
   `avrdude` on `/dev/ttyS1`, and then restore the app/service path cleanly
+
+### Buzzer GPIO status
+The carrier-board buzzer is documented by the old Linux alias:
+
+```text
+/dev/brewie-buzzer -> /sys/class/gpio/gpio5_pb2
+```
+
+Using the same A13 GPIO numbering rule proven for other pins, `PB2` maps to Linux
+`gpio34`:
+
+```text
+('B' - 'A') * 32 + 2 = 34
+```
+
+Current status:
+- suspected current sysfs path: `/sys/class/gpio/gpio34`
+- helper added: `Deploy/Admin/probe_buzzer_gpio.sh`
+- not yet proven on the real Bullseye SOM image
+- not yet integrated into `brewie_app`
+
+Practical first test on the SOM:
+
+```bash
+sudo /home/admin/probe_buzzer_gpio.sh
+```
+
+If there is no sound, try the inverted polarity once:
+
+```bash
+sudo /home/admin/probe_buzzer_gpio.sh --active-low
+```
+
+Do not add normal app buzzer behavior until the GPIO number and active polarity are proven
+on the current image.
 
 ---
 

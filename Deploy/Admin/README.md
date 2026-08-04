@@ -53,3 +53,30 @@ mega2560_recovery_usbasp -> Custom -> Restore Bootloader USBasp
 ```
 
 Then return to SOM-side flashing as the normal workflow.
+
+## Buzzer GPIO probe
+`probe_buzzer_gpio.sh` is a cautious manual probe for the buzzer on the SOM carrier board.
+
+The old Brewie Linux image exposed:
+
+```text
+/dev/brewie-buzzer -> /sys/class/gpio/gpio5_pb2
+```
+
+On the current A13 Bullseye image, the suspected Linux sysfs GPIO number for A13 `PB2` is
+`gpio34`. This has not yet been proven on the current image.
+
+Copy the helper to the SOM and run:
+
+```bash
+sudo /home/admin/probe_buzzer_gpio.sh
+```
+
+If there is no sound, try the inverted polarity once:
+
+```bash
+sudo /home/admin/probe_buzzer_gpio.sh --active-low
+```
+
+Only after the pin and polarity are proven should the normal `brewie_app` grow a real
+platform buzzer module.
