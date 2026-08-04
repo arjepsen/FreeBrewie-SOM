@@ -229,17 +229,17 @@ static void status_view_model_update_fault_text(status_view_model_t *model,
 }
 
 /****************************************************************************************
- * @brief Format the first local-only CONTROL_SNAPSHOT preview bytes.
+ * @brief Format the local-only CONTROL_SNAPSHOT preview in readable terms.
  *
- * The Status screen only needs enough detail to prove the process-runner-to-snapshot bridge
- * is producing stable bytes. Full protocol inspection belongs in a future debug tool or log
- * view, not in a tiny portrait status row.
+ * The preview payload uses the same field order as the MCU wire message:
+ * mash target, boil target, mash pump, boil pump, inlet bits, then 11 valve-command bytes.
+ * This remains diagnostic text only; no protocol frame is built or sent here.
  ****************************************************************************************/
 static void status_view_model_format_control_snapshot(status_view_model_t *model,
                                                       const uint8_t *payload,
                                                       uint8_t payload_size)
 {
-    if (payload == NULL || payload_size < 5U)
+    if (payload == NULL || payload_size < 16U)
     {
         model->values.control_snapshot_text = "not started";
         return;
@@ -247,13 +247,15 @@ static void status_view_model_format_control_snapshot(status_view_model_t *model
 
     snprintf(model->control_snapshot_text,
              sizeof(model->control_snapshot_text),
-             "len %u: %02X %02X %02X %02X %02X...",
-             (unsigned int)payload_size,
+             "mash %uC boil %uC pump %u/%u inlet %02X valves %02X %02X %02X...",
              (unsigned int)payload[0],
              (unsigned int)payload[1],
              (unsigned int)payload[2],
              (unsigned int)payload[3],
-             (unsigned int)payload[4]);
+             (unsigned int)payload[4],
+             (unsigned int)payload[5],
+             (unsigned int)payload[6],
+             (unsigned int)payload[7]);
     model->values.control_snapshot_text = model->control_snapshot_text;
 }
 
